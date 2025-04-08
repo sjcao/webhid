@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  h1 {
+    @apply text-2xl;
+    @apply my-4;
+  }
+  h2 {
+    @apply text-xl;
+    @apply my-2;
+  }
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#app {
+  max-width: 1280px;
+  padding: 1rem 2rem;
+  width: 100%;
+}
+
+td {
+  padding: 0.25em 1em;
+}
+
