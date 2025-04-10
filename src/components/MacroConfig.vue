@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 
 import { BridgeData, BridgeStatus, makeBridge } from './bridge';
 import { parse, stringify } from 'yaml';
+import MacroRecorder from "@/components/MacroRecorder.vue";
 
 const props = defineProps<{
   hard?: boolean; // should it interact with hardware or just dummy
@@ -23,6 +24,7 @@ const macroList = bridge<number[]>('macroList', [],
 );
 
 const rr = ref();
+const startRecord = ref(false);
 async function getMacroFunction(macroId: number) {
 //   return await props.py(`
 // def macro_op_to_js(macro_op):
@@ -102,6 +104,10 @@ function tryLoad() {
   }
 }
 
+function tryRecord() {
+  startRecord.value = true;
+}
+
 function trySave() {
   if (saveTargetMacroId.value !== null) {
     setMacroFunction(saveTargetMacroId.value, parse(macroContentInput.value)).then(() => {
@@ -133,7 +139,7 @@ async function importMacros() {
 
 </script>
 <template>
-  <div class="min-w-96">
+  <div class="macro-recorder-container">
     <h2>Select</h2>
     <select class="select select-bordered w-full max-w-xs" v-model="selectedMacroId">
       <option :value="null">(none)</option>
@@ -142,6 +148,8 @@ async function importMacros() {
     <div>
       <button class="btn btn-primary" @click="tryLoad">Load</button>
       <button class="btn btn-error" @click="tryDelete">Delete</button>
+      <button v-if="!startRecord" class="btn btn-primary" @click="tryRecord">宏录制</button>
+      <button v-else class="btn btn-primary" @click="startRecord = false">取消宏录制</button>
     </div>
     <textarea
       placeholder="Macro content"
@@ -161,5 +169,25 @@ async function importMacros() {
       <button class="btn flex-1" @click="exportMacros">Export</button>
       <button class="btn flex-1" @click="importMacros">Import</button>
     </div>
+
+    <MacroRecorder class="macro-record" v-if="startRecord" @close="startRecord=false"></MacroRecorder>
   </div>
+
 </template>
+
+
+<style scoped>
+  .macro-recorder-container {
+    position: relative;
+    top: 0;
+    left: 0;
+  }
+  .macro-record {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    width: 100%;
+    height: 100%;
+  }
+</style>

@@ -1,5 +1,6 @@
 import { ModelRef, ref, watch } from "vue";
 
+
 export type BridgeData = {[key: string]: any};
 export type BridgeStatus = {[key: string]: 'idle' | 'reading' | 'writing'};
 
@@ -66,4 +67,21 @@ export function makeBridge(bridgeData: ModelRef<BridgeData>, bridgeStatus: Model
   }
 
   return bridge;
+}
+
+
+export async function sendData(device:HIDDevice,data: Uint8Array) {
+  if (!device.opened) {
+    await device.open();
+    console.log("设备已打开 🎉");
+  }
+
+  const reportId = 0x01; // 设备报告 ID（通常需要查设备文档）
+
+  try {
+    await device.sendReport(reportId, data);
+    console.log("数据已发送 ✅");
+  } catch (err) {
+    console.error("发送数据失败：", err);
+  }
 }

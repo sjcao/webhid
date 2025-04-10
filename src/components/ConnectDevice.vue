@@ -63,7 +63,7 @@ const connectDevice = async (device: HIDDevice) => {
   try {
     if (!device.opened) {
       await device.open()
-
+      
       emit('deviceCreated', device);
 
       ElMessage.success('设备连接成功')
@@ -135,15 +135,15 @@ const isPythonReady = computed(() => {
         v-loading="loading"
         empty-text="未检测到已连接设备"
     >
-      <el-table-column prop="productName" label="设备名称" width="220"/>
-      <el-table-column label="厂商/产品 ID" width="180">
+      <el-table-column prop="productName" label="设备名称"/>
+      <el-table-column label="厂商/产品 ID">
         <template #default="{ row }">
           <div>厂商: 0x{{ row.vendorId.toString(16).toUpperCase() }}</div>
           <div>产品: 0x{{ row.productId.toString(16).toUpperCase() }}</div>
         </template>
       </el-table-column>
 
-      <el-table-column prop="opened" label="连接状态" width="120">
+      <el-table-column prop="opened" label="连接状态">
         <template #default="{ row }">
           <el-tag :type="row.opened ? 'success' : 'danger'">
             {{ row.opened ? '已连接' : '未连接' }}
@@ -151,7 +151,7 @@ const isPythonReady = computed(() => {
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" width="200" align="center">
+      <el-table-column label="操作">
         <template #default="{ row }">
           <el-row>
 
@@ -194,5 +194,6 @@ const isPythonReady = computed(() => {
   .el-table-devices{
     display: flex;
     justify-content: center;
+    width: 50vw;
   }
 </style>

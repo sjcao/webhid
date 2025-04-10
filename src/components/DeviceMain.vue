@@ -7,7 +7,7 @@ import ButtonConfig from './ButtonConfig.vue';
 import MacroConfig from './MacroConfig.vue';
 import SensorConfig from './SensorConfig.vue';
 import LedConfig from './LedConfig.vue';
-import PythonRunner from './PythonRunner.vue';
+import {useHIDListener} from "@/components/webhid.ts";
 
 const emit = defineEmits(['back']);
 
@@ -55,6 +55,7 @@ const handleSelectProfile = (profile: string) => {
   activeProfile.value = profile;
 }
 
+
 </script>
 <template>
   <el-container>
@@ -69,50 +70,48 @@ const handleSelectProfile = (profile: string) => {
     <el-container>
 
       <el-aside width="200px">
-        <!-- 动态列表 -->
+        配置列表
         <el-menu
+            :default-active="0"
             class="dynamic-menu"
             @select="handleSelectProfile"
         >
-          <!-- 循环渲染列表项 -->
-          <template v-for="(item) in allProfileList">
+          <!-- 单层菜单项 -->
+          <el-menu-item v-for="(item,index) in allProfileList" :key="index" :index="index">
+            <span>{{ item }}</span>
+          </el-menu-item>
 
-            <!-- 单层菜单项 -->
-            <el-menu-item>
-              <template #title>{{ item }}</template>
-            </el-menu-item>
-          </template>
         </el-menu>
+
       </el-aside>
 
       <el-main>
-        <el-container>
-          <el-header>
-
+        <el-container direction="vertical">
             <div class="join join-horizontal">
-              <button class="btn join-item" :class="{'btn-active': activeTab === 'basic'}"
-                      @click="activeTab = 'basic'; refreshKey++; ">Basic
-              </button>
-              <button class="btn join-item" :class="{'btn-active': activeTab === 'button'}"
-                      @click="activeTab = 'button'; refreshKey++; ">Button
-              </button>
-              <button class="btn join-item" :class="{'btn-active': activeTab === 'led'}"
-                      @click="activeTab = 'led'; refreshKey++; ">LED
-              </button>
-              <button class="btn join-item" :class="{'btn-active': activeTab === 'profile'}"
-                      @click="activeTab = 'profile'; refreshKey++; ">Profile
-              </button>
-              <button class="btn join-item" :class="{'btn-active': activeTab === 'macro'}"
-                      @click="activeTab = 'macro'; refreshKey++; ">Macro
-              </button>
-              <button class="btn join-item" :class="{'btn-active': activeTab === 'sensor'}"
-                      @click="activeTab = 'sensor'; refreshKey++; ">Sensor
-              </button>
-              <button class="btn join-item" :class="{'btn-active': activeTab === 'info'}"
-                      @click="activeTab = 'info'; refreshKey++; ">Info
-              </button>
+              <el-button-group>
+                <el-button class="join-item" :class="{'btn-active': activeTab === 'basic'}"
+                           @click="activeTab = 'basic'; refreshKey++; ">DPI设置
+                </el-button>
+                <el-button class="join-item" :class="{'btn-active': activeTab === 'button'}"
+                           @click="activeTab = 'button'; refreshKey++; ">按键设置
+                </el-button>
+                <el-button class="join-item" :class="{'btn-active': activeTab === 'led'}"
+                           @click="activeTab = 'led'; refreshKey++; ">LED灯光
+                </el-button>
+                <el-button class="join-item" :class="{'btn-active': activeTab === 'profile'}"
+                           @click="activeTab = 'profile'; refreshKey++; ">配置文件
+                </el-button>
+                <el-button class="join-item" :class="{'btn-active': activeTab === 'macro'}"
+                           @click="activeTab = 'macro'; refreshKey++; ">宏录制
+                </el-button>
+                <!--              <el-button class="join-item" :class="{'btn-active': activeTab === 'sensor'}"-->
+                <!--                      @click="activeTab = 'sensor'; refreshKey++; ">传感器-->
+                <!--              </el-button>-->
+                <el-button class="join-item" :class="{'btn-active': activeTab === 'info'}"
+                           @click="activeTab = 'info'; refreshKey++; ">鼠标信息
+                </el-button>
+              </el-button-group>
             </div>
-          </el-header>
 
           <div class="w-md p-2">
             <div>
@@ -143,8 +142,8 @@ const handleSelectProfile = (profile: string) => {
                   <MouseInfo v-if="activeTab === 'info' && hard"
                              :key="refreshKey" :currentDevice="currentDevice"/>
                   <div v-if="activeTab === 'info' && !hard">No hardware connected</div>
-                  <PythonRunner v-if="activeTab === 'info'"/>
-                  v-show is used to load available profiles when initially loaded
+                  <!--                  <PythonRunner v-if="activeTab === 'info'"/>-->
+                  <!--                  v-show is used to load available profiles when initially loaded-->
                   <ProfileConfig v-show="activeTab === 'profile'"
                                  :key="refreshKey" :hard="hard" @update="updateHasProfileList"
                                  :is-config-all-idle="isConfigAllIdle"
@@ -160,7 +159,19 @@ const handleSelectProfile = (profile: string) => {
         </el-container>
       </el-main>
     </el-container>
-    <el-footer>...</el-footer>
+    <!--    <el-footer>...</el-footer>-->
   </el-container>
 
 </template>
+
+<style scoped>
+.btn-active {
+  background-color: dodgerblue;
+  color: white;
+}
+
+.dynamic-menu {
+
+}
+
+</style>

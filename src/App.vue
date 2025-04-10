@@ -4,6 +4,7 @@ import ConnectDevice from './components/ConnectDevice.vue';
 import DeviceMain from './components/DeviceMain.vue';
 import LogConsole from './components/LogConsole.vue';
 import LogGlance from './components/LogGlance.vue';
+import {setHIDDevice} from "@/components/webhid.ts";
 
 const connected = ref(false);
 const hard = ref(false);
@@ -57,20 +58,20 @@ window.addEventListener("unhandledrejection", (event) => {
 <template>
   <div>
     <ConnectDevice v-if="!connected"
-                   @device-created="(payload) => {connected = true; hard = false;currentDevice = payload}"
+                   @device-created="(payload) => {connected = true; hard = false;currentDevice = payload;setHIDDevice(currentDevice)}"
                    @device-not-created="connected = true; hard = false;"/>
-    <DeviceMain v-else :hard="hard" :device="currentDevice" @back="connected = false"/>
+    <DeviceMain v-else :hard="hard" :currentDevice="currentDevice" @back="connected = false"/>
   </div>
   <div class="h-96"></div>
-<!--  <footer>-->
-<!--    <div class="flex flex-row gap-2 items-baseline">-->
-<!--      <button class="btn btn-sm" @click="showConsole = !showConsole; if(logConsole) {logConsole.scrollToBottom()}">-->
-<!--        Console-->
-<!--      </button>-->
-<!--      <LogGlance :messages="logs"></LogGlance>-->
-<!--    </div>-->
-<!--    <LogConsole v-show="showConsole" ref="logConsole" :messages="logs"/>-->
-<!--  </footer>-->
+  <!--  <footer>-->
+  <!--    <div class="flex flex-row gap-2 items-baseline">-->
+  <!--      <button class="btn btn-sm" @click="showConsole = !showConsole; if(logConsole) {logConsole.scrollToBottom()}">-->
+  <!--        Console-->
+  <!--      </button>-->
+  <!--      <LogGlance :messages="logs"></LogGlance>-->
+  <!--    </div>-->
+  <!--    <LogConsole v-show="showConsole" ref="logConsole" :messages="logs"/>-->
+  <!--  </footer>-->
 </template>
 
 <style scoped>

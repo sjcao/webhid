@@ -25,6 +25,7 @@
     "@gautemo/vite-plugin-service-worker": "^0.1.0",
     "@types/w3c-web-hid": "^1.0.6",
     "@vitejs/plugin-vue": "^5.1.2",
+    "@vue/runtime-core": "^3.5.13",
     "autoprefixer": "^10.4.20",
     "daisyui": "^4.12.10",
     "postcss": "^8.4.45",
