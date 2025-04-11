@@ -1,1 +1,1 @@
-[](https://sjcao.github.io/webhid/)
+[https://sjcao.github.io/webhid/](https://sjcao.github.io/webhid/)
