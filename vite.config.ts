@@ -11,7 +11,7 @@ export default defineConfig({
       filename: 'service-worker.ts',
     }),
   ],
-  base: '/webhid/',
+  base: '/webhidmouse',
   worker: {
     format: "es"
   },

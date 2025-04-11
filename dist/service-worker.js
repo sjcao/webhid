@@ -1,0 +1,1 @@
+import{d as e}from"./assets/index-hifc6bGH.js";const i=e.serviceWorkerFetchListener();addEventListener("fetch",function(t){i(t)||t.respondWith(fetch(t.request))});addEventListener("install",function(t){t.waitUntil(self.skipWaiting())});addEventListener("activate",function(t){t.waitUntil(self.clients.claim())});
