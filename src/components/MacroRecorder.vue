@@ -35,13 +35,13 @@
     <!-- 动作列表 -->
     <div class="action-list">
       <transition-group name="list">
-        <div
+        <span
             v-for="(action, index) in actions"
             :key="index"
             class="action-item"
         >
           <!-- 按键显示 -->
-          <div v-if="action.type === 'key'" class="key-display">
+          <el-card v-if="action.type === 'key'" class="key-display">
             <el-tag type="info" class="key-icon">
               {{ keyIcons[action.key] || action.key.toUpperCase() }}
             </el-tag>
@@ -53,14 +53,14 @@
                 @click="deleteAction(index)"
                 :icon="Delete"
             />
-          </div>
+          </el-card>
 
           <!-- 延迟显示 -->
-          <div v-else class="delay-display">
+          <el-card v-else class="delay-display">
             <el-icon class="clock-icon">
               <Clock/>
             </el-icon>
-            <span class="delay-text">30ms 延迟</span>
+            <span class="delay-text">30ms</span>
             <el-button
                 type="danger"
                 size="small"
@@ -68,8 +68,8 @@
                 @click="deleteAction(index)"
                 :icon="Delete"
             />
-          </div>
-        </div>
+          </el-card>
+        </span>
       </transition-group>
     </div>
   </div>
@@ -208,6 +208,8 @@ onBeforeUnmount(() => {
 }
 
 .action-list {
+  display: flex;
+  flex-wrap: wrap;
   border: 1px solid #ebeef5;
   border-radius: 4px;
   padding: 10px;
@@ -215,7 +217,7 @@ onBeforeUnmount(() => {
 }
 
 .action-item {
-  margin: 8px 0;
+  margin: 8px;
   padding: 10px;
   background: white;
   border-radius: 4px;
@@ -223,13 +225,14 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   transition: all 0.3s;
+  flex-shrink: 0;
 }
 
 .key-display, .delay-display {
   display: flex;
   align-items: center;
   gap: 10px;
-  width: 100%;
+  width: auto;
 }
 
 .key-icon {

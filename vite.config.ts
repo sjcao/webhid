@@ -11,7 +11,7 @@ export default defineConfig({
       filename: 'service-worker.ts',
     }),
   ],
-  base: '/razerqdhid/',
+  base: '/webhid/',
   worker: {
     format: "es"
   },

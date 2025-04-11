@@ -188,6 +188,7 @@ async function importMacros() {
     left: 0;
     z-index: 9999;
     width: 100%;
-    height: 100%;
+    min-height: 100%;
+    height: auto;
   }
 </style>
