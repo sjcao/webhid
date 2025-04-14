@@ -170,7 +170,7 @@ async function importMacros() {
       <button class="btn flex-1" @click="importMacros">Import</button>
     </div>
 
-    <MacroRecorder class="macro-record" v-if="startRecord" @close="startRecord=false"></MacroRecorder>
+    <MacroRecorder class="macro-record" v-if="startRecord" @close="startRecord=false" @contextmenu.prevent></MacroRecorder>
   </div>
 
 </template>

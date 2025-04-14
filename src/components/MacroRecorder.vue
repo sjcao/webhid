@@ -30,10 +30,14 @@
       >
         关闭录制
       </el-button>
+
+      <el-text>延迟时间:</el-text>
+      <el-input-number v-model="delay">
+      </el-input-number>
     </div>
 
     <!-- 动作列表 -->
-    <div class="action-list">
+    <div class="action-list" @mousedown="handleMousePress">
       <transition-group name="list">
         <span
             v-for="(action, index) in actions"
@@ -54,13 +58,13 @@
                 :icon="Delete"
             />
           </el-card>
-
           <!-- 延迟显示 -->
           <el-card v-else class="delay-display">
+            <span>+</span>
             <el-icon class="clock-icon">
               <Clock/>
             </el-icon>
-            <span class="delay-text">30ms</span>
+            <span class="delay-text">{{delay}}ms</span>
             <el-button
                 type="danger"
                 size="small"
@@ -68,6 +72,7 @@
                 @click="deleteAction(index)"
                 :icon="Delete"
             />
+            <span>+</span>
           </el-card>
         </span>
       </transition-group>
@@ -87,8 +92,9 @@ import {
 const emit = defineEmits(['close']);
 
 // 响应式状态
-const isRecording = ref(false)
-const actions = ref([])
+const isRecording = ref(false);
+const actions = ref([]);
+const delay = ref(30);
 
 // 按键图标映射
 const keyIcons = {
@@ -103,9 +109,10 @@ const keyIcons = {
 // 监听键盘事件
 const handleKeyPress = (e) => {
   if (!isRecording.value) return
-
+  e.preventDefault()
+  e.stopImmediatePropagation()
   // 记录按键（排除功能键）
-  if (e.key.length === 1 || e.key in keyIcons) {
+  if (e.key.length) {
     // 自动添加延迟（第一个按键不加）
     if (actions.value.length > 0) {
       actions.value.push({type: 'delay', duration: 30})
@@ -119,10 +126,9 @@ const handleKeyPress = (e) => {
   }
 }
 
-// 监听键盘事件
+// 监听鼠标事件
 const handleMousePress = (e) => {
   if (!isRecording.value) return
-
   let key = ""
   // 记录按键（排除功能键）
   if (e.button === 0) {
@@ -147,7 +153,7 @@ const handleMousePress = (e) => {
 
 
 // 切换录制状态
-const toggleRecording = () => {
+const toggleRecording = (e) => {
   isRecording.value = !isRecording.value
   if (isRecording.value) {
     actions.value = [] // 开始新录制时清空记录
@@ -185,12 +191,10 @@ const playMacro = async () => {
 // 生命周期钩子
 onMounted(() => {
   window.addEventListener('keydown', handleKeyPress)
-  window.addEventListener('mousedown', handleMousePress)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeyPress)
-  window.removeEventListener('mousedown', handleMousePress)
 })
 </script>
 
@@ -210,19 +214,19 @@ onBeforeUnmount(() => {
 .action-list {
   display: flex;
   flex-wrap: wrap;
-  border: 1px solid #ebeef5;
+  border: 1px solid deepskyblue;
   border-radius: 4px;
   padding: 10px;
-  min-height: 100px;
+  min-height: 400px;
 }
 
 .action-item {
+  height: fit-content;
   margin: 8px;
   padding: 10px;
   background: white;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
   align-items: center;
   transition: all 0.3s;
   flex-shrink: 0;
