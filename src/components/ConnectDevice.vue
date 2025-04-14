@@ -137,7 +137,7 @@ const isPythonReady = computed(() => {
         <el-carousel-item v-for="(item,index) in devices" :key="index" @click="">
 <!--          <h3 text="2xl" justify="center">{{ item }}</h3>-->
           <div class="image-container">
-            <el-image src="/ic_mouse.svg" fit="cover"></el-image>
+            <el-image src="/public/ic_mouse.svg" fit="cover"></el-image>
 <!--            <div>厂商: 0x{{ item.vendorId.toString(16).toUpperCase() }}</div>-->
 <!--            <div>产品: 0x{{ item.productId.toString(16).toUpperCase() }}</div>-->
             <div>
