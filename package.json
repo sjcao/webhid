@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@gautemo/vite-plugin-service-worker": "^0.1.0",
+    "@types/node": "^22.14.1",
     "@types/w3c-web-hid": "^1.0.6",
     "@vitejs/plugin-vue": "^5.1.2",
     "@vue/runtime-core": "^3.5.13",
