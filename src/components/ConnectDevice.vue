@@ -117,7 +117,7 @@ const isPythonReady = computed(() => {
 
 </script>
 <template>
-  <AuroraBackground class="fixed top-0 left-0 w-screen h-screen flex flex-col items-center justify-center gap-4 px-4" :radial-gradient="false">
+  <AuroraBackground class="fixed top-0 left-0 w-screen h-screen flex flex-col items-center justify-center gap-4 px-4 bg-zinc-100" :radial-gradient="true">
   <el-container class="connect-device-container">
     <el-header class="mt-10">
       <h1> WebHID 鼠标配置工具</h1>
