@@ -16,7 +16,7 @@ const props = defineProps<{
   currentDevice?: HIDDevice;
 }>();
 
-const allProfileList = ['板载内存', '配置文件1', '配置文件2', '配置文件3'];
+const allProfileList = ['配置文件1', '配置文件2', '配置文件3','配置文件4'];
 const activeProfile = ref('direct');
 const activeTab = ref('basic');
 const refreshKey = ref(0);

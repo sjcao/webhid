@@ -3,7 +3,6 @@ import {ref} from 'vue';
 import ConnectDevice from './components/ConnectDevice.vue';
 import DeviceMain from './components/DeviceMain.vue';
 import LogConsole from './components/LogConsole.vue';
-import LogGlance from './components/LogGlance.vue';
 import {setHIDDevice} from "@/components/webhid.ts";
 
 const connected = ref(false);

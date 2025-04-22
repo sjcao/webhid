@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import {ref, computed, onMounted} from 'vue';
 import {ElMessage} from "element-plus";
+import {AuroraBackground} from "@/components/ui/aurora-background";
 
 const emit = defineEmits(['deviceCreated', 'deviceNotCreated']);
 
 // 设备列表
 const devices = ref<HIDDevice[]>([])
 const loading = ref(false)
-const imgMouse =  new URL(`/ic_mouse.svg`, import.meta.url).href
+const imgMouse = new URL(`/ic-moouse.png`, import.meta.url).href
 
 async function requestDevice() {
   if (!hasHid()) {
@@ -19,6 +20,10 @@ async function requestDevice() {
   }
 
   const devices = await navigator.hid.requestDevice({
+    // filters: [
+    //   {vendorId: 0x4242, productId: 0x0009},
+    //   {vendorId: 0x373B, productId: 0x1135}
+    // ]
     filters: []
   });
   if (!(devices.length > 0)) {
@@ -64,7 +69,7 @@ const connectDevice = async (device: HIDDevice) => {
   try {
     if (!device.opened) {
       await device.open()
-      
+
       emit('deviceCreated', device);
 
       ElMessage.success('设备连接成功')
@@ -85,7 +90,7 @@ const enterSetting = async (device: HIDDevice) => {
 
       ElMessage.success('设备连接成功')
       await refreshDeviceList()
-    }else {
+    } else {
       emit('deviceCreated', device);
     }
   } catch (error) {
@@ -112,161 +117,175 @@ const isPythonReady = computed(() => {
 
 </script>
 <template>
+  <AuroraBackground class="fixed top-0 left-0 w-screen h-screen flex flex-col items-center justify-center gap-4 px-4" :radial-gradient="false">
   <el-container class="connect-device-container">
-    <el-header>
+    <el-header class="mt-10">
       <h1> WebHID 鼠标配置工具</h1>
     </el-header>
 
     <div>
-      仅支持 Chrome、Edge、Opera 等内核的浏览器。</div>
+      仅支持 Chrome、Edge、Opera 等内核的浏览器。
+    </div>
     <div>如列表中无设备显示，请点击按钮，以允许浏览器连接到您的设备</div>
 
     <div>
 
-    <el-button size="large"  type="primary" @click="requestDevice" :class="{'btn-disabled': !isPythonReady}">
-      请求浏览器访问设备
-    </el-button>
+      <el-button size="large" type="primary" @click="requestDevice">
+        请求浏览器访问设备
+      </el-button>
 
-    <el-button size="large" @click="noHardwareMode" :class="{'btn-disabled': !isPythonReady}">无设备模式
-    </el-button>
+      <el-button size="large" @click="noHardwareMode">无设备模式
+      </el-button>
     </div>
 
     <!-- 设备列表 -->
     <div class="el-carousel-container">
-      <el-carousel :initial-index="Math.floor(devices.length/2)" :autoplay="false" :arrow="'always'" :loop="false" :indicator-position="'outside'" type="card" height="360px">
+      <el-carousel :initial-index="Math.floor(devices.length/2)" :autoplay="false" :arrow="'always'" :loop="false"
+                   :indicator-position="'outside'" type="card" height="360px">
         <el-carousel-item v-for="(item,index) in devices" :key="index" @click="">
-<!--          <h3 text="2xl" justify="center">{{ item }}</h3>-->
+          <!--          <h3 text="2xl" justify="center">{{ item }}</h3>-->
           <div class="image-container">
             <el-image :src="imgMouse" fit="cover"></el-image>
 <!--            <div>厂商: 0x{{ item.vendorId.toString(16).toUpperCase() }}</div>-->
-<!--            <div>产品: 0x{{ item.productId.toString(16).toUpperCase() }}</div>-->
+            <div>{{ item.productName.toString().toUpperCase() }}</div>
             <div>
-            <el-tag :type="item.opened ? 'success' : 'danger'">
-              {{ item.opened ? '已连接' : '未连接' }}
-            </el-tag>
+              <el-tag :type="item.opened ? 'success' : 'danger'">
+                {{ item.opened ? '已连接' : '未连接' }}
+              </el-tag>
             </div>
-            <div>
+            <div class="mb-3">
               <el-button
                   v-if="!item.opened"
                   size="large"
                   type="success"
                   @click="connectDevice(item)"
-              >连接</el-button>
+              >连接
+              </el-button>
 
               <el-button
                   v-if="item.opened"
                   size="large"
                   type="danger"
                   @click="disconnectDevice(item)"
-              >断开</el-button>
+              >断开
+              </el-button>
 
               <el-button
                   v-if="item.opened"
                   size="large"
                   type="success"
                   @click="enterSetting(item)"
-              >进入设置</el-button>
+              >进入设置
+              </el-button>
             </div>
           </div>
         </el-carousel-item>
       </el-carousel>
     </div>
 
-<!--    <el-table-->
-<!--        class="el-table-devices"-->
-<!--        :data="devices"-->
-<!--        border-->
-<!--        stripe-->
-<!--        v-loading="loading"-->
-<!--        empty-text="未检测到已连接设备"-->
-<!--    >-->
-<!--      <el-table-column prop="productName" label="设备名称"/>-->
-<!--      <el-table-column label="厂商/产品 ID">-->
-<!--        <template #default="{ row }">-->
-<!--          <div>厂商: 0x{{ row.vendorId.toString(16).toUpperCase() }}</div>-->
-<!--          <div>产品: 0x{{ row.productId.toString(16).toUpperCase() }}</div>-->
-<!--        </template>-->
-<!--      </el-table-column>-->
+    <!--    <el-table-->
+    <!--        class="el-table-devices"-->
+    <!--        :data="devices"-->
+    <!--        border-->
+    <!--        stripe-->
+    <!--        v-loading="loading"-->
+    <!--        empty-text="未检测到已连接设备"-->
+    <!--    >-->
+    <!--      <el-table-column prop="productName" label="设备名称"/>-->
+    <!--      <el-table-column label="厂商/产品 ID">-->
+    <!--        <template #default="{ row }">-->
+    <!--          <div>厂商: 0x{{ row.vendorId.toString(16).toUpperCase() }}</div>-->
+    <!--          <div>产品: 0x{{ row.productId.toString(16).toUpperCase() }}</div>-->
+    <!--        </template>-->
+    <!--      </el-table-column>-->
 
-<!--      <el-table-column prop="opened" label="连接状态">-->
-<!--        <template #default="{ row }">-->
-<!--          <el-tag :type="row.opened ? 'success' : 'danger'">-->
-<!--            {{ row.opened ? '已连接' : '未连接' }}-->
-<!--          </el-tag>-->
-<!--        </template>-->
-<!--      </el-table-column>-->
+    <!--      <el-table-column prop="opened" label="连接状态">-->
+    <!--        <template #default="{ row }">-->
+    <!--          <el-tag :type="row.opened ? 'success' : 'danger'">-->
+    <!--            {{ row.opened ? '已连接' : '未连接' }}-->
+    <!--          </el-tag>-->
+    <!--        </template>-->
+    <!--      </el-table-column>-->
 
-<!--      <el-table-column label="操作">-->
-<!--        <template #default="{ row }">-->
-<!--          <el-row>-->
+    <!--      <el-table-column label="操作">-->
+    <!--        <template #default="{ row }">-->
+    <!--          <el-row>-->
 
-<!--          <el-button-->
-<!--              v-if="!row.opened"-->
-<!--              size="small"-->
-<!--              type="success"-->
-<!--              @click="connectDevice(row)"-->
-<!--          >连接</el-button>-->
+    <!--          <el-button-->
+    <!--              v-if="!row.opened"-->
+    <!--              size="small"-->
+    <!--              type="success"-->
+    <!--              @click="connectDevice(row)"-->
+    <!--          >连接</el-button>-->
 
-<!--          <el-button-->
-<!--              v-if="row.opened"-->
-<!--              size="small"-->
-<!--              type="danger"-->
-<!--              @click="disconnectDevice(row)"-->
-<!--          >断开</el-button>-->
+    <!--          <el-button-->
+    <!--              v-if="row.opened"-->
+    <!--              size="small"-->
+    <!--              type="danger"-->
+    <!--              @click="disconnectDevice(row)"-->
+    <!--          >断开</el-button>-->
 
-<!--          <el-button-->
-<!--              v-if="row.opened"-->
-<!--              size="small"-->
-<!--              type="success"-->
-<!--              @click="enterSetting(row)"-->
-<!--          >进入设置</el-button>-->
-<!--          </el-row>-->
+    <!--          <el-button-->
+    <!--              v-if="row.opened"-->
+    <!--              size="small"-->
+    <!--              type="success"-->
+    <!--              @click="enterSetting(row)"-->
+    <!--          >进入设置</el-button>-->
+    <!--          </el-row>-->
 
-<!--        </template>-->
-<!--      </el-table-column>-->
-<!--    </el-table>-->
+    <!--        </template>-->
+    <!--      </el-table-column>-->
+    <!--    </el-table>-->
   </el-container>
+  </AuroraBackground>
 </template>
 
 <style scoped>
-  .connect-device-container {
-    display: flex;
-    align-items: center;
-    height: 100vh; /* 使容器高度占满整个视口 */
-    width: 100vw;
-    gap: 30px;
-  }
-  .el-table-devices{
-    display: flex;
-    justify-content: center;
-    width: 50vw;
-  }
+.connect-device-container {
+  display: flex;
+  align-items: center;
+  height: 100vh; /* 使容器高度占满整个视口 */
+  width: 100vw;
+  gap: 30px;
+  z-index: 9999;
+}
 
-  .image-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 10px;
-  }
+.el-table-devices {
+  display: flex;
+  justify-content: center;
+  width: 50vw;
+}
 
-  .el-carousel-container{
-    width: 100%;
-  }
+.image-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 20px;
+}
 
-  .el-carousel__item:nth-child(2n) {
-    background-color: #99a9bf;
-    border-width: 5px;
-    border-radius: 10px;
-    border-color: dodgerblue;
-  }
+.el-carousel-container {
+  width: 75%;
+}
 
-  .el-carousel__item:nth-child(2n + 1) {
-    background-color: #d3dce6;
-    border-width: 5px;
-    border-radius: 10px;
-    border-color: dodgerblue;
-  }
+.el-carousel__item:nth-child(2n) {
+  background-color: white;
+  border-width: 2px;
+  border-radius: 10px;
+  border-color: dodgerblue;
+  gap: 20px;
+}
+
+.el-carousel__item:nth-child(2n + 1) {
+  background-color: white;
+  border-width: 2px;
+  border-radius: 10px;
+  border-color: dodgerblue;
+}
+
+.wavy-background {
+  display: flex;
+}
 </style>

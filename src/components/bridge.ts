@@ -76,7 +76,7 @@ export async function sendData(device:HIDDevice,data: Uint8Array) {
     console.log("设备已打开 🎉");
   }
 
-  const reportId = 0x01; // 设备报告 ID（通常需要查设备文档）
+  const reportId = 0x09; // 设备报告 ID（通常需要查设备文档）
 
   try {
     await device.sendReport(reportId, data);

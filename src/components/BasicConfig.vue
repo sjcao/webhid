@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import {computed, CSSProperties, reactive, ref} from 'vue';
+import {computed, CSSProperties, onMounted, reactive, ref} from 'vue';
 
 import {BridgeData, BridgeStatus, makeBridge, sendData} from './bridge';
-import {useHIDListener} from "@/components/webhid.ts";
+import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
+import {MouseCommandBuilder, ParamType, ResponseParser} from "@/components/command.ts";
+import {toHexString} from "@/components/hexString.ts";
 
 const props = defineProps<{
   hard?: boolean; // should it interact with hardware or just dummy
@@ -87,16 +89,11 @@ function dpiCopyXY() {
   }
 }
 
-//处理设备数据
-const handleData = (data: Uint8Array) => {
-  console.log('ComponentA received:', data);
-};
-
-useHIDListener(handleData);
+// console.log("DPI 400 命令:", dpi400Command.map((b: number) => b.toString(16).padStart(2, '0')));
 
 
 // DPI配置
-const dpiOptions = [400, 800, 1200, 1600, 2000, 2200, 2600, 3200, 4200, 5200, 6200, 6400]
+const dpiOptions = [400, 800, 1600, 3200]
 const defaultIndex = dpiOptions.findIndex(dpi => dpi === 3200)
 
 // 响应式状态
@@ -125,140 +122,146 @@ const restoreDefaultSettings = () => {
 
 const formatTooltip = (index) => {
   const dpi = dpiOptions[index]
-  return dpi === 6400 ? '6400 (快)'
+  return dpi === 3200 ? '3200 (快)'
       : dpi === 400 ? '400 (慢)'
           : dpi.toString()
 }
 
 const handleDpiChange = () => {
-
+  const dpi = dpiOptions[xAxisIndex.value]
+  const setDpi = MouseCommandBuilder.setDPI(dpi)
+  sendDataToDevice(setDpi)
 }
+
+
+const handleData = (data: Uint8Array) => {
+  console.log('ComponentA received:', data);
+  const [type, result] = ResponseParser.parse(Array.from(data))
+  if (type === ParamType.DPI) {
+    const dpi = result as number
+    xAxisIndex.value = dpiOptions.indexOf(dpi)
+  }
+}
+
+useHIDListener(handleData);
+
+onMounted(() => {
+  //读取DPi设置
+  //处理设备数据
+  const com = MouseCommandBuilder.readDPI()
+  sendDataToDevice(com)
+})
 
 </script>
 <template>
-    <div class="form-control">
-      <h2>DPI</h2>
+  <div class="form-control">
+    <h2>DPI</h2>
 
-      <div class="dpi-container">
-        <!-- DPI滑动条 -->
+    <div class="dpi-container">
+      <!-- DPI滑动条 -->
 
-        <!-- XY轴独立设置 -->
-        <div class="xy-settings">
-          <el-checkbox v-model="separateXandY">X/Y单独设置</el-checkbox>
-          <div class="axis-sliders">
-            <div class="axis-item">
-              <span class="axis-label">X轴</span>
+      <!-- XY轴独立设置 -->
+      <div class="xy-settings">
+        <el-checkbox v-model="separateXandY" v-if="false">X/Y单独设置</el-checkbox>
+        <div class="axis-sliders">
+          <div class="axis-item">
+            <span class="axis-label" v-if="false">X轴</span>
 
-              <div class="slider-container">
-                <div class="slider-header">
+            <div class="slider-container">
+              <div class="slider-header">
             <span class="dpi-value">
               {{ currentDpiX }}
-              <span v-if="currentDpiX === 6400" class="speed-tag">(快)</span>
+              <span v-if="currentDpiX === 3200" class="speed-tag">(快)</span>
               <span v-if="currentDpiX === 400" class="speed-tag">(慢)</span>
             </span>
-                </div>
               </div>
-
-              <el-slider class="slider-el-slider"
-                         v-model="xAxisIndex"
-                         :min="0"
-                         :max="dpiOptions.length - 1"
-                         :step="1"
-                         show-input
-                         input-size="large"
-                         size="large"
-                         :format-tooltip="formatTooltip"
-                         @change="handleDpiChange"
-              />
             </div>
-            <div class="axis-item" v-if="separateXandY">
-              <span class="axis-label">Y轴</span>
 
-              <div class="slider-container">
-                <div class="slider-header">
+            <el-slider class="slider-el-slider"
+                       v-model="xAxisIndex"
+                       :min="0"
+                       :max="dpiOptions.length - 1"
+                       :step="1"
+                       show-input
+                       input-size="large"
+                       size="large"
+                       :format-tooltip="formatTooltip"
+                       @change="handleDpiChange"
+            >
+            </el-slider>
+          </div>
+          <div class="axis-item" v-if="separateXandY">
+            <span class="axis-label">Y轴</span>
+
+            <div class="slider-container">
+              <div class="slider-header">
             <span class="dpi-value">
               {{ currentDpiY }}
-              <span v-if="currentDpiY === 6400" class="speed-tag">(快)</span>
+              <span v-if="currentDpiY === 3200" class="speed-tag">(快)</span>
               <span v-if="currentDpiY === 400" class="speed-tag">(慢)</span>
             </span>
-                </div>
               </div>
-              <el-slider class="slider-el-slider"
-                         v-model="yAxisIndex"
-                         :min="0"
-                         :max="dpiOptions.length - 1"
-                         :step="1"
-                         show-input
-                         input-size="large"
-                         size="large"
-                         :format-tooltip="formatTooltip"
-                         @change="handleDpiChange"
-              />
             </div>
+            <el-slider class="slider-el-slider"
+                       v-model="yAxisIndex"
+                       :min="0"
+                       :max="dpiOptions.length - 1"
+                       :step="1"
+                       show-input
+                       input-size="large"
+                       size="large"
+                       :format-tooltip="formatTooltip"
+                       @change="handleDpiChange"
+            />
           </div>
         </div>
-        <div class="div-button-default">
-
-          <el-button
-              type="info"
-              @click="restoreDefaultSettings"
-          >恢复默认设置
-          </el-button>
-
-        </div>
       </div>
+      <div class="div-button-default">
 
-      <!--    <div class="grid grid-rows-2 grid-flow-col place-items-baseline justify-start">-->
-      <!--      <span class="mx-2">X:</span>-->
-      <!--      <span class="mx-2">Y:</span>-->
-      <!--      <template v-for="(xy, index) in dpiStages[0]" :key="index">-->
-      <!--        <input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered rounded-none min-w-16" :class="{'input-primary': index + 1 == dpiStages[1]}" v-model.lazy="xy[0]"/>-->
-      <!--        <input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered rounded-none min-w-16" :class="{'input-primary': index + 1 == dpiStages[1]}" v-model.lazy="xy[1]"/>-->
-      <!--      </template>-->
-      <!--      <span></span>-->
-      <!--      <span><button class="btn btn-sm" @click="dpiCopyXY">Y=X</button></span>-->
-      <!--    </div>-->
-      <!--    <div class="my-2 flex gap-2 place-items-baseline">-->
-      <!--      <span class="flex-shrink-0">Stages: </span><input type="number" min="1" max="5" step="1" class="input input-sm input-bordered w-16" v-model.lazy="dpiStageCount"/>-->
-      <!--      <span class="flex-shrink-0">Active: </span><input type="number" min="1" max="5" step="1" class="input input-sm input-bordered w-16" v-model.lazy="dpiStages[1]"/>-->
-      <!--      <span class="flex-shrink-0">Current X:</span><input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered rounded-none min-w-16" v-model.lazy.number="dpiXy[0]"/>-->
-      <!--      <span class="flex-shrink-0">Y:</span><input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered rounded-none min-w-16" v-model.lazy.number="dpiXy[1]"/>-->
-      <!--    </div>-->
-      <h2 class="form-header">Scroll</h2>
-      <div class="grid grid-cols-2 place-items-baseline">
-        <span>Wheel mode</span>
-        <label class="label cursor-pointer space-x-4">
-          <span class="label-text">Tactile</span>
-          <input type="checkbox" class="toggle toggle-sm" v-model="scrollModeToggle"/>
-          <span class="label-text">Freespin</span>
-        </label>
-        <span>Acceleration</span>
-        <label class="label cursor-pointer space-x-4">
-          <input type="checkbox" class="toggle toggle-sm" v-model="scrollAcceleration"/>
-        </label>
-        <span>Smart Reel</span>
-        <label class="label cursor-pointer space-x-4">
-          <input type="checkbox" class="toggle toggle-sm" v-model="scrollSmartReel"/>
-        </label>
+        <el-button
+            type="info"
+            @click="restoreDefaultSettings"
+        >恢复默认设置
+        </el-button>
+
       </div>
-      <h2 class="form-header">Polling rate</h2>
-      <div class="flex flex-row gap-4">
-
-        <div class="flex-1">
-          <el-slider class="slider-el-slider"
-                     :min="125"
-                     :max="1000"
-                     :step="125"
-                     show-input
-                     input-size="large"
-                     size="large"
-                     :marks="pollingRate"
-          />
-
-        </div>
-      </div>
-
     </div>
+
+    <!--      <h2 class="form-header">Scroll</h2>-->
+    <!--      <div class="grid grid-cols-2 place-items-baseline">-->
+    <!--        <span>Wheel mode</span>-->
+    <!--        <label class="label cursor-pointer space-x-4">-->
+    <!--          <span class="label-text">Tactile</span>-->
+    <!--          <input type="checkbox" class="toggle toggle-sm" v-model="scrollModeToggle"/>-->
+    <!--          <span class="label-text">Freespin</span>-->
+    <!--        </label>-->
+    <!--        <span>Acceleration</span>-->
+    <!--        <label class="label cursor-pointer space-x-4">-->
+    <!--          <input type="checkbox" class="toggle toggle-sm" v-model="scrollAcceleration"/>-->
+    <!--        </label>-->
+    <!--        <span>Smart Reel</span>-->
+    <!--        <label class="label cursor-pointer space-x-4">-->
+    <!--          <input type="checkbox" class="toggle toggle-sm" v-model="scrollSmartReel"/>-->
+    <!--        </label>-->
+    <!--      </div>-->
+    <!--      <h2 class="form-header">Polling rate</h2>-->
+    <!--      <div class="flex flex-row gap-4">-->
+
+    <!--        <div class="flex-1">-->
+    <!--          <el-slider class="slider-el-slider"-->
+    <!--                     :min="125"-->
+    <!--                     :max="1000"-->
+    <!--                     :step="125"-->
+    <!--                     show-input-->
+    <!--                     input-size="large"-->
+    <!--                     size="large"-->
+    <!--                     :marks="pollingRate"-->
+    <!--          />-->
+
+    <!--        </div>-->
+    <!--      </div>-->
+
+  </div>
 </template>
 <style lang="scss" scoped>
 .form-control {
@@ -267,7 +270,7 @@ const handleDpiChange = () => {
   justify-content: center;
 }
 
-.form-header{
+.form-header {
   margin-top: 50px;
 }
 

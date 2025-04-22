@@ -270,6 +270,7 @@ export const hidConsumerCode = {
   0xC9:	'Show Counter',
   0xCA:	'Tracking Increment',
   0xCB:	'Tracking Decrement',
+  0xCD:	'Play Or Pause',
   0xE0:	'Volume',
   0xE1:	'Balance',
   0xE2:	'Mute',

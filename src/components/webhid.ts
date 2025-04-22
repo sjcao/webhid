@@ -1,6 +1,7 @@
 // stores/hid.ts
 import {defineStore} from 'pinia';
 import {onMounted, onUnmounted} from 'vue';
+import {toHexString} from "./hexString.ts";
 
 type HIDDataHandler = (data: Uint8Array) => void;
 
@@ -72,8 +73,9 @@ export const useHIDStore = defineStore('hid', {
                 console.log("设备已打开 🎉");
             }
 
-            const reportId = 0x01; // 设备报告 ID（通常需要查设备文档）
+            const reportId = 0x09; // 设备报告 ID（通常需要查设备文档）
 
+            console.log("发送数据: ", toHexString(Array.from(data)));
             try {
                 await this.device?.sendReport(reportId, data);
                 console.log("数据已发送 ✅");
@@ -108,7 +110,7 @@ export async function setHIDDevice(hidDevice: HIDDevice) {
 }
 
 
-export async function sendDataToDevice(data: Uint8Array) {
+export async function sendDataToDevice(data: number[]) {
     const store = useHIDStore();
-    await store.sendData(data);
+    await store.sendData(Uint8Array.from(data));
 }
