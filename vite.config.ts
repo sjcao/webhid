@@ -11,9 +11,7 @@ export default defineConfig({
             filename: 'service-worker.ts',
         }),
     ],
-    base: process.env.NODE_ENV === 'production'
-        ? '/webhid/'
-        : './',
+    base: '/webhid/',
     worker: {
         format: "es"
     },
