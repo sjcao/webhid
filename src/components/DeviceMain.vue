@@ -19,7 +19,7 @@ const props = defineProps<{
 
 const allProfileList = ['配置文件1', '配置文件2', '配置文件3','配置文件4'];
 const activeProfile = ref('direct');
-const activeTab = ref('basic');
+const activeTab = ref('button');
 const refreshKey = ref(0);
 const hasProfileList = ref(['direct', 'white']);
 
@@ -60,12 +60,12 @@ const handleSelectProfile = (profile: string) => {
 </script>
 <template>
   <AuroraBackground
-      class="fixed overflow-hidden top-0 left-0 w-full h-full items-start"
+      class="fixed z-0 overflow-scroll top-0 left-0 w-full h-full items-start"
       :radial-gradient="true">
 
-  <el-container class="m-10 w-full z-50">
+  <el-container class="gap-10 z-50 relative w-full flex">
     <el-header>
-      <el-page-header @back="goBack">
+      <el-page-header class="m-10" @back="goBack">
         <template #content>
           <span class="text-large font-600 mr-3"> WebHID 鼠标配置工具 </span>
         </template>
@@ -75,7 +75,7 @@ const handleSelectProfile = (profile: string) => {
     <el-container>
 
       <el-aside width="200px" class="bg-white rounded-md">
-        <div class="m-4 text-lg">配置列表</div>
+        <div class="m-4 text-lg font-bold">配置列表</div>
         <el-menu
             :default-active="0"
             class="dynamic-menu"
@@ -83,36 +83,36 @@ const handleSelectProfile = (profile: string) => {
         >
           <!-- 单层菜单项 -->
           <el-menu-item v-for="(item,index) in allProfileList" :key="index" :index="index">
-            <span>{{ item }}</span>
+            <span class="text-base font-sans">{{ item }}</span>
           </el-menu-item>
 
         </el-menu>
 
       </el-aside>
 
-      <el-main>
+      <el-main class="flex flex-1">
         <el-container direction="vertical">
             <div class="join join-horizontal">
-              <el-button-group>
-                <el-button class="join-item" :class="{'btn-active': activeTab === 'basic'}"
-                           @click="activeTab = 'basic'; refreshKey++; ">DPI设置
-                </el-button>
-                <el-button class="join-item" :class="{'btn-active': activeTab === 'button'}"
+              <el-button-group class="flex flex-1 w-10/12">
+                <el-button class="join-item h-10 flex-grow" :class="{'btn-active': activeTab === 'button'}"
                            @click="activeTab = 'button'; refreshKey++; ">按键设置
                 </el-button>
-                <el-button class="join-item" :class="{'btn-active': activeTab === 'led'}"
+                <el-button class="join-item h-10 flex-grow" :class="{'btn-active': activeTab === 'basic'}"
+                           @click="activeTab = 'basic'; refreshKey++; ">DPI设置
+                </el-button>
+                <el-button class="join-item h-10 flex-grow" :class="{'btn-active': activeTab === 'led'}"
                            @click="activeTab = 'led'; refreshKey++; ">LED灯光
                 </el-button>
-                <el-button class="join-item" :class="{'btn-active': activeTab === 'profile'}"
+                <el-button class="join-item h-10 flex-grow" :class="{'btn-active': activeTab === 'profile'}"
                            @click="activeTab = 'profile'; refreshKey++; ">配置文件
                 </el-button>
-                <el-button class="join-item" :class="{'btn-active': activeTab === 'macro'}"
+                <el-button class="join-item h-10 flex-grow" :class="{'btn-active': activeTab === 'macro'}"
                            @click="activeTab = 'macro'; refreshKey++; ">宏录制
                 </el-button>
                 <!--              <el-button class="join-item" :class="{'btn-active': activeTab === 'sensor'}"-->
                 <!--                      @click="activeTab = 'sensor'; refreshKey++; ">传感器-->
                 <!--              </el-button>-->
-                <el-button class="join-item" :class="{'btn-active': activeTab === 'info'}"
+                <el-button class="join-item h-10 flex-grow" :class="{'btn-active': activeTab === 'info'}"
                            @click="activeTab = 'info'; refreshKey++; ">鼠标信息
                 </el-button>
               </el-button-group>
@@ -170,7 +170,10 @@ const handleSelectProfile = (profile: string) => {
 </template>
 
 <style scoped>
-
+.btn-active{
+  background-color: #1e90ff90;
+  color: white;
+}
 .dynamic-menu {
 
 }

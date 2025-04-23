@@ -193,7 +193,7 @@ const isPythonReady = computed(() => {
                   </el-tag>
                 </div>
 
-                <div class="mb-3 m-2 flex items-center justify-center">
+                <div class="mb-3 m-1 flex items-center justify-center">
                   <el-button
                       v-if="!item.opened"
                       size="large"
