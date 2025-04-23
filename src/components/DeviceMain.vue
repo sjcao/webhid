@@ -8,6 +8,7 @@ import MacroConfig from './MacroConfig.vue';
 import SensorConfig from './SensorConfig.vue';
 import LedConfig from './LedConfig.vue';
 import {useHIDListener} from "@/components/webhid.ts";
+import {AuroraBackground} from "@/components/ui/aurora-background";
 
 const emit = defineEmits(['back']);
 
@@ -58,7 +59,11 @@ const handleSelectProfile = (profile: string) => {
 
 </script>
 <template>
-  <el-container>
+  <AuroraBackground
+      class="fixed overflow-hidden top-0 left-0 w-full h-full items-start"
+      :radial-gradient="true">
+
+  <el-container class="m-10 w-full z-50">
     <el-header>
       <el-page-header @back="goBack">
         <template #content>
@@ -69,8 +74,8 @@ const handleSelectProfile = (profile: string) => {
 
     <el-container>
 
-      <el-aside width="200px">
-        配置列表
+      <el-aside width="200px" class="bg-white rounded-md">
+        <div class="m-4 text-lg">配置列表</div>
         <el-menu
             :default-active="0"
             class="dynamic-menu"
@@ -161,17 +166,17 @@ const handleSelectProfile = (profile: string) => {
     </el-container>
     <!--    <el-footer>...</el-footer>-->
   </el-container>
-
+  </AuroraBackground>
 </template>
 
 <style scoped>
-.btn-active {
-  background-color: dodgerblue;
-  color: white;
-}
 
 .dynamic-menu {
 
+}
+.el-menu-item.is-active {
+  background-color: #1e90ff90;
+  color: white;
 }
 
 </style>

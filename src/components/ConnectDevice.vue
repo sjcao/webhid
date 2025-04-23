@@ -117,42 +117,11 @@ const isPythonReady = computed(() => {
   return Boolean(true);
 });
 
-
-const items = [
-  {
-    title: "The Dawn of Innovation",
-    description: "Explore the birth of groundbreaking ideas and inventions.",
-  },
-  {
-    title: "The Digital Revolution",
-    description: "Dive into the transformative power of technology.",
-  },
-  {
-    title: "The Art of Design",
-    description: "Discover the beauty of thoughtful and experience design.",
-  },
-  {
-    title: "The Power of Communication",
-    description: "Understand the impact of effective communication in our lives.",
-  },
-  {
-    title: "The Pursuit of Knowledge",
-    description: "Join the quest for understanding and enlightenment.",
-  },
-  {
-    title: "The Joy of Creation",
-    description: "Experience the thrill of bringing ideas to life.",
-  },
-  {
-    title: "The Spirit of Adventure",
-    description: "Embark on exciting journeys and thrilling discoveries.",
-  },
-];
-
 </script>
 <template>
-  <AuroraBackground class="fixed overflow-auto top-0 left-0 w-full h-full flex flex-col items-center justify-center gap-4 px-4"
-                    :radial-gradient="true">
+  <AuroraBackground
+      class="fixed overflow-auto flex-1 top-0 left-0 w-full h-full flex flex-col items-center justify-center gap-4 px-4"
+      :radial-gradient="true">
     <Motion
         as="div"
         :initial="{ opacity: 0, y: 40, filter: 'blur(10px)' }"
@@ -195,46 +164,36 @@ const items = [
           </el-button>
         </div>
 
-        <BentoGrid class="mx-auto max-w-4xl">
-          <BentoGridItem
-              v-for="(item, index) in items"
-              :key="index"
-              :class="index === 3 || index === 6 ? 'md:col-span-2' : ''"
-          >
-            <template #header>
-              <div class="flex size-full animate-pulse space-x-4">
-                <div class="flex size-full flex-1 rounded-md bg-zinc-800"></div>
-              </div>
-            </template>
+        <div>
+          <BentoGrid class="mx-auto max-w-4xl"
+                     :class="devices.length===1?'md:grid-cols-1': devices.length ===2?'md:grid-cols-2':'md:grid-cols-3'">
+            <BentoGridItem
+                v-for="(item, index) in devices"
+                :key="index"
+                class="content-center flex items-center"
+            >
+              <template #header>
+                <div class="flex content-center items-center size-full space-x-4">
+                  <!--                <div class="flex size-full flex-1 rounded-md bg-zinc-800"></div>-->
+                  <el-image :src="imgMouse" fit="contain" class="flex size-36 flex-1 rounded-md"></el-image>
+                </div>
+              </template>
 
-            <template #title>
-              <strong>{{ item.title }}</strong>
-            </template>
+              <template #title>
+                <strong>{{ item.productName }}</strong>
+              </template>
 
-            <template #icon> </template>
+              <template #icon>
+              </template>
 
-            <template #description>
-              <p>{{ item.description }}</p>
-            </template>
-          </BentoGridItem>
-        </BentoGrid>
-
-        <!-- 设备列表 -->
-        <div class="el-carousel-container">
-          <el-carousel :initial-index="Math.floor(devices.length/2)" :autoplay="false" :arrow="'always'" :loop="false"
-                       :indicator-position="'outside'" type="card" height="360px">
-            <el-carousel-item v-for="(item,index) in devices" :key="index" @click="">
-              <!--          <h3 text="2xl" justify="center">{{ item }}</h3>-->
-              <div class="image-container">
-                <el-image :src="imgMouse" fit="cover"></el-image>
-                <!--            <div>厂商: 0x{{ item.vendorId.toString(16).toUpperCase() }}</div>-->
-                <div>{{ item.productName.toString().toUpperCase() }}</div>
-                <div>
+              <template #description>
+                <div class="flex items-center justify-center">
                   <el-tag :type="item.opened ? 'success' : 'danger'">
                     {{ item.opened ? '已连接' : '未连接' }}
                   </el-tag>
                 </div>
-                <div class="mb-3">
+
+                <div class="mb-3 m-2 flex items-center justify-center">
                   <el-button
                       v-if="!item.opened"
                       size="large"
@@ -259,64 +218,11 @@ const items = [
                   >进入设置
                   </el-button>
                 </div>
-              </div>
-            </el-carousel-item>
-          </el-carousel>
+
+              </template>
+            </BentoGridItem>
+          </BentoGrid>
         </div>
-
-        <!--    <el-table-->
-        <!--        class="el-table-devices"-->
-        <!--        :data="devices"-->
-        <!--        border-->
-        <!--        stripe-->
-        <!--        v-loading="loading"-->
-        <!--        empty-text="未检测到已连接设备"-->
-        <!--    >-->
-        <!--      <el-table-column prop="productName" label="设备名称"/>-->
-        <!--      <el-table-column label="厂商/产品 ID">-->
-        <!--        <template #default="{ row }">-->
-        <!--          <div>厂商: 0x{{ row.vendorId.toString(16).toUpperCase() }}</div>-->
-        <!--          <div>产品: 0x{{ row.productId.toString(16).toUpperCase() }}</div>-->
-        <!--        </template>-->
-        <!--      </el-table-column>-->
-
-        <!--      <el-table-column prop="opened" label="连接状态">-->
-        <!--        <template #default="{ row }">-->
-        <!--          <el-tag :type="row.opened ? 'success' : 'danger'">-->
-        <!--            {{ row.opened ? '已连接' : '未连接' }}-->
-        <!--          </el-tag>-->
-        <!--        </template>-->
-        <!--      </el-table-column>-->
-
-        <!--      <el-table-column label="操作">-->
-        <!--        <template #default="{ row }">-->
-        <!--          <el-row>-->
-
-        <!--          <el-button-->
-        <!--              v-if="!row.opened"-->
-        <!--              size="small"-->
-        <!--              type="success"-->
-        <!--              @click="connectDevice(row)"-->
-        <!--          >连接</el-button>-->
-
-        <!--          <el-button-->
-        <!--              v-if="row.opened"-->
-        <!--              size="small"-->
-        <!--              type="danger"-->
-        <!--              @click="disconnectDevice(row)"-->
-        <!--          >断开</el-button>-->
-
-        <!--          <el-button-->
-        <!--              v-if="row.opened"-->
-        <!--              size="small"-->
-        <!--              type="success"-->
-        <!--              @click="enterSetting(row)"-->
-        <!--          >进入设置</el-button>-->
-        <!--          </el-row>-->
-
-        <!--        </template>-->
-        <!--      </el-table-column>-->
-        <!--    </el-table>-->
       </el-container>
     </Motion>
   </AuroraBackground>
