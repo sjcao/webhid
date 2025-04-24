@@ -5,6 +5,8 @@ import {BridgeData, BridgeStatus, makeBridge, sendData} from './bridge';
 import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
 import {MouseCommandBuilder, ParamType, ResponseParser} from "@/components/command.ts";
 import {toHexString} from "@/components/hexString.ts";
+import {BalanceSlider} from "@/components/ui/balance-slider";
+import {HyperText} from "@/components/ui/hyper-text";
 
 const props = defineProps<{
   hard?: boolean; // should it interact with hardware or just dummy
@@ -94,40 +96,60 @@ function dpiCopyXY() {
 
 // DPI配置
 const dpiOptions = [400, 800, 1600, 3200]
-const defaultIndex = dpiOptions.findIndex(dpi => dpi === 3200)
-
+const defaultIndex = dpiOptions.findIndex(dpi => dpi === 1600)
 // 响应式状态
-const activeIndex = ref('2')
-// const xSelectedIndex = ref(defaultIndex)
-// const ySelectedIndex = ref(defaultIndex)
+const radioIndex = ref(2)
+const sidePrecent = ref(75)
 const separateXandY = ref(false)
 const xAxisIndex = ref(defaultIndex)
 const yAxisIndex = ref(defaultIndex)
 
 // 计算属性
 const currentDpiX = computed(() => dpiOptions[xAxisIndex.value])
-const currentDpiY = computed(() => dpiOptions[yAxisIndex.value])
-
-// 方法
-const handleSelect = (key) => {
-  activeIndex.value = key
-}
 
 const restoreDefaultSettings = () => {
   // ySelectedIndex.value = defaultIndex
   xAxisIndex.value = defaultIndex
   yAxisIndex.value = defaultIndex
+  radioIndex.value = defaultIndex
+  sidePrecent.value = 100
   separateXandY.value = false
 }
 
-const formatTooltip = (index) => {
-  const dpi = dpiOptions[index]
-  return dpi === 3200 ? '3200 (快)'
-      : dpi === 400 ? '400 (慢)'
-          : dpi.toString()
-}
+const handleRadioChage = () => {
+  if (radioIndex.value === 0) {
+    sidePrecent.value = 25
+  } else if (radioIndex.value === 1) {
+    sidePrecent.value = 50
+  } else if (radioIndex.value === 2) {
+    sidePrecent.value = 75
+  } else if (radioIndex.value === 3) {
+    sidePrecent.value = 100
+  }
 
-const handleDpiChange = () => {
+  xAxisIndex.value = radioIndex.value
+  const dpi = dpiOptions[xAxisIndex.value]
+  const setDpi = MouseCommandBuilder.setDPI(dpi)
+  sendDataToDevice(setDpi)
+}
+const handleDpiChange = (value) => {
+  sidePrecent.value = parseInt(value.value)
+  if (sidePrecent.value === 0) {
+    xAxisIndex.value = 0
+    radioIndex.value = 0
+  } else if (sidePrecent.value === 25) {
+    xAxisIndex.value = 0
+    radioIndex.value = 0
+  } else if (sidePrecent.value === 50) {
+    xAxisIndex.value = 1
+    radioIndex.value = 1
+  } else if (sidePrecent.value === 75) {
+    xAxisIndex.value = 2
+    radioIndex.value = 2
+  } else if (sidePrecent.value === 100) {
+    xAxisIndex.value = 3
+    radioIndex.value = 3
+  }
   const dpi = dpiOptions[xAxisIndex.value]
   const setDpi = MouseCommandBuilder.setDPI(dpi)
   sendDataToDevice(setDpi)
@@ -155,7 +177,7 @@ onMounted(() => {
 </script>
 <template>
   <div class="form-control">
-    <h2>DPI</h2>
+    <h2>灵敏度设置</h2>
 
     <div class="dpi-container">
       <!-- DPI滑动条 -->
@@ -169,50 +191,37 @@ onMounted(() => {
 
             <div class="slider-container">
               <div class="slider-header">
-            <span class="dpi-value">
-              {{ currentDpiX }}
-              <span v-if="currentDpiX === 3200" class="speed-tag">(快)</span>
-              <span v-if="currentDpiX === 400" class="speed-tag">(慢)</span>
-            </span>
+                <div class="dpi-value">
+                  <HyperText
+                      :text=currentDpiX.toString()
+                      class="text-4xl font-bold"
+                      :duration="800"
+                      :animate-on-load="true"
+                  />
+                </div>
               </div>
             </div>
 
-            <el-slider class="slider-el-slider"
-                       v-model="xAxisIndex"
-                       :min="0"
-                       :max="dpiOptions.length - 1"
-                       :step="1"
-                       show-input
-                       input-size="large"
-                       size="large"
-                       :format-tooltip="formatTooltip"
-                       @change="handleDpiChange"
-            >
-            </el-slider>
-          </div>
-          <div class="axis-item" v-if="separateXandY">
-            <span class="axis-label">Y轴</span>
-
-            <div class="slider-container">
-              <div class="slider-header">
-            <span class="dpi-value">
-              {{ currentDpiY }}
-              <span v-if="currentDpiY === 3200" class="speed-tag">(快)</span>
-              <span v-if="currentDpiY === 400" class="speed-tag">(慢)</span>
-            </span>
-              </div>
-            </div>
-            <el-slider class="slider-el-slider"
-                       v-model="yAxisIndex"
-                       :min="0"
-                       :max="dpiOptions.length - 1"
-                       :step="1"
-                       show-input
-                       input-size="large"
-                       size="large"
-                       :format-tooltip="formatTooltip"
-                       @change="handleDpiChange"
+            <BalanceSlider
+                left-content="慢"
+                right-content="快"
+                right-color="#ffffff"
+                left-color="#1e90ff"
+                indicator-color="#1e90ff"
+                :initial-value="sidePrecent"
+                v-model="sidePrecent"
+                @changeValue="handleDpiChange"
             />
+
+            <div class="mt-10">
+              <el-radio-group v-model="radioIndex" class="flex justify-center" @change="handleRadioChage">
+                <el-radio :label=0 size="large" border class="w-24">400</el-radio>
+                <el-radio :label=1 size="large" border class="w-24">800</el-radio>
+                <el-radio :label=2 size="large" border class="w-24">1600</el-radio>
+                <el-radio :label=3 size="large" border class="w-24 ">3200</el-radio>
+              </el-radio-group>
+            </div>
+
           </div>
         </div>
       </div>
