@@ -60,13 +60,13 @@ const handleSelectProfile = (profile: string) => {
 </script>
 <template>
   <AuroraBackground
-      class="fixed z-0 overflow-scroll top-0 left-0 w-full h-full items-start"
+      class="fixed z-0 top-0 left-0 w-full h-full items-start"
       :radial-gradient="true">
 
-    <el-container class="gap-10 z-50 relative w-full flex">
-      <el-header>
+    <el-container class="z-50 w-full">
+      <el-header class="h-32">
         <el-container>
-          <el-page-header class="m-10 sm:text-2xl" @back="goBack">
+          <el-page-header class="fixed top-0 m-10 sm:text-2xl" @back="goBack">
             <template #content>
               <span class="mb-10 text-center text-xl text-black sm:mb-20 sm:text-2xl dark:text-white"> WebHID 鼠标配置工具 </span>
             </template>
@@ -74,9 +74,9 @@ const handleSelectProfile = (profile: string) => {
         </el-container>
       </el-header>
 
-      <el-container>
+      <el-container class="static">
 
-        <el-aside width="200px" class="bg-white rounded-md">
+        <el-aside class="bg-white rounded-md w-48">
           <div class="m-4 text-lg font-bold">配置列表</div>
           <el-menu
               :default-active="0"
