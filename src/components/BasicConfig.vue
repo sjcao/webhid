@@ -113,6 +113,7 @@ const restoreDefaultSettings = () => {
   yAxisIndex.value = defaultIndex
   radioIndex.value = defaultIndex
   sidePrecent.value = 75
+
   separateXandY.value = false
 }
 
