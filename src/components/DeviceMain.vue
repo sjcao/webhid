@@ -59,24 +59,22 @@ const handleSelectProfile = (profile: string) => {
 
 </script>
 <template>
-  <AuroraBackground
-      class="fixed z-0 top-0 left-0 w-full h-full items-start"
+  <AuroraBackground class="fixed top-0 left-0 w-full h-full z-0"
       :radial-gradient="true">
+  </AuroraBackground>
 
-    <el-container class="z-50 w-full">
-      <el-header class="h-32">
-        <el-container>
-          <el-page-header class="fixed top-0 m-10 sm:text-2xl" @back="goBack">
+    <el-container class="z-50">
+      <el-header>
+          <el-page-header class="sm:text-2xl" @back="goBack">
             <template #content>
-              <span class="mb-10 text-center text-xl text-black sm:mb-20 sm:text-2xl dark:text-white"> WebHID 鼠标配置工具 </span>
+              <span class="text-center text-xl text-black sm:mb-20 sm:text-2xl dark:text-white"> WebHID 鼠标配置工具 </span>
             </template>
           </el-page-header>
-        </el-container>
       </el-header>
 
-      <el-container class="static">
+      <el-container class="z-50">
 
-        <el-aside class="bg-white rounded-md w-48">
+        <el-aside class="bg-white rounded-md w-44">
           <div class="m-4 text-lg font-bold">配置列表</div>
           <el-menu
               :default-active="0"
@@ -96,32 +94,32 @@ const handleSelectProfile = (profile: string) => {
           <el-container direction="vertical">
             <div class="join join-horizontal ml-10 mr-10">
               <el-button-group class="flex flex-1 w-10/12">
-                <el-button :style="{ fontSize: '18px' , fontWeight:'bold',color:'#000'}"
+                <el-button :style="{ fontSize: '16px' , fontWeight:'bold',color:'#000'}"
                            class="join-item h-12 flex-grow"
                            size="large" :class="{'btn-active': activeTab === 'button'}"
                            @click="activeTab = 'button'; refreshKey++; ">按键设置
                 </el-button>
-                <el-button :style="{ fontSize: '18px', fontWeight:'bold',color:'#000'}" class="join-item h-12 flex-grow"
+                <el-button :style="{ fontSize: '16px', fontWeight:'bold',color:'#000'}" class="join-item h-12 flex-grow"
                            size="large" :class="{'btn-active': activeTab === 'basic'}"
                            @click="activeTab = 'basic'; refreshKey++; ">DPI设置
                 </el-button>
-                <el-button :style="{ fontSize: '18px' , fontWeight:'bold',color:'#000'}"
+                <el-button :style="{ fontSize: '16px' , fontWeight:'bold',color:'#000'}"
                            class="join-item h-12 flex-grow"
                            size="large" :class="{'btn-active': activeTab === 'led'}"
                            @click="activeTab = 'led'; refreshKey++; ">LED灯光
                 </el-button>
-                <el-button :style="{ fontSize: '18px', fontWeight:'bold',color:'#000'}" class="join-item h-12 flex-grow"
+                <el-button :style="{ fontSize: '16px', fontWeight:'bold',color:'#000'}" class="join-item h-12 flex-grow"
                            size="large" :class="{'btn-active': activeTab === 'profile'}"
                            @click="activeTab = 'profile'; refreshKey++; ">配置文件
                 </el-button>
-                <el-button :style="{ fontSize: '18px', fontWeight:'bold',color:'#000'}" class="join-item h-12 flex-grow"
+                <el-button :style="{ fontSize: '16px', fontWeight:'bold',color:'#000'}" class="join-item h-12 flex-grow"
                            size="large" :class="{'btn-active': activeTab === 'macro'}"
                            @click="activeTab = 'macro'; refreshKey++; ">宏录制
                 </el-button>
                 <!--              <el-button class="join-item" :class="{'btn-active': activeTab === 'sensor'}"-->
                 <!--                      @click="activeTab = 'sensor'; refreshKey++; ">传感器-->
                 <!--              </el-button>-->
-                <el-button :style="{ fontSize: '18px', fontWeight:'bold',color:'#000'}" class="join-item h-12 flex-grow"
+                <el-button :style="{ fontSize: '16px', fontWeight:'bold',color:'#000'}" class="join-item h-12 flex-grow"
                            size="large" :class="{'btn-active': activeTab === 'info'}"
                            @click="activeTab = 'info'; refreshKey++; ">鼠标信息
                 </el-button>
@@ -177,7 +175,6 @@ const handleSelectProfile = (profile: string) => {
       </el-container>
       <!--    <el-footer>...</el-footer>-->
     </el-container>
-  </AuroraBackground>
 </template>
 
 <style scoped>

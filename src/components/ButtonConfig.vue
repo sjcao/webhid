@@ -4,12 +4,15 @@ import { computed, ref } from 'vue';
 import { BridgeData, BridgeStatus, makeBridge } from './bridge';
 import { hidConsumerCode, hidKeyboardCode } from './hidcode';
 import { fromHexString, toHexString } from './hexString';
+import {CardBody, CardContainer, CardItem} from "@/components/ui/card-3d";
 
 const props = defineProps<{
   hard?: boolean; // should it interact with hardware or just dummy
   activeProfile: string;
   currentDevice?: HIDDevice;
 }>();
+
+const imgMouse = new URL(`/ic-moouse.png`, import.meta.url).href
 
 const bridgeData = defineModel<BridgeData>('bridgeData', {default: {}});
 const bridgeStatus = defineModel<BridgeStatus>('bridgeStatus', {default: {}});
@@ -202,7 +205,33 @@ function parseIntDefault(s: string, defaultValue: number) {
 
 </script>
 <template>
-  <div class="form-control">
+  <div>
+    <CardContainer>
+      <CardBody
+          class="group/card relative size-auto rounded-xl border border-black/[0.1] bg-gray-50 p-6 sm:w-[30rem] dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]"
+      >
+        <CardItem
+            :translate-z="50"
+            class="text-xl font-bold text-neutral-600 dark:text-white"
+        >
+          选中需要设置的按键
+        </CardItem>
+
+        <CardItem
+            :translate-z="100"
+            class="mt-4 w-full"
+        >
+          <img
+              :src="imgMouse"
+              class="w-full rounded-xl object-fill group-hover/card:shadow-xl"
+              alt="thumbnail"
+          />
+        </CardItem>
+      </CardBody>
+    </CardContainer>
+  </div>
+
+  <div class="form-control" v-if="false">
     <h2>Button</h2>
     <div class="flex flex-row items-baseline">
       <div class="grid grid-cols-4">
