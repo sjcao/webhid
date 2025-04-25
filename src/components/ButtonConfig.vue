@@ -208,13 +208,26 @@ function parseIntDefault(s: string, defaultValue: number) {
   <div>
     <CardContainer>
       <CardBody
-          class="group/card relative size-auto rounded-xl border border-black/[0.1] bg-gray-50 p-6 sm:w-[30rem] dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]"
+          class="group/card relative size-auto rounded-xl border border-black/[0.1] bg-gray-50 p-6 sm:w-[19rem] dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]"
       >
         <CardItem
             :translate-z="50"
             class="text-xl font-bold text-neutral-600 dark:text-white"
         >
           选中需要设置的按键
+        </CardItem>
+
+        <!-- 按钮 -->
+        <CardItem
+            :translate-z="150"
+            class="mt-4 w-full"
+        >
+          <el-button
+              class="absolute top-1/4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md"
+              @click=""
+          >
+            右键
+          </el-button>
         </CardItem>
 
         <CardItem
@@ -227,8 +240,12 @@ function parseIntDefault(s: string, defaultValue: number) {
               alt="thumbnail"
           />
         </CardItem>
+
       </CardBody>
     </CardContainer>
+
+
+
   </div>
 
   <div class="form-control" v-if="false">

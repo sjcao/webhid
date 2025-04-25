@@ -63,7 +63,7 @@ const handleSelectProfile = (profile: string) => {
       :radial-gradient="true">
   </AuroraBackground>
 
-    <el-container class="z-50">
+    <el-container class="z-50 overflow-auto">
       <el-header>
           <el-page-header class="sm:text-2xl" @back="goBack">
             <template #content>
