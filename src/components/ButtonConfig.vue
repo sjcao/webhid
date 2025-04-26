@@ -217,29 +217,62 @@ function parseIntDefault(s: string, defaultValue: number) {
           选中需要设置的按键
         </CardItem>
 
-        <!-- 按钮 -->
-        <CardItem
-            :translate-z="150"
-            class="mt-4 w-full"
-        >
-          <el-button
-              class="absolute top-1/4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md"
-              @click=""
-          >
-            右键
-          </el-button>
-        </CardItem>
-
         <CardItem
             :translate-z="100"
             class="mt-4 w-full"
         >
+          <div class="relative">
           <img
               :src="imgMouse"
               class="w-full rounded-xl object-fill group-hover/card:shadow-xl"
               alt="thumbnail"
           />
+
+          <el-button
+              class="absolute top-button-right   px-4 py-2 rounded-md"
+              @click=""
+              type="primary"
+              plain
+          >
+            右键
+          </el-button>
+            <el-button
+                class="absolute top-button-mid left-1/2  px-4 py-2 rounded-md"
+                @click=""
+                type="primary"
+                plain
+            >
+              中键
+            </el-button>
+          <el-button
+              type="primary"
+              plain
+              class="absolute top-button-left  px-4 py-2 rounded-md"
+              @click=""
+          >
+            左键
+          </el-button>
+
+            <el-button
+                class="absolute top-button-next   px-4 py-2 rounded-md"
+                @click=""
+                type="primary"
+                plain
+            >
+              前进键
+            </el-button>
+
+            <el-button
+                class="absolute top-button-back   px-4 py-2 rounded-md"
+                @click=""
+                type="primary"
+                plain
+            >
+              后退键
+            </el-button>
+          </div>
         </CardItem>
+
 
       </CardBody>
     </CardContainer>
@@ -557,4 +590,25 @@ function parseIntDefault(s: string, defaultValue: number) {
   </div>
 </template>
 <style lang="scss" scoped>
+.top-button-right{
+  top: 15%;
+  right: 12%;
+}
+.top-button-left{
+  top: 15%;
+  left: 12%;
+}
+.top-button-mid{
+  top: 0%;
+  transform: translateX(-65%);
+}
+
+.top-button-next{
+  top: 38%;
+  transform: translateX(-30%);
+}
+.top-button-back{
+  top: 50%;
+  transform: translateX(-30%);
+}
 </style>
