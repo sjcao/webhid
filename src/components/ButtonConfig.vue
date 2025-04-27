@@ -29,6 +29,7 @@ const buttonsLayout = [
 const isShowButtonMenu = ref(false)
 const selectedButton = ref('left');
 const selectedHypershift = ref(false);
+const leftDialogVisible = ref(false);
 
 const buttonFunctionMap: any = {};
 for (let hs of [true, false]) {
@@ -128,9 +129,10 @@ f(profile, button, hypershift, value)
   }
 }
 const functionCategoryList = [
-  '鼠标按键', '板载配置', 'DPI按键', '鼠标滚轮', '多媒体', '字母和数字键',
-  'F区功能键', '数字小键盘键', '控制键与字符键', '火力键', '组合键', '宏'
+  '系统按键', '键盘按键', '特殊按键', '录制宏'
 ];
+
+const MouseKeyItem = ['关闭', '左键', '右键', '中键', '后退', '前进']
 
 const selectedButtonFunction = computed({
   get: () => {
@@ -214,7 +216,11 @@ const handleButtonClick = (button: string) => {
   if (selectedButton.value === button) {
     isShowButtonMenu.value = false;
     selectedButton.value = '';
-  }else {
+  } else {
+    if (button === '左键' && leftDialogVisible.value === false) {
+      leftDialogVisible.value = true
+      return
+    }
     selectedButton.value = button;
     isShowButtonMenu.value = true;
   }
@@ -225,21 +231,48 @@ const handleButtonClick = (button: string) => {
 <template>
   <div>
     <el-row class="flex flex-row justify-center">
-      <el-col :span="8" v-if="isShowButtonMenu">
+      <el-col :span="6" v-if="isShowButtonMenu">
         <h5 class="mb-2">分配功能键</h5>
         <el-menu
-            v-for="(item,index) in functionCategoryList"
-            default-active="2"
             class="el-menu-vertical-demo"
             @open=""
             @close=""
         >
-          <el-sub-menu :index="index">
+          <el-sub-menu index="0">
             <template #title>
               <el-icon>
                 <location/>
               </el-icon>
-              <span>{{ item }}</span>
+              <span>系统按键</span>
+            </template>
+            <el-menu-item-group title="鼠标按键">
+              <el-menu-item v-for="(keyItem,index) in MouseKeyItem" :index="index"><span>{{ keyItem }}</span>
+              </el-menu-item>
+            </el-menu-item-group>
+          </el-sub-menu>
+
+          <el-sub-menu index="1">
+            <template #title>
+              <el-icon>
+                <location/>
+              </el-icon>
+              <span>键盘按键</span>
+            </template>
+          </el-sub-menu>
+          <el-sub-menu index="2">
+            <template #title>
+              <el-icon>
+                <location/>
+              </el-icon>
+              <span>特殊按键</span>
+            </template>
+          </el-sub-menu>
+          <el-sub-menu index="3">
+            <template #title>
+              <el-icon>
+                <location/>
+              </el-icon>
+              <span>宏设置</span>
             </template>
           </el-sub-menu>
         </el-menu>
@@ -318,6 +351,23 @@ const handleButtonClick = (button: string) => {
       </el-col>
     </el-row>
   </div>
+
+  <el-dialog
+      v-model="leftDialogVisible"
+      title="提示"
+      width="30%"
+      align-center
+  >
+    <span>当前只有一个左键改了后可能无法点击</span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="leftDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleButtonClick('左键'); leftDialogVisible = false">
+          我就要改
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 
   <div class="form-control" v-if="false">
     <h2>Button</h2>
