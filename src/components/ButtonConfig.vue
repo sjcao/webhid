@@ -2,6 +2,8 @@
 import {computed, ref} from 'vue';
 
 import {CardBody, CardContainer, CardItem} from "@/components/ui/card-3d";
+import router from "@/router.ts";
+import MacroRecorder from "@/components/MacroRecorder.vue";
 
 const props = defineProps<{
   hard?: boolean; // should it interact with hardware or just dummy
@@ -48,61 +50,273 @@ const handleButtonClick = (button: string) => {
       leftDialogVisible.value = true
       return
     }
+    combineSelectKey.value = '';
     selectedButton.value = button;
     isShowButtonMenu.value = true;
   }
 };
 
+const hybetweenTime = ref(3)
+const hyTimes = ref(1)
+const combinationCheckboxGroup = ref([''])
+const combinaKey = ['Ctrl', 'Shift', 'Alt', 'Win']
 
+// 当前选中的值
+const selectedValues = ref<string[]>([]);
+// 选中的顺序
+const selectedOrder = ref<string[]>([]);
+// 获取某个选项的顺序
+const getOrder = (value: string): string | null => {
+  const index = selectedOrder.value.indexOf(value);
+  return index !== -1 ? `${index + 1}` : null;
+};
+// 处理复选框变化
+const handleCheckboxChange = (values: string[]) => {
+  // 找出新增的值
+  const addedValues = values.filter((value) => !selectedOrder.value.includes(value));
+
+  // 找出移除的值
+  const removedValues = selectedOrder.value.filter((value) => !values.includes(value));
+
+  // 更新选中顺序
+  if (removedValues.length > 0) {
+    // 移除取消选中的值
+    selectedOrder.value = selectedOrder.value.filter((value) => !removedValues.includes(value));
+  }
+  if (addedValues.length > 0) {
+    // 将新增的值添加到顺序数组末尾
+    selectedOrder.value.push(...addedValues);
+  }
+};
+// 绑定输入框的值
+const inputRef = ref<any>(null);
+const combineSelectKey = ref<string>('');
+// 处理键盘按下事件
+const handleKeydown = (event: KeyboardEvent) => {
+  // 阻止默认行为（如输入多个字符）
+  event.preventDefault();
+
+  // 获取按下的键值
+  const key = event.key;
+  combineSelectKey.value = key;
+};
+
+// 处理鼠标进入事件
+const handleMouseEnter = () => {
+  if (inputRef.value) {
+    // 调用 focus 方法让输入框获取焦点
+    inputRef.value.focus();
+  }
+};
+
+// 处理鼠标离开事件
+const handleMouseLeave = () => {
+  if (inputRef.value) {
+    // 调用 blur 方法让输入框失去焦点
+    inputRef.value.blur();
+  }
+};
+
+
+const isShowMacro = ref(false)
+const elDrawerMacro = ref<any>(null);
+const handleMacroBack = () => {
+  if (elDrawerMacro.value) {
+    elDrawerMacro.value.handleClose(); // 调用 close 方法关闭抽屉
+  }
+};
 </script>
 <template>
   <div>
     <el-row class="flex flex-row justify-center">
-      <el-col :span="6" v-if="isShowButtonMenu">
-        <h5 class="mb-2">分配功能键</h5>
-        <el-menu
-            class="el-menu-vertical-demo"
-            @open=""
-            @close=""
-        >
-          <el-sub-menu index="0">
-            <template #title>
-              <el-icon>
-                <location/>
-              </el-icon>
-              <span>系统按键</span>
-            </template>
-            <el-menu-item-group title="鼠标按键">
-              <el-menu-item v-for="(keyItem,index) in MouseKeyItem" :index="index"><span>{{ keyItem }}</span>
-              </el-menu-item>
-            </el-menu-item-group>
-          </el-sub-menu>
+      <el-col :span="11" v-if="isShowButtonMenu">
+        <div class="flex justify-between mb-1">
+          <h5 class="mb-2">分配功能键
+          </h5>
+          <el-button type="primary" plain class="" @click="isShowButtonMenu=false;selectedButton=''">→</el-button>
+        </div>
+        <el-tabs type="border-card">
+          <el-tab-pane label="系统按键">
+            <el-menu
+                class="el-menu-vertical-demo"
+                :unique-opened="true"
+                @open=""
+                @close=""
+            >
+              <el-menu-item-group>
+                <el-sub-menu index="0">
+                  <template #title>
+                    <span class="font-bold">鼠标按键</span>
+                  </template>
+                  <el-menu-item v-for="(keyItem,index) in MouseKeyItem" :index="'0'+index"><span>{{ keyItem }}</span>
+                  </el-menu-item>
+                </el-sub-menu>
 
-          <el-sub-menu index="1">
-            <template #title>
-              <el-icon>
-                <location/>
-              </el-icon>
-              <span>键盘按键</span>
-            </template>
-          </el-sub-menu>
-          <el-sub-menu index="2">
-            <template #title>
-              <el-icon>
-                <location/>
-              </el-icon>
-              <span>特殊按键</span>
-            </template>
-          </el-sub-menu>
-          <el-sub-menu index="3">
-            <template #title>
-              <el-icon>
-                <location/>
-              </el-icon>
-              <span>宏设置</span>
-            </template>
-          </el-sub-menu>
-        </el-menu>
+                <el-sub-menu index="1">
+                  <template #title>
+                    <span class="font-bold">板载配置</span>
+                  </template>
+                  <el-menu-item v-for="(keyItem,index) in ProfileKeyItem" :index="'1'+index"><span>{{ keyItem }}</span>
+                  </el-menu-item>
+                </el-sub-menu>
+
+                <el-sub-menu index="2">
+                  <template #title>
+                    <span class="font-bold">DPI切换</span>
+                  </template>
+                  <el-menu-item v-for="(keyItem,index) in DPIKeyItem" :index="'2'+index"><span>{{ keyItem }}</span>
+                  </el-menu-item>
+                </el-sub-menu>
+
+                <el-sub-menu index="3">
+                  <template #title>
+                    <span class="font-bold">鼠标滚轮</span>
+                  </template>
+                  <el-menu-item v-for="(keyItem,index) in ScrollKeyItem" :index="'3'+index"><span>{{ keyItem }}</span>
+                  </el-menu-item>
+                </el-sub-menu>
+
+                <el-sub-menu index="4">
+                  <template #title>
+                    <span class="font-bold">多媒体</span>
+                  </template>
+                  <el-menu-item v-for="(keyItem,index) in ConsumerKeyItem" :index="'4'+index"><span>{{ keyItem }}</span>
+                  </el-menu-item>
+                </el-sub-menu>
+
+              </el-menu-item-group>
+            </el-menu>
+          </el-tab-pane>
+          <el-tab-pane label="键盘按键">
+            <el-menu
+                class="el-menu-vertical-demo"
+                :unique-opened="true"
+                @open=""
+                @close=""
+            >
+              <el-menu-item-group>
+                <el-sub-menu index="0">
+                  <template #title>
+                    <span class="font-bold">字母和数字键</span>
+                  </template>
+                  <el-menu-item v-for="(keyItem,index) in KeyBoardKeyItem" :index="'0'+index"><span>{{ keyItem }}</span>
+                  </el-menu-item>
+                </el-sub-menu>
+
+                <el-sub-menu index="1">
+                  <template #title>
+                    <span class="font-bold">F区功能键</span>
+                  </template>
+                  <el-menu-item v-for="(keyItem,index) in FKeyBoardKeyItem" :index="'1'+index"><span>{{
+                      keyItem
+                    }}</span>
+                  </el-menu-item>
+                </el-sub-menu>
+
+                <el-sub-menu index="2">
+                  <template #title>
+                    <span class="font-bold">数字小键盘键</span>
+                  </template>
+                  <el-menu-item v-for="(keyItem,index) in NumPadKeyBoardKeyItem" :index="'2'+index"><span>{{
+                      keyItem
+                    }}</span>
+                  </el-menu-item>
+                </el-sub-menu>
+
+                <el-sub-menu index="3">
+                  <template #title>
+                    <span class="font-bold">控制键与字符键</span>
+                  </template>
+                  <el-menu-item v-for="(keyItem,index) in ControlKeyBoardKeyItem" :index="'3'+index"><span>{{
+                      keyItem
+                    }}</span>
+                  </el-menu-item>
+                </el-sub-menu>
+
+                <el-sub-menu index="4">
+                  <template #title>
+                    <span class="font-bold">多媒体</span>
+                  </template>
+                  <el-menu-item v-for="(keyItem,index) in ConsumerKeyItem" :index="'4'+index"><span>{{ keyItem }}</span>
+                  </el-menu-item>
+                </el-sub-menu>
+
+              </el-menu-item-group>
+            </el-menu>
+          </el-tab-pane>
+          <el-tab-pane label="特殊按键">
+            <el-card class="box-card">
+              <template #header>
+                <div class="card-header">
+                  <span>火力键</span>
+                </div>
+              </template>
+              <div class="flex flex-col justify-center items-center gap-2">
+                <div>
+                  <el-text>根据设置的间隔和次数持续点击左键</el-text>
+                </div>
+                <div>
+                  <div>
+                    <el-text>点击间隔:</el-text>
+                    <el-input-number size="default" v-model="hybetweenTime" :min="0"></el-input-number>
+                    <el-text>ms</el-text>
+                  </div>
+                  <div class="mt-2">
+                    <el-text>点击次数:</el-text>
+                    <el-input-number size="default" v-model="hyTimes" :min="0"></el-input-number>
+                    <el-text>次</el-text>
+                  </div>
+                </div>
+                <div>
+                  <el-text type="warning">点击次数为0时，按下按键一直发，松开按键结束</el-text>
+                </div>
+                <div>
+                  <el-button type="primary" plain>保存并选择</el-button>
+                </div>
+              </div>
+            </el-card>
+
+            <el-card class="box-card mt-2">
+              <template #header>
+                <div class="card-header">
+                  <span>组合键</span>
+                </div>
+              </template>
+
+              <div class="flex flex-col justify-center items-center gap-2">
+                <div class="flex flex-col gap-1">
+                  <el-checkbox-group v-model="selectedValues" @change="handleCheckboxChange" size="large">
+                    <el-checkbox-button v-for="(item,index) in combinaKey" :key="item" :label="item">
+                      {{ item }}
+                      <el-tag class="h-3.5" v-if="getOrder(item)">{{ getOrder(item) }}
+                      </el-tag>
+                    </el-checkbox-button>
+                  </el-checkbox-group>
+                  <el-text>+</el-text>
+                  <el-input class="1" ref="inputRef" placeholder="请输入键盘按键" v-model="combineSelectKey"
+                            @keydown="handleKeydown" @mouseenter="handleMouseEnter"
+                            @mouseleave="handleMouseLeave"
+                            readonly></el-input>
+                </div>
+                <div>
+                  <el-button type="primary" plain>保存并选择</el-button>
+                  <el-button type="text" plain @click="combineSelectKey=''">清除</el-button>
+                </div>
+              </div>
+            </el-card>
+          </el-tab-pane>
+          <el-tab-pane label="宏设置">
+            <el-card class="box-card">
+              <template #header>
+                <div class="card-header flex justify-between">
+                  <span>宏列表</span>
+                  <el-button type="success" size="default" @click="isShowMacro=true">新建宏</el-button>
+                </div>
+              </template>
+              <el-empty :image-size="100"/>
+            </el-card>
+          </el-tab-pane>
+        </el-tabs>
       </el-col>
 
       <el-col :span="12">
@@ -196,6 +410,17 @@ const handleButtonClick = (button: string) => {
     </template>
   </el-dialog>
 
+  <el-drawer ref="elDrawerMacro" v-model="isShowMacro" :show-close="false" class="demo-drawer" :size="'96%'" :lock-scroll="true" :destroy-on-close="true"
+             :close-on-click-modal="false" :close-on-press-escape="false" :with-header="false">
+    <div class="demo-drawer__content" >
+      <MacroRecorder class="macro-record" @onClose="handleMacroBack" @contextmenu.prevent/>
+    </div>
+<!--    <div class="demo-drawer__footer">-->
+
+<!--    </div>-->
+  </el-drawer>
+
+
 </template>
 <style lang="scss" scoped>
 .top-button-right {
@@ -221,5 +446,11 @@ const handleButtonClick = (button: string) => {
 .top-button-back {
   top: 50%;
   transform: translateX(-30%);
+}
+
+.macro-record {
+  width: 100%;
+  min-height: 100%;
+  height: 100%;
 }
 </style>
