@@ -9,17 +9,17 @@
       >
         {{ isRecording ? '停止录制' : '开始录制' }}
       </el-button>
-      <el-button
-          type="success"
-          @click="playMacro"
-          :disabled="actions.length === 0"
-      >
-        执行宏
-      </el-button>
+<!--      <el-button-->
+<!--          type="success"-->
+<!--          @click="playMacro"-->
+<!--          :disabled="actions.length === 0"-->
+<!--      >-->
+<!--        执行宏-->
+<!--      </el-button>-->
       <el-button
           type="danger"
           @click="clearActions"
-          :disabled="actions.length === 0"
+          :disabled="actions.length === 0 || isRecording"
       >
         清空记录
       </el-button>
@@ -27,17 +27,18 @@
       <el-button
           type="warning"
           @click="closeActions"
+          :disabled="isRecording"
       >
         关闭录制
       </el-button>
 
-      <el-text>延迟时间:</el-text>
-      <el-input-number v-model="delay">
-      </el-input-number>
+<!--      <el-text>延迟时间:</el-text>-->
+<!--      <el-input-number v-model="delay">-->
+<!--      </el-input-number>-->
     </div>
 
     <!-- 动作列表 -->
-    <div class="action-list" @mousedown="handleMousePress">
+    <div class="action-list h-full min-h-96" @mousedown="handleMousePress">
       <transition-group name="list">
         <span
             v-for="(action, index) in actions"
@@ -46,34 +47,33 @@
         >
           <!-- 按键显示 -->
           <el-card v-if="action.type === 'key'" class="key-display">
-            <el-tag type="info" class="key-icon">
+            <el-tag type="primary" class="key-icon">
               {{ keyIcons[action.key] || action.key.toUpperCase() }}
             </el-tag>
-            <span class="key-name">{{ action.key.toUpperCase() }}</span>
-            <el-button
-                type="danger"
-                size="small"
-                circle
-                @click="deleteAction(index)"
-                :icon="Delete"
-            />
+<!--            <span class="key-name">{{ action.key.toUpperCase() }}</span>-->
+<!--            <el-button-->
+<!--                class="ml-1"-->
+<!--                type="primary"-->
+<!--                plain-->
+<!--                size="small"-->
+<!--                circle-->
+<!--                @click="editAction(index)"-->
+<!--                :icon="Edit"-->
+<!--            />-->
           </el-card>
           <!-- 延迟显示 -->
-          <el-card v-else class="delay-display">
-            <span>+</span>
-            <el-icon class="clock-icon">
-              <Clock/>
-            </el-icon>
-            <span class="delay-text">{{delay}}ms</span>
+          <el-row v-else class="delay-display">
+            <el-tag type="success" class="delay-text">{{delay}}ms</el-tag>
             <el-button
-                type="danger"
+                class="ml-1"
+                type="success"
+                plain
                 size="small"
                 circle
-                @click="deleteAction(index)"
-                :icon="Delete"
+                @click="editAction(index)"
+                :icon="Edit"
             />
-            <span>+</span>
-          </el-card>
+          </el-row>
         </span>
       </transition-group>
     </div>
@@ -85,11 +85,11 @@ import {ref, onMounted, onBeforeUnmount} from 'vue'
 import {
   VideoPlay,
   VideoPause,
-  Delete,
+  Edit,
   Clock
 } from '@element-plus/icons-vue'
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['onClose']);
 
 // 响应式状态
 const isRecording = ref(false);
@@ -98,7 +98,7 @@ const delay = ref(30);
 
 // 按键图标映射
 const keyIcons = {
-  control: '⌃',
+  control: 'Ctrl',
   shift: '⇧',
   alt: '⌥',
   command: '⌘',
@@ -156,13 +156,13 @@ const handleMousePress = (e) => {
 const toggleRecording = (e) => {
   isRecording.value = !isRecording.value
   if (isRecording.value) {
-    actions.value = [] // 开始新录制时清空记录
+    // actions.value = [] // 开始新录制时清空记录
   }
 }
 
 // 删除动作
-const deleteAction = (index) => {
-  actions.value.splice(index, 1)
+const editAction = (index) => {
+  // actions.value.splice(index, 1)
 }
 
 // 清空记录
@@ -172,7 +172,7 @@ const clearActions = () => {
 
 // 清空记录
 const closeActions = () => {
-  emit('close')
+  emit('onClose')
 }
 
 
@@ -215,17 +215,18 @@ onBeforeUnmount(() => {
 
 .action-list {
   display: flex;
+  justify-items: center;
+  align-items: center;
   flex-wrap: wrap;
   border: 1px solid deepskyblue;
   border-radius: 4px;
   padding: 10px;
-  min-height: 400px;
 }
 
 .action-item {
   height: fit-content;
   margin: 8px;
-  padding: 10px;
+  padding: 0;
   background: white;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -237,13 +238,12 @@ onBeforeUnmount(() => {
 .key-display, .delay-display {
   display: flex;
   align-items: center;
-  gap: 10px;
   width: auto;
 }
 
 .key-icon {
   font-size: 18px;
-  padding: 5px 10px;
+  padding: 20px 20px;
   min-width: 40px;
   text-align: center;
 }
@@ -254,6 +254,8 @@ onBeforeUnmount(() => {
 }
 
 .delay-text {
+  font-size: 18px;
+  padding: 20px 20px;
   color: #909399;
 }
 

@@ -117,8 +117,14 @@ const handleMouseLeave = () => {
   }
 };
 
-const isShowMacro = ref(false)
 
+const isShowMacro = ref(false)
+const elDrawerMacro = ref<any>(null);
+const handleMacroBack = () => {
+  if (elDrawerMacro.value) {
+    elDrawerMacro.value.handleClose(); // 调用 close 方法关闭抽屉
+  }
+};
 </script>
 <template>
   <div>
@@ -404,22 +410,14 @@ const isShowMacro = ref(false)
     </template>
   </el-dialog>
 
-  <el-drawer v-model="isShowMacro" :show-close="false" class="demo-drawer" :size="'96%'">
-    <template #header="{ close, titleId, titleClass }">
-      <h4 :id="titleId" :class="titleClass">This is a custom header!</h4>
-      <el-button type="danger" @click="close">
-        <el-icon class="el-icon--left">
-          <CircleCloseFilled/>
-        </el-icon>
-        Close
-      </el-button>
-    </template>
-    <div class="demo-drawer__content">
-    <MacroRecorder class="macro-record"/>
+  <el-drawer ref="elDrawerMacro" v-model="isShowMacro" :show-close="false" class="demo-drawer" :size="'96%'" :lock-scroll="true" :destroy-on-close="true"
+             :close-on-click-modal="false" :close-on-press-escape="false" :with-header="false">
+    <div class="demo-drawer__content" >
+      <MacroRecorder class="macro-record" @onClose="handleMacroBack" @contextmenu.prevent/>
     </div>
-    <div class="demo-drawer__footer">
+<!--    <div class="demo-drawer__footer">-->
 
-    </div>
+<!--    </div>-->
   </el-drawer>
 
 
