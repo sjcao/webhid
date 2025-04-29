@@ -4,7 +4,7 @@
       <el-text>循环方式：</el-text>
       <el-radio label="1" size="large" border>按住循环</el-radio>
       <el-radio label="2" size="large" border>循环至此键按下</el-radio>
-      <el-radio label="3" size="large" border>循环至此键按下</el-radio>
+      <el-radio label="3" size="large" border>循环至任何键按下</el-radio>
       <el-radio label="4" size="large" border>循环
         <el-input-number v-model="loopTimes" min="1">
           <template #suffix>次</template>
