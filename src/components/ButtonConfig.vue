@@ -57,26 +57,26 @@ const ScrollKeyItem = [
 ];
 
 const ConsumerKeyItem = [
-  {keyName: '亮度+', value: 0x6F},
-  {keyName: '亮度-', value: 0x70},
-  {keyName: '播放器', value: 0xB0},
-  {keyName: '停止播放', value: 0xB7},
-  {keyName: '播放/暂停', value: 0xCD},
-  {keyName: '上一首', value: 0xB6},
-  {keyName: '下一首', value: 0xB5},
-  {keyName: '静音', value: 0xE2},
-  {keyName: '音量+', value: 0xE9},
-  {keyName: '音量-', value: 0xEA},
-  {keyName: '邮件', value: 0x18A},
-  {keyName: '主页', value: 0x183},
-  {keyName: '搜索', value: 0x184},
-  {keyName: '刷新', value: 0x185},
-  {keyName: '收藏夹', value: 0x186},
-  {keyName: '网页停止', value: 0x187},
-  {keyName: '网页前进', value: 0x188},
-  {keyName: '网页后退', value: 0x189},
-  {keyName: '计算器', value: 0x192},
-  {keyName: '我的电脑', value: 0x194}
+  {keyName: '亮度+', value: [0x6F,0x00]},
+  {keyName: '亮度-', value: [0x70, 0x00]},
+  {keyName: '播放器', value: [0x83, 0x01]},
+  {keyName: '停止播放', value: [0xB7, 0x00]},
+  {keyName: '播放/暂停', value: [0xCD, 0x00]},
+  {keyName: '上一首', value: [0xB6, 0x00]},
+  {keyName: '下一首', value: [0xB5, 0x00]},
+  {keyName: '静音', value: [0xE2, 0x00]},
+  {keyName: '音量+', value: [0xE9, 0x00]},
+  {keyName: '音量-', value: [0xEA, 0x00]},
+  {keyName: '邮件', value: [0x8A, 0x01]},
+  {keyName: '主页', value: [0x23, 0x02]},
+  {keyName: '搜索', value: [0x21, 0x02]},
+  {keyName: '刷新', value: [0x27, 0x02]},
+  {keyName: '收藏夹', value: [0x2A, 0x02]},
+  {keyName: '网页停止', value: [0x26, 0x02]},
+  {keyName: '网页前进', value: [0x25, 0x02]},
+  {keyName: '网页后退', value: [0x24, 0x02]},
+  {keyName: '计算器', value: [0x92, 0x01]},
+  {keyName: '我的电脑', value: [0x94, 0x01]}
 ];
 
 const KeyBoardKeyItem = [
@@ -154,10 +154,11 @@ const NumPadKeyBoardKeyItem = [
 
 const ControlKeyBoardKeyItem = [
   {keyName: '~`', value: 0x35},
-  {keyName: '_-', value: 0x27},
-  {keyName: '+=', value: 0x2D},
+  {keyName: '_-', value: 0x2D},
+  {keyName: '+=', value: 0x2E},
   {keyName: '{[', value: 0x2F},
   {keyName: ']}', value: 0x30},
+  {keyName: '|\\', value: 0x31},
   {keyName: ':;', value: 0x33},
   {keyName: '”’', value: 0x34},
   {keyName: '<,', value: 0x36},

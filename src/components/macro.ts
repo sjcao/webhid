@@ -1,6 +1,6 @@
 
 export enum KeyType {
-    KEY, MOUSE
+    KEYBOARD, MOUSE
 }
 
 export enum KeyActionType {
