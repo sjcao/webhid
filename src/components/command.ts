@@ -37,6 +37,23 @@ enum KeyFunctionType {
     MACRO = 12
 }
 
+// const MouseKeyValue = ['关闭', '左键', '右键', '中键', '后退', '前进']
+const MouseKeyValue = {
+    
+}
+const ProfileKeyValue = ['切换板载配置1', '切换板载配置2', '切换板载配置3', '切换板载配置4']
+const DPIKeyValue = ['DPI循环', 'DPI+', 'DPI-']
+const ScrollKeyValue = ['左滚', '右滚', '上滚', '下滚']
+const ConsumerKeyValue= ['亮度+', '亮度-', '播放器', '停止播放', '播放/暂停', '上一首', '下一首', '静音', '音量+', '音量-', '邮件', '主页', '搜索', '刷新', '收藏夹', '网页停止', '网页前进', '网页后退', '计算器', '我的电脑']
+const KeyBoardKeyValue = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '!1', '@2', '#3', '$4', '%5', '^6', '&7', '*8', '(9', ')0', 'K', 'L', 'Z']
+const FKeyBoardKeyValue= ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12']
+const NumPadKeyBoardKeyValue = ['/', '*', '-', '+', 'enter', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.']
+const ControlKeyBoardKeyValue = ['~`', '_-', '+=', '{[', ']}', ':;', '”’', '<,', '>.', '?/'
+    , 'Esc', 'Tab', 'Back Space', 'Enter', 'Space', 'Left Win', 'Right Win'
+    , 'Left Ctrl', 'Right Ctrl', 'Left Alt', 'Right Alt', 'Left Shift', 'Right Shift', 'Up'
+    , 'Left', 'Down', 'Right', 'Print Screen', 'Scroll Lock', 'Pause', 'Insert'
+    , 'Home', 'Delete', 'End', 'Page Up', 'Page Down', 'Caps Lock', 'Num Lock']
+
 enum WorkMode {
     WIRED = 0,
     WIRELESS = 1,
@@ -145,6 +162,19 @@ export class ResponseParser {
         }
 
         const commandType = packet[1];
+// 根据索引生成对应的HID键值映射
+        const generateHIDKeyMapping = (index: number): number[] => {
+            const hidKeyMap: { [key: number]: number[] } = {
+                0: [0x00, 0x00], // 示例: 索引0对应无操作
+                1: [0x01, 0x00], // 示例: 索引1对应HID键值1
+                2: [0x02, 0x00], // 示例: 索引2对应HID键值2
+                3: [0x03, 0x00], // 示例: 索引3对应HID键值3
+                // 可根据实际需求扩展映射
+            };
+
+            return hidKeyMap[index] || [0x00, 0x00]; // 默认返回无操作键值
+        };
+
         const paramType = packet[2];
         const dataLength = packet[3];
         const data = packet.slice(4, 4 + dataLength);
@@ -204,11 +234,11 @@ export class ResponseParser {
 // 使用示例
 // 生成设置DPI 1600的命令
 const setDPICommand = MouseCommandBuilder.setDPI(1600);
-console.log('Set DPI Command:', setDPICommand.map(b => b.toString(16).padStart(2, '0')));
+// console.log('Set DPI Command:', setDPICommand.map(b => b.toString(16).padStart(2, '0')));
 
 // 解析响应数据
 const sampleResponse = [0x09, 0x81, 0x90, 0x02, 0x06, 0x40, 0x46, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x58];
-console.log('Parsed DPI Response:', ResponseParser.parse(sampleResponse));
+// console.log('Parsed DPI Response:', ResponseParser.parse(sampleResponse));
 
 // 生成多媒体按键设置
 const mediaCommand = MouseCommandBuilder.setButtonMapping(
@@ -217,4 +247,4 @@ const mediaCommand = MouseCommandBuilder.setButtonMapping(
     2, // 播放器
     0x83, 0x01
 );
-console.log('Media Command:', mediaCommand.map(b => b.toString(16).padStart(2, '0')));
+// console.log('Media Command:', mediaCommand.map(b => b.toString(16).padStart(2, '0')));

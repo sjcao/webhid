@@ -26,19 +26,175 @@ const functionCategoryList = [
   '系统按键', '键盘按键', '特殊按键', '录制宏'
 ];
 
-const MouseKeyItem = ['关闭', '左键', '右键', '中键', '后退', '前进']
-const ProfileKeyItem = ['切换板载配置1', '切换板载配置2', '切换板载配置3', '切换板载配置4']
-const DPIKeyItem = ['DPI循环', 'DPI+', 'DPI-']
-const ScrollKeyItem = ['左滚', '右滚', '上滚', '下滚']
-const ConsumerKeyItem = ['亮度+', '亮度-', '播放器', '停止播放', '播放/暂停', '上一首', '下一首', '静音', '音量+', '音量-', '邮件', '主页', '搜索', '刷新', '收藏夹', '网页停止', '网页前进', '网页后退', '计算器', '我的电脑']
-const KeyBoardKeyItem = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '!1', '@2', '#3', '$4', '%5', '^6', '&7', '*8', '(9', ')0', 'K', 'L', 'Z']
-const FKeyBoardKeyItem = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12']
-const NumPadKeyBoardKeyItem = ['/', '*', '-', '+', 'enter', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.']
-const ControlKeyBoardKeyItem = ['~`', '_-', '+=', '{[', ']}', ':;', '”’', '<,', '>.', '?/'
-  , 'Esc', 'Tab', 'Back Space', 'Enter', 'Space', 'Left Win', 'Right Win'
-  , 'Left Ctrl', 'Right Ctrl', 'Left Alt', 'Right Alt', 'Left Shift', 'Right Shift', 'Up'
-  , 'Left', 'Down', 'Right', 'Print Screen', 'Scroll Lock', 'Pause', 'Insert'
-  , 'Home', 'Delete', 'End', 'Page Up', 'Page Down', 'Caps Lock', 'Num Lock']
+const MouseKeyItem = [
+  {keyName: '关闭', value: 0x00},
+  {keyName: '左键', value: 0x01},
+  {keyName: '右键', value: 0x02},
+  {keyName: '中键', value: 0x04},
+  {keyName: '后退', value: 0x08},
+  {keyName: '前进', value: 0x10}
+]
+
+
+
+const ProfileKeyItem = [
+  {keyName: '切换板载配置1', value: 0x01},
+  {keyName: '切换板载配置2', value: 0x02},
+  {keyName: '切换板载配置3', value: 0x03},
+  {keyName: '切换板载配置4', value: 0x04}
+]
+
+const DPIKeyItem = [
+  {keyName: 'DPI循环', value: 0x01},
+  {keyName: 'DPI+', value: 0x02},
+  {keyName: 'DPI-', value: 0x03}
+];
+const ScrollKeyItem = [
+  {keyName: '左滚', value: 0x01},
+  {keyName: '右滚', value: 0x02},
+  {keyName: '上滚', value: 0x04},
+  {keyName: '下滚', value: 0x08}
+];
+
+const ConsumerKeyItem = [
+  {keyName: '亮度+', value: 0x6F},
+  {keyName: '亮度-', value: 0x70},
+  {keyName: '播放器', value: 0xB0},
+  {keyName: '停止播放', value: 0xB7},
+  {keyName: '播放/暂停', value: 0xCD},
+  {keyName: '上一首', value: 0xB6},
+  {keyName: '下一首', value: 0xB5},
+  {keyName: '静音', value: 0xE2},
+  {keyName: '音量+', value: 0xE9},
+  {keyName: '音量-', value: 0xEA},
+  {keyName: '邮件', value: 0x18A},
+  {keyName: '主页', value: 0x183},
+  {keyName: '搜索', value: 0x184},
+  {keyName: '刷新', value: 0x185},
+  {keyName: '收藏夹', value: 0x186},
+  {keyName: '网页停止', value: 0x187},
+  {keyName: '网页前进', value: 0x188},
+  {keyName: '网页后退', value: 0x189},
+  {keyName: '计算器', value: 0x192},
+  {keyName: '我的电脑', value: 0x194}
+];
+
+const KeyBoardKeyItem = [
+  {keyName: 'Q', value: 0x14},
+  {keyName: 'W', value: 0x1A},
+  {keyName: 'E', value: 0x08},
+  {keyName: 'R', value: 0x15},
+  {keyName: 'T', value: 0x17},
+  {keyName: 'Y', value: 0x1C},
+  {keyName: 'U', value: 0x18},
+  {keyName: 'I', value: 0x0C},
+  {keyName: 'O', value: 0x12},
+  {keyName: 'P', value: 0x13},
+  {keyName: 'A', value: 0x04},
+  {keyName: 'S', value: 0x16},
+  {keyName: 'D', value: 0x07},
+  {keyName: 'F', value: 0x09},
+  {keyName: 'G', value: 0x0A},
+  {keyName: 'H', value: 0x0B},
+  {keyName: 'J', value: 0x0D},
+  {keyName: 'K', value: 0x0E},
+  {keyName: 'L', value: 0x0F},
+  {keyName: 'Z', value: 0x1D},
+  {keyName: 'X', value: 0x1B},
+  {keyName: 'C', value: 0x06},
+  {keyName: 'V', value: 0x19},
+  {keyName: 'B', value: 0x05},
+  {keyName: 'N', value: 0x11},
+  {keyName: 'M', value: 0x10},
+  {keyName: '!1', value: 0x1E},
+  {keyName: '@2', value: 0x1F},
+  {keyName: '#3', value: 0x20},
+  {keyName: '$4', value: 0x21},
+  {keyName: '%5', value: 0x22},
+  {keyName: '^6', value: 0x23},
+  {keyName: '&7', value: 0x24},
+  {keyName: '*8', value: 0x25},
+  {keyName: '(9', value: 0x26},
+  {keyName: ')0', value: 0x27},
+];
+
+const FKeyBoardKeyItem = [
+  {keyName: 'F1', value: 0x3A},
+  {keyName: 'F2', value: 0x3B},
+  {keyName: 'F3', value: 0x3C},
+  {keyName: 'F4', value: 0x3D},
+  {keyName: 'F5', value: 0x3E},
+  {keyName: 'F6', value: 0x3F},
+  {keyName: 'F7', value: 0x40},
+  {keyName: 'F8', value: 0x41},
+  {keyName: 'F9', value: 0x42},
+  {keyName: 'F10', value: 0x43},
+  {keyName: 'F11', value: 0x44},
+  {keyName: 'F12', value: 0x45}
+];
+
+const NumPadKeyBoardKeyItem = [
+  {keyName: '/', value: 0x54},
+  {keyName: '*', value: 0x55},
+  {keyName: '-', value: 0x56},
+  {keyName: '+', value: 0x57},
+  {keyName: 'enter', value: 0x58},
+  {keyName: '1', value: 0x59},
+  {keyName: '2', value: 0x5A},
+  {keyName: '3', value: 0x5B},
+  {keyName: '4', value: 0x5C},
+  {keyName: '5', value: 0x5D},
+  {keyName: '6', value: 0x5E},
+  {keyName: '7', value: 0x5F},
+  {keyName: '8', value: 0x60},
+  {keyName: '9', value: 0x61},
+  {keyName: '0', value: 0x62},
+  {keyName: '.', value: 0x63}
+];
+
+const ControlKeyBoardKeyItem = [
+  {keyName: '~`', value: 0x35},
+  {keyName: '_-', value: 0x27},
+  {keyName: '+=', value: 0x2D},
+  {keyName: '{[', value: 0x2F},
+  {keyName: ']}', value: 0x30},
+  {keyName: ':;', value: 0x33},
+  {keyName: '”’', value: 0x34},
+  {keyName: '<,', value: 0x36},
+  {keyName: '>.', value: 0x37},
+  {keyName: '?/', value: 0x38},
+  {keyName: 'Esc', value: 0x29},
+  {keyName: 'Tab', value: 0x2B},
+  {keyName: 'Back Space', value: 0x2A},
+  {keyName: 'Enter', value: 0x28},
+  {keyName: 'Space', value: 0x2C},
+  {keyName: 'Left Win', value: 0xE3},
+  {keyName: 'Right Win', value: 0xE7},
+  {keyName: 'Left Ctrl', value: 0xE0},
+  {keyName: 'Right Ctrl', value: 0xE4},
+  {keyName: 'Left Alt', value: 0xE2},
+  {keyName: 'Right Alt', value: 0xE6},
+  {keyName: 'Left Shift', value: 0xE1},
+  {keyName: 'Right Shift', value: 0xE5},
+  {keyName: 'Up', value: 0x52},
+  {keyName: 'Left', value: 0x50},
+  {keyName: 'Down', value: 0x51},
+  {keyName: 'Right', value: 0x4F},
+  {keyName: 'Print Screen', value: 0x46},
+  {keyName: 'Scroll Lock', value: 0x47},
+  {keyName: 'Pause', value: 0x48},
+  {keyName: 'Insert', value: 0x49},
+  {keyName: 'Home', value: 0x4A},
+  {keyName: 'Delete', value: 0x4C},
+  {keyName: 'End', value: 0x4D},
+  {keyName: 'Page Up', value: 0x4B},
+  {keyName: 'Page Down', value: 0x4E},
+  {keyName: 'Caps Lock', value: 0x39},
+  {keyName: 'Num Lock', value: 0x53}
+];
+
+
+
 
 // 当前选中的按钮
 // 如果 selectedButton 已经在其他地方声明，请删除此处的重复声明
@@ -164,7 +320,7 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">鼠标按键</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in MouseKeyItem" :index="'0'+index"><span>{{ keyItem }}</span>
+                  <el-menu-item v-for="(keyItem,index) in MouseKeyItem" :index="'0'+index"><span>{{ keyItem.keyName }}</span>
                   </el-menu-item>
                 </el-sub-menu>
 
@@ -172,7 +328,7 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">板载配置</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in ProfileKeyItem" :index="'1'+index"><span>{{ keyItem }}</span>
+                  <el-menu-item v-for="(keyItem,index) in ProfileKeyItem" :index="'1'+index"><span>{{ keyItem.keyName }}</span>
                   </el-menu-item>
                 </el-sub-menu>
 
@@ -180,7 +336,7 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">DPI切换</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in DPIKeyItem" :index="'2'+index"><span>{{ keyItem }}</span>
+                  <el-menu-item v-for="(keyItem,index) in DPIKeyItem" :index="'2'+index"><span>{{ keyItem.keyName }}</span>
                   </el-menu-item>
                 </el-sub-menu>
 
@@ -188,7 +344,7 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">鼠标滚轮</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in ScrollKeyItem" :index="'3'+index"><span>{{ keyItem }}</span>
+                  <el-menu-item v-for="(keyItem,index) in ScrollKeyItem" :index="'3'+index"><span>{{ keyItem.keyName }}</span>
                   </el-menu-item>
                 </el-sub-menu>
 
@@ -196,7 +352,7 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">多媒体</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in ConsumerKeyItem" :index="'4'+index"><span>{{ keyItem }}</span>
+                  <el-menu-item v-for="(keyItem,index) in ConsumerKeyItem" :index="'4'+index"><span>{{ keyItem.keyName }}</span>
                   </el-menu-item>
                 </el-sub-menu>
 
@@ -215,7 +371,7 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">字母和数字键</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in KeyBoardKeyItem" :index="'0'+index"><span>{{ keyItem }}</span>
+                  <el-menu-item v-for="(keyItem,index) in KeyBoardKeyItem" :index="'0'+index"><span>{{ keyItem.keyName }}</span>
                   </el-menu-item>
                 </el-sub-menu>
 
@@ -224,7 +380,7 @@ onMounted(() => {
                     <span class="font-bold">F区功能键</span>
                   </template>
                   <el-menu-item v-for="(keyItem,index) in FKeyBoardKeyItem" :index="'1'+index"><span>{{
-                      keyItem
+                      keyItem.keyName
                     }}</span>
                   </el-menu-item>
                 </el-sub-menu>
@@ -234,7 +390,7 @@ onMounted(() => {
                     <span class="font-bold">数字小键盘键</span>
                   </template>
                   <el-menu-item v-for="(keyItem,index) in NumPadKeyBoardKeyItem" :index="'2'+index"><span>{{
-                      keyItem
+                      keyItem.keyName
                     }}</span>
                   </el-menu-item>
                 </el-sub-menu>
@@ -244,16 +400,8 @@ onMounted(() => {
                     <span class="font-bold">控制键与字符键</span>
                   </template>
                   <el-menu-item v-for="(keyItem,index) in ControlKeyBoardKeyItem" :index="'3'+index"><span>{{
-                      keyItem
+                      keyItem.keyName
                     }}</span>
-                  </el-menu-item>
-                </el-sub-menu>
-
-                <el-sub-menu index="4">
-                  <template #title>
-                    <span class="font-bold">多媒体</span>
-                  </template>
-                  <el-menu-item v-for="(keyItem,index) in ConsumerKeyItem" :index="'4'+index"><span>{{ keyItem }}</span>
                   </el-menu-item>
                 </el-sub-menu>
 
