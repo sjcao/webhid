@@ -108,14 +108,14 @@ const handleSelectProfile = (profile: string) => {
                            size="large" :class="{'btn-active': activeTab === 'led'}"
                            @click="activeTab = 'led'; refreshKey++; ">LED灯光
                 </el-button>
-                <el-button :style="{ fontSize: '16px', fontWeight:'bold',color:'#000'}" class="join-item h-12 flex-grow"
-                           size="large" :class="{'btn-active': activeTab === 'profile'}"
-                           @click="activeTab = 'profile'; refreshKey++; ">配置文件
-                </el-button>
-                <el-button :style="{ fontSize: '16px', fontWeight:'bold',color:'#000'}" class="join-item h-12 flex-grow"
-                           size="large" :class="{'btn-active': activeTab === 'macro'}"
-                           @click="activeTab = 'macro'; refreshKey++; ">宏录制
-                </el-button>
+<!--                <el-button :style="{ fontSize: '16px', fontWeight:'bold',color:'#000'}" class="join-item h-12 flex-grow"-->
+<!--                           size="large" :class="{'btn-active': activeTab === 'profile'}"-->
+<!--                           @click="activeTab = 'profile'; refreshKey++; ">配置文件-->
+<!--                </el-button>-->
+<!--                <el-button :style="{ fontSize: '16px', fontWeight:'bold',color:'#000'}" class="join-item h-12 flex-grow"-->
+<!--                           size="large" :class="{'btn-active': activeTab === 'macro'}"-->
+<!--                           @click="activeTab = 'macro'; refreshKey++; ">宏录制-->
+<!--                </el-button>-->
                 <!--              <el-button class="join-item" :class="{'btn-active': activeTab === 'sensor'}"-->
                 <!--                      @click="activeTab = 'sensor'; refreshKey++; ">传感器-->
                 <!--              </el-button>-->

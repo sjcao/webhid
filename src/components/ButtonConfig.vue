@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import {computed, ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 
 import {CardBody, CardContainer, CardItem} from "@/components/ui/card-3d";
 import router from "@/router.ts";
 import MacroRecorder from "@/components/MacroRecorder.vue";
+import {
+  loadActionsListFromLocalStorage,
+  saveActionsListToLocalStorage,
+} from "@/components/macro.ts";
 
 const props = defineProps<{
   hard?: boolean; // should it interact with hardware or just dummy
@@ -124,7 +128,19 @@ const handleMacroBack = () => {
   if (elDrawerMacro.value) {
     elDrawerMacro.value.handleClose(); // 调用 close 方法关闭抽屉
   }
+  macroList.value = loadActionsListFromLocalStorage()
 };
+
+const macroList = ref([])
+const handleDeletMacro = (index: number) => {
+    macroList.value.splice(index, 1);
+    saveActionsListToLocalStorage(macroList.value)
+};
+
+// 生命周期钩子
+onMounted(() => {
+  macroList.value = loadActionsListFromLocalStorage()
+})
 </script>
 <template>
   <div>
@@ -309,11 +325,18 @@ const handleMacroBack = () => {
             <el-card class="box-card">
               <template #header>
                 <div class="card-header flex justify-between">
-                  <span>宏列表</span>
+                  <span>宏列表:</span>
                   <el-button type="success" size="default" @click="isShowMacro=true">新建宏</el-button>
                 </div>
               </template>
-              <el-empty :image-size="100"/>
+              <el-empty :image-size="100" v-if="macroList.length===0"/>
+              <div class="flex justify-between" v-if="macroList.length > 0 " v-for="(item,index) in macroList">
+                {{ '宏编号 ' + (index + 1) }}
+                <div>
+                <el-button type="primary">启用</el-button>
+                <el-button type="danger" @click="handleDeletMacro(index)">删除</el-button>
+                </div>
+              </div>
             </el-card>
           </el-tab-pane>
         </el-tabs>
@@ -410,14 +433,15 @@ const handleMacroBack = () => {
     </template>
   </el-dialog>
 
-  <el-drawer ref="elDrawerMacro" v-model="isShowMacro" :show-close="false" class="demo-drawer" :size="'96%'" :lock-scroll="true" :destroy-on-close="true"
+  <el-drawer ref="elDrawerMacro" v-model="isShowMacro" :show-close="false" class="demo-drawer" :size="'96%'"
+             :lock-scroll="true" :destroy-on-close="true"
              :close-on-click-modal="false" :close-on-press-escape="false" :with-header="false">
-    <div class="demo-drawer__content" >
+    <div class="demo-drawer__content">
       <MacroRecorder class="macro-record" @onClose="handleMacroBack" @contextmenu.prevent/>
     </div>
-<!--    <div class="demo-drawer__footer">-->
+    <!--    <div class="demo-drawer__footer">-->
 
-<!--    </div>-->
+    <!--    </div>-->
   </el-drawer>
 
 
