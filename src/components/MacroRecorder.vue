@@ -95,7 +95,7 @@
               <el-icon v-if="action.type===KeyType.MOUSE" class="h-4">
                 <Mouse/>
               </el-icon>
-              <el-image v-if="action.type===KeyType.KEY" :src="imgKeyBoard" class="h-6 mr-2"></el-image>
+              <el-image v-if="action.type===KeyType.KEYBOARD" :src="imgKeyBoard" class="h-6 mr-2"></el-image>
               {{ action.keyName.toUpperCase() }}
               <el-icon v-if="action.action === KeyActionType.DOWN">
                 <Bottom/>
@@ -106,16 +106,40 @@
             </el-text>
             <!--            <span class="key-name">{{ action.key.toUpperCase() }}</span>-->
             <el-divider direction="vertical"/>
-            <el-button
-                class="ml-1"
-                type="primary"
-                plain
-                size="small"
-                circle
-                @click="editAction(index)"
-                :icon="Edit"
-                :disabled="isRecording"
-            />
+            <el-popover :visible="activeEditMouseIndex === index || activeEditkeyBoardIndex === index" placement="top"
+                        :width="180">
+              <el-dropdown split-button type="primary" v-if="action.type===KeyType.MOUSE">
+                {{ editMosueClickString }}
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item v-for="(item,index) in MouseKeyItem.slice(1)" :tabindex="index"
+                                      @click="onEditMouseClick(item)">{{ item.keyName }}
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+              <el-input v-if="action.type===KeyType.KEYBOARD" class="1" :ref="el => { if (el) editInputRefs[index] = el }" placeholder="请输入键盘按键"
+                        v-model="editInputKey"
+                        @keydown="handleKeydown" @mouseenter="handleMouseEnter(index)"
+                        @mouseleave="handleMouseLeave(index)"
+                        readonly></el-input>
+              <div style="text-align: right" class="mt-2">
+                <el-button size="small" text @click="handleDeleteItem(index)">删除</el-button>
+                <el-button size="small" type="primary" @click="handleEditItem(index)">修改</el-button>
+              </div>
+              <template #reference>
+                <el-button
+                    class="ml-1"
+                    type="primary"
+                    plain
+                    size="small"
+                    circle
+                    @click="handleEditKeyBoardOrMouse(action,index)"
+                    :icon="Edit"
+                    :disabled="isRecording"
+                />
+              </template>
+            </el-popover>
           </el-card>
 
           <el-icon v-if="index!==actions.length-1" size="25">
@@ -128,20 +152,11 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, onBeforeUnmount} from 'vue'
-import {
-  VideoPlay,
-  VideoPause,
-  Edit,
-  Stopwatch,
-  Mouse,
-  Right,
-  Top,
-  Bottom,
-  Grid
-} from '@element-plus/icons-vue'
-import {KeyType, KeyActionType, saveActionsToLocalStorage, MacroAction} from "@/components/macro.ts";
+import {onBeforeUnmount, onMounted, ref} from 'vue'
 
+import {Bottom, Edit, Mouse, Right, Stopwatch, Top, VideoPause, VideoPlay} from '@element-plus/icons-vue'
+import {KeyActionType, KeyType, MacroAction, saveActionsToLocalStorage} from "@/components/macro.ts";
+import {AllKeyBoardKeyEventKey, MouseKeyItem} from "@/components/hidcode.ts";
 
 const calculateTime = (index: number): number => {
   if (index === 0 || actions.value.length < 2) return 0;
@@ -154,9 +169,9 @@ const calculateTime = (index: number): number => {
 
 const handleDeleteTime = (index: number) => {
   if (index > 0 && index < actions.value.length) {
-    actions.value[index].isDeleteDelay = true
-    activeEditTimeIndex.value = null; // 重置编辑状态
+    actions.value[index].isDeleteDelay = true;
   }
+  activeEditTimeIndex.value = null; // 重置编辑状态
 };
 
 const handleEditTime = (index: number) => {
@@ -165,7 +180,6 @@ const handleEditTime = (index: number) => {
 
     const newDelay = Math.min(editInputTimeRef.value, 65535);
     actions.value[index].timeStamp = actions.value[index - 1].timeStamp + newDelay;
-    activeEditTimeIndex.value = null;
 
     // 计算时间差
     const timeDifference = actions.value[index].timeStamp - oldTimestamp;
@@ -175,6 +189,103 @@ const handleEditTime = (index: number) => {
       actions.value[i].timeStamp += timeDifference;
     }
   }
+  activeEditTimeIndex.value = null;
+};
+
+
+// 绑定输入框的值
+const editInputRefs = ref<Record<string, any>>({}); // 使用对象存储
+
+const editInputKey = ref<string>('');
+// 处理键盘按下事件
+const handleKeydown = (event: KeyboardEvent) => {
+  // 阻止默认行为（如输入多个字符）
+  event.preventDefault();
+
+  // 获取按下的键值
+  const key = event.key;
+  editInputKey.value = key;
+};
+
+
+// 处理鼠标进入事件
+const handleMouseEnter = (index) => {
+  const editInputRef = editInputRefs.value[index];
+  if (editInputRef) {
+    // 调用 focus 方法让输入框获取焦点
+    editInputRef.focus();
+  }
+};
+
+// 处理鼠标离开事件
+const handleMouseLeave = (index) => {
+  const editInputRef = editInputRefs.value[index];
+  if (editInputRef) {
+    // 调用 blur 方法让输入框失去焦点
+    editInputRef.blur();
+  }
+};
+
+const handleEditKeyBoardOrMouse = (action: MacroAction, index: number) => {
+  if (action.type === KeyType.MOUSE) {
+    editMosueClick.value = MouseKeyItem.find((item) => item.keyName === action.keyName)
+    editMosueClickString.value = editMosueClick.value.keyName
+  }
+
+  editInputKey.value = ''
+
+  activeEditMouseIndex.value = action.type === KeyType.MOUSE ? index : null;
+  activeEditkeyBoardIndex.value = action.type === KeyType.KEYBOARD ? index : null;
+};
+
+// 删除后调整后续的时间间隔不变
+const handleDeleteItem = (index: number) => {
+  if (index >= 0 && index < actions.value.length) {
+    const deletedAction = actions.value[index];
+    actions.value.splice(index, 1); // 删除指定索引的动作项
+
+    // 如果删除的不是最后一个动作，调整后续动作的时间戳
+    if (index < actions.value.length) {
+      const timeDifference = deletedAction.timeStamp - actions.value[index].timeStamp;
+
+      for (let i = index; i < actions.value.length; i++) {
+        actions.value[i].timeStamp += timeDifference;
+      }
+    }
+  }
+  activeEditMouseIndex.value = null;
+  activeEditkeyBoardIndex.value = null;
+};
+
+const editMosueClick = ref<any>();
+const editMosueClickString = ref('');
+const onEditMouseClick = (item: any) => {
+  editMosueClick.value = item
+  editMosueClickString.value = item.keyName
+};
+
+const handleEditItem = (index: number) => {
+  if (index >= 0 && index < actions.value.length) {
+    if (actions.value[index].type === KeyType.MOUSE) {
+      // 修改鼠标值逻辑
+      const mouseKey = editMosueClick.value;
+      if (mouseKey) {
+        actions.value[index].keyName = mouseKey.keyName;
+        actions.value[index].keyCode = mouseKey.keyCode; // 假设 MouseKeyItem 包含 keyCode 属性
+      }
+    } else if (actions.value[index].type === KeyType.KEYBOARD) {
+      // 修改按键值逻辑
+      if (editInputKey.value) {
+        actions.value[index].keyName = editInputKey.value;
+        // todo
+
+        // actions.value[index].keyCode = Object.keys(AllKeyBoardKeyEventKey).find(key => key === editInputKey.value)
+      }
+    }
+  }
+
+  activeEditMouseIndex.value = null;
+  activeEditkeyBoardIndex.value = null;
 };
 
 const emit = defineEmits(['onClose']);
@@ -183,7 +294,7 @@ const emit = defineEmits(['onClose']);
 const isRecording = ref(false);
 const activeEditTimeIndex = ref<number | null>(null);
 const activeEditMouseIndex = ref<number | null>(null);
-const activeEditkeyIndex = ref<number | null>(null);
+const activeEditkeyBoardIndex = ref<number | null>(null);
 const actions = ref<MacroAction[]>([]);
 const editInputTimeRef = ref(0);
 
@@ -212,14 +323,14 @@ const handleKeyDown = (e) => {
   if (e.key.length) {
     let keyName = e.key
     if (e.key === ' ') {
-      keyName= '空格键';
+      keyName = '空格键';
     }
 
     const action: MacroAction = {
       keyName: keyName,
       keyCode: e.code,
       action: KeyActionType.DOWN,
-      type: KeyType.KEY,
+      type: KeyType.KEYBOARD,
       timeStamp: Date.now()
     }
 
@@ -236,14 +347,14 @@ const handleKeyUp = (e) => {
   if (e.key.length) {
     let keyName = e.key
     if (e.key === ' ') {
-      keyName= '空格键';
+      keyName = '空格键';
     }
 
     const action: MacroAction = {
       keyName: keyName,
       keyCode: e.code,
       action: KeyActionType.UP,
-      type: KeyType.KEY,
+      type: KeyType.KEYBOARD,
       timeStamp: Date.now()
     }
     actions.value.push(action)
@@ -331,7 +442,7 @@ const clearActions = () => {
 // 清空记录
 const closeActions = () => {
   //保存本地
-  if (actions.value.length){
+  if (actions.value.length) {
     saveActionsToLocalStorage(actions.value)
   }
   emit('onClose')
