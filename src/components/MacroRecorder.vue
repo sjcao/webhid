@@ -118,7 +118,8 @@
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
-              <el-input v-if="action.type===KeyType.KEYBOARD" class="1" :ref="el => { if (el) editInputRefs[index] = el }" placeholder="请输入键盘按键"
+              <el-input v-if="action.type===KeyType.KEYBOARD" class="1"
+                        :ref="el => { if (el) editInputRefs[index] = el }" placeholder="请输入键盘按键"
                         v-model="editInputKey"
                         @keydown="handleKeydown" @mouseenter="handleMouseEnter(index)"
                         @mouseleave="handleMouseLeave(index)"
@@ -278,8 +279,7 @@ const handleEditItem = (index: number) => {
       if (editInputKey.value) {
         actions.value[index].keyName = editInputKey.value;
         // todo
-
-        // actions.value[index].keyCode = Object.keys(AllKeyBoardKeyEventKey).find(key => key === editInputKey.value)
+        actions.value[index].keyCode = AllKeyBoardKeyEventKey.find(item => item[editInputKey.value])[editInputKey.value].value
       }
     }
   }
