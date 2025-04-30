@@ -278,6 +278,7 @@ const handleEditItem = (index: number) => {
       if (editInputKey.value) {
         actions.value[index].keyName = editInputKey.value;
         // todo
+
         // actions.value[index].keyCode = Object.keys(AllKeyBoardKeyEventKey).find(key => key === editInputKey.value)
       }
     }
