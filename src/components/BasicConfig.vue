@@ -10,7 +10,7 @@ import {HyperText} from "@/components/ui/hyper-text";
 
 const props = defineProps<{
   hard?: boolean; // should it interact with hardware or just dummy
-  activeProfile: string;
+  activeProfile: number;
   currentDevice?: HIDDevice;
 }>();
 

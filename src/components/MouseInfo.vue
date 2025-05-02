@@ -1,113 +1,84 @@
 <script setup lang="ts">
-import { filesize } from 'filesize';
-import { ref } from 'vue';
-import { fromHexString, toHexString } from './hexString';
+
+import {MouseCommandBuilder, ParamType, ResponseParser} from "@/components/command.ts";
+import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
+import {onMounted, ref} from "vue";
 
 const props = defineProps<{
   currentDevice?: HIDDevice;
 }>();
-const serial = "serial";
-const fwVersion = "fwVersion"
-const flashUsage = [90,100,100,100];
-const [_, flashTotal, flashFree, flashRecycled] = flashUsage;
-const flashCanUse = flashFree - flashRecycled;
-const flashUsed = flashTotal - flashFree;
-const macroCount = "macroCount"
 
-
-const confirmReset = ref(false);
-
-async function resetFlash() {
-  // await props.py(`device.reset_flash()`);
-  confirmReset.value = false;
+const workMode = ref('有线')
+const type = ref('鼠标')
+const ver = ref('v1.0')
+const profile = ref(0)
+const handleData = (data: Uint8Array) => {
+  const [type, result] = ResponseParser.parse(Array.from(data))
+  if (type === ParamType.WORK_MODE) {
+    const mode = result.mode
+    if (mode === 0) {
+      workMode.value = '有线'
+      const com = MouseCommandBuilder.readVersion(0)
+      sendDataToDevice(com)
+    } else if (mode === 1) {
+      const com = MouseCommandBuilder.readVersion(1)
+      sendDataToDevice(com)
+      workMode.value = '无线'
+    } else if (mode === 2) {
+      workMode.value = '蓝牙'
+    }
+  }else if (type === ParamType.VERSION){
+    ver.value = result.version
+    type.value = result.type==='Mouse' ? '鼠标' : '接收器'
+  }
+  else if (type === ParamType.PROFILE) {
+    profile.value = result.profile
+  }
 }
 
-const sendCommand = ref(0x0082);
-const sendArgument = ref<number[]>([]);
-const sendResponse = ref<number[]>([]);
+useHIDListener(handleData);
 
-async function sendRawReport() {
-//   const resp = await props.py(`
-// a, b = device.sr_with(
-//   full_command,
-//   f'>{len(argument)}s{80-len(argument)}s', bytes([int(x) for x in argument]),
-//   all=True);
-// list(a + b)
-// `, {locals: {
-//     full_command: sendCommand.value,
-//     argument: JSON.parse(JSON.stringify(sendArgument.value))
-//   }});
-//   sendResponse.value = resp;
-}
+onMounted(() => {
+  //读取DPi设置
+  //处理设备数据
+  const com = MouseCommandBuilder.readWorkMode()
+  sendDataToDevice(com)
+
+  sendDataToDevice(MouseCommandBuilder.readProfile())
+})
 
 </script>
 <template>
-  <div class="min-w-[30em] *:my-2">
-    <table class="table"><tbody>
-      <tr><td colspan="2" class="subtitle">System</td></tr>
-      <tr><td>Serial</td><td>{{ serial }}</td></tr>
-      <tr><td>Firmware</td><td>{{ fwVersion }}</td></tr>
-      <tr><td>Flash</td><td>
-        <div>Total: {{ flashTotal / 256 }} ({{ filesize(flashTotal) }})</div>
-        <div>In use: {{ flashUsed / 256 }} ({{ filesize(flashUsed) }})</div>
-        <div>Available: {{ flashCanUse / 256 }} ({{ filesize(flashCanUse) }})</div>
-        <div>Recycled: {{ flashRecycled / 256 }} ({{ filesize(flashRecycled) }})</div>
-      </td></tr>
-      <tr><td>Macro count</td><td>{{ macroCount }}</td></tr>
-    </tbody></table>
-    <div class="flex items-center h-4">
-      <div 
-        class="h-full text-center bg-error text-error-content"
-        :style="{'width': ((flashUsed / flashTotal) * 100).toString() + '%'}"
-      ></div>
-      <div 
-        class="h-full text-center bg-success text-success-content"
-        :style="{'width': ((flashCanUse / flashTotal) * 100).toString() + '%'}"
-      ></div>
-      <div 
-        class="h-full text-center bg-warning text-warning-content"
-        :style="{'width': ((flashRecycled / flashTotal) * 100).toString() + '%'}"
-      ></div>
-    </div>
-    <div class="flex justify-between items-center">
-      <span>{{ flashUsed / 256 }}<br>in use</span>
-      <span>{{ flashCanUse / 256 }}<br>can be used</span>
-      <span>{{ flashRecycled / 256 }}<br>recycled</span>
-    </div>
-    <button class="btn btn-sm min-w-24 btn-warning w-full"
-      v-if="!confirmReset"
-      @click="confirmReset = true">Reset flash</button>
-    <button class="btn btn-sm min-w-24 btn-error w-full"
-      v-if="confirmReset"
-      @click="resetFlash">Confirm</button>
-    <details>
-      <summary>Send raw report</summary>
-      <div class="grid gap-2 items-baseline" style="grid-template-columns: max-content auto;">
-        <span>Command</span>
-        <input type="text" class="input input-bordered input-sm w-32"
-          :value="'0x' + sendCommand.toString(16).padStart(4, '0')"
-          @change="(event) => sendCommand = parseInt(event.target?.value) || 0"
-        />
-        <span>Argument</span>
-        <textarea class="textarea textarea-bordered w-full"
-          :value="toHexString(sendArgument)"
-          @change="(event) => sendArgument = fromHexString(event.target?.value)"
-        ></textarea>
-        <button class="btn btn-sm w-full block col-span-2" @click="sendRawReport">Send</button>
-        <span>Response</span>
-        <textarea class="textarea textarea-bordered w-full"
-          :value="toHexString(sendResponse)"
-          readonly
-        ></textarea>
-      </div>
-    </details>
+  <div class="flex w-full h-full">
+    <el-descriptions title="鼠标信息" :column="1" border>
+      <el-descriptions-item
+          label="型号"
+          label-align="right"
+          align="center"
+          label-class-name="my-label"
+          class-name="my-content"
+          width="150px"
+      >ATU-MOUSE
+      </el-descriptions-item
+      >
+      <el-descriptions-item label="版本号" label-align="right" align="center"
+      >{{ver}}
+      </el-descriptions-item>
+      <el-descriptions-item label="工作模式" label-align="right" align="center"
+      >{{workMode}}
+      </el-descriptions-item>
+      <el-descriptions-item label="配置编号" label-align="right" align="center"
+      >{{profile}}
+      </el-descriptions-item>
+    </el-descriptions>
   </div>
-  
 </template>
 <style lang="scss" scoped>
-.subtitle {
-  text-align: center;
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 0.25em 0.5em;
+:deep(.my-label) {
+  background: var(--el-color-success-light-9) !important;
+}
+
+:deep(.my-content) {
+
 }
 </style>

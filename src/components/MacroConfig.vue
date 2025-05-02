@@ -7,7 +7,7 @@ import MacroRecorder from "@/components/MacroRecorder.vue";
 
 const props = defineProps<{
   hard?: boolean; // should it interact with hardware or just dummy
-  activeProfile: string;
+  activeProfile: number;
   currentDevice?: HIDDevice;
 }>();
 

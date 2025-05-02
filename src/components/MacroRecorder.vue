@@ -260,7 +260,7 @@ const handleDeleteItem = (index: number) => {
 
 const editMosueClick = ref<any>();
 const editMosueClickString = ref('');
-const onEditMouseClick = (item: any) => {
+const onEditMouseClick = (item: MacroAction) => {
   editMosueClick.value = item
   editMosueClickString.value = item.keyName
 };
@@ -277,7 +277,7 @@ const handleEditItem = (index: number) => {
     } else if (actions.value[index].type === KeyType.KEYBOARD) {
       // 修改按键值逻辑
       if (editInputKey.value) {
-        actions.value[index].keyName = editInputKey.value;
+        actions.value[index].keyName = editInputKey.value.toUpperCase();
         // todo
         actions.value[index].keyCode = AllKeyBoardKeyEventKey.find(item => item[editInputKey.value])[editInputKey.value].value
       }
@@ -328,7 +328,7 @@ const handleKeyDown = (e) => {
 
     const action: MacroAction = {
       keyName: keyName,
-      keyCode: e.code,
+      keyCode: AllKeyBoardKeyEventKey.find(item => item[e.key])[e.key].value,
       action: KeyActionType.DOWN,
       type: KeyType.KEYBOARD,
       timeStamp: Date.now()
@@ -352,7 +352,7 @@ const handleKeyUp = (e) => {
 
     const action: MacroAction = {
       keyName: keyName,
-      keyCode: e.code,
+      keyCode: AllKeyBoardKeyEventKey.find(item => item[e.key])[e.key].value,
       action: KeyActionType.UP,
       type: KeyType.KEYBOARD,
       timeStamp: Date.now()
@@ -382,7 +382,7 @@ const handleMouseDown = (e) => {
 
   const action: MacroAction = {
     keyName: key,
-    keyCode: e.button,
+    keyCode: MouseKeyItem.find(item=>item.keyName===key).value,
     action: KeyActionType.DOWN,
     type: KeyType.MOUSE,
     timeStamp: Date.now()
@@ -411,7 +411,7 @@ const handleMouseUp = (e) => {
 
   const action: MacroAction = {
     keyName: key,
-    keyCode: e.button,
+    keyCode: MouseKeyItem.find(item=>item.keyName===key).value,
     action: KeyActionType.UP,
     type: KeyType.MOUSE,
     timeStamp: Date.now()

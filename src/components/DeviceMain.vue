@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import MouseInfo from './MouseInfo.vue';
 import BasicConfig from './BasicConfig.vue';
 import ProfileConfig from './ProfileConfig.vue';
@@ -7,8 +7,9 @@ import ButtonConfig from './ButtonConfig.vue';
 import MacroConfig from './MacroConfig.vue';
 import SensorConfig from './SensorConfig.vue';
 import LedConfig from './LedConfig.vue';
-import {useHIDListener} from "@/components/webhid.ts";
+import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
 import {AuroraBackground} from "@/components/ui/aurora-background";
+import {MouseCommandBuilder, ParamType, ResponseParser} from "@/components/command.ts";
 
 const emit = defineEmits(['back']);
 
@@ -18,7 +19,7 @@ const props = defineProps<{
 }>();
 
 const allProfileList = ['配置文件1', '配置文件2', '配置文件3', '配置文件4'];
-const activeProfile = ref('direct');
+const activeProfile = ref(0);
 const activeTab = ref('button');
 const refreshKey = ref(0);
 const hasProfileList = ref(['direct', 'white']);
@@ -28,11 +29,11 @@ function hasProfile(name: string) {
 }
 
 function updateHasProfileList(value: string[]) {
-  value = ['direct'].concat(value);
-  hasProfileList.value = value;
-  if (!value.includes(activeProfile.value)) {
-    activeProfile.value = 'direct';
-  }
+  // value = ['direct'].concat(value);
+  // hasProfileList.value = value;
+  // if (!value.includes(activeProfile.value)) {
+  //   activeProfile.value = 'direct';
+  // }
 }
 
 const profileConfigData = ref({
@@ -52,11 +53,28 @@ const goBack = () => {
   emit("back");
 }
 
-const handleSelectProfile = (profile: string) => {
-  activeProfile.value = profile;
+const handleSelectProfile = (index: number) => {
+  activeProfile.value = index
+  //切换
+  const cmd = MouseCommandBuilder.switchProfile(index)
+  sendDataToDevice(cmd)
 }
 
+const handleData = (data: Uint8Array) => {
+  const [type, result] = ResponseParser.parse(Array.from(data))
+  if (type === ParamType.PROFILE) {
+    activeProfile.value = result.profile
+  }
+}
 
+useHIDListener(handleData);
+
+onMounted(() => {
+  //读取DPi设置
+  //处理设备数据
+  const com = MouseCommandBuilder.readProfile()
+  sendDataToDevice(com)
+})
 </script>
 <template>
   <AuroraBackground class="fixed top-0 left-0 w-full h-full z-0"
@@ -153,9 +171,9 @@ const handleSelectProfile = (profile: string) => {
                     <SensorConfig v-if="activeTab === 'sensor'"
                                   :key="refreshKey" :active-profile="activeProfile" :hard="hard"
                                   :currentDevice="currentDevice"/>
-                    <MouseInfo v-if="activeTab === 'info' && hard"
+                    <MouseInfo v-if="activeTab === 'info'"
                                :key="refreshKey" :currentDevice="currentDevice"/>
-                    <div v-if="activeTab === 'info' && !hard">No hardware connected</div>
+<!--                    <div v-if="activeTab === 'info' && !hard">No hardware connected</div>-->
                     <!--                  <PythonRunner v-if="activeTab === 'info'"/>-->
                     <!--                  v-show is used to load available profiles when initially loaded-->
                     <ProfileConfig v-show="activeTab === 'profile'"

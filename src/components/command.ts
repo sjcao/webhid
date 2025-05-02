@@ -1,5 +1,5 @@
 // 类型定义层
-enum CommandType {
+export enum CommandType {
     READ = 0x80,
     WRITE = 0x81
 }
@@ -13,7 +13,7 @@ export enum ParamType {
     NONE = 0x00
 }
 
-enum ButtonID {
+export enum ButtonID {
     LEFT = 0,
     RIGHT = 1,
     MIDDLE = 2,
@@ -22,8 +22,8 @@ enum ButtonID {
     DPI_BUTTON = 5
 }
 
-enum KeyFunctionType {
-    SYSTEM = 0,
+export enum KeyFunctionType {
+    MOUSE = 0,
     PROFILE_CHANGE = 1,
     DPI_ACTION = 2,
     WHEEL = 3,

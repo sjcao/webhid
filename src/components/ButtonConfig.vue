@@ -8,10 +8,23 @@ import {
   loadActionsListFromLocalStorage,
   saveActionsListToLocalStorage,
 } from "@/components/macro.ts";
+import {ButtonID, KeyFunctionType, MouseCommandBuilder, ParamType, ResponseParser} from "@/components/command.ts";
+import {
+  MouseKeyItem,
+  ProfileKeyItem,
+  DPIKeyItem,
+  ScrollKeyItem,
+  ConsumerKeyItem,
+  KeyBoardKeyItem,
+  FKeyBoardKeyItem,
+  ControlKeyBoardKeyItem,
+  NumPadKeyBoardKeyItem, AllKeyBoardKeyEventKey
+} from "@/components/hidcode.ts";
+import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
 
 const props = defineProps<{
   hard?: boolean; // should it interact with hardware or just dummy
-  activeProfile: string;
+  activeProfile: number;
   currentDevice?: HIDDevice;
 }>();
 
@@ -19,182 +32,8 @@ const imgMouse = new URL(`/ic-moouse.png`, import.meta.url).href
 
 
 const isShowButtonMenu = ref(false)
-const selectedButton = ref('left');
+const selectedButton = ref('');
 const leftDialogVisible = ref(false);
-
-const functionCategoryList = [
-  '系统按键', '键盘按键', '特殊按键', '录制宏'
-];
-
-const MouseKeyItem = [
-  {keyName: '关闭', value: 0x00},
-  {keyName: '左键', value: 0x01},
-  {keyName: '右键', value: 0x02},
-  {keyName: '中键', value: 0x04},
-  {keyName: '后退', value: 0x08},
-  {keyName: '前进', value: 0x10}
-]
-
-
-
-const ProfileKeyItem = [
-  {keyName: '切换板载配置1', value: 0x01},
-  {keyName: '切换板载配置2', value: 0x02},
-  {keyName: '切换板载配置3', value: 0x03},
-  {keyName: '切换板载配置4', value: 0x04}
-]
-
-const DPIKeyItem = [
-  {keyName: 'DPI循环', value: 0x01},
-  {keyName: 'DPI+', value: 0x02},
-  {keyName: 'DPI-', value: 0x03}
-];
-const ScrollKeyItem = [
-  {keyName: '左滚', value: 0x01},
-  {keyName: '右滚', value: 0x02},
-  {keyName: '上滚', value: 0x04},
-  {keyName: '下滚', value: 0x08}
-];
-
-const ConsumerKeyItem = [
-  {keyName: '亮度+', value: [0x6F,0x00]},
-  {keyName: '亮度-', value: [0x70, 0x00]},
-  {keyName: '播放器', value: [0x83, 0x01]},
-  {keyName: '停止播放', value: [0xB7, 0x00]},
-  {keyName: '播放/暂停', value: [0xCD, 0x00]},
-  {keyName: '上一首', value: [0xB6, 0x00]},
-  {keyName: '下一首', value: [0xB5, 0x00]},
-  {keyName: '静音', value: [0xE2, 0x00]},
-  {keyName: '音量+', value: [0xE9, 0x00]},
-  {keyName: '音量-', value: [0xEA, 0x00]},
-  {keyName: '邮件', value: [0x8A, 0x01]},
-  {keyName: '主页', value: [0x23, 0x02]},
-  {keyName: '搜索', value: [0x21, 0x02]},
-  {keyName: '刷新', value: [0x27, 0x02]},
-  {keyName: '收藏夹', value: [0x2A, 0x02]},
-  {keyName: '网页停止', value: [0x26, 0x02]},
-  {keyName: '网页前进', value: [0x25, 0x02]},
-  {keyName: '网页后退', value: [0x24, 0x02]},
-  {keyName: '计算器', value: [0x92, 0x01]},
-  {keyName: '我的电脑', value: [0x94, 0x01]}
-];
-
-const KeyBoardKeyItem = [
-  {keyName: 'Q', value: 0x14},
-  {keyName: 'W', value: 0x1A},
-  {keyName: 'E', value: 0x08},
-  {keyName: 'R', value: 0x15},
-  {keyName: 'T', value: 0x17},
-  {keyName: 'Y', value: 0x1C},
-  {keyName: 'U', value: 0x18},
-  {keyName: 'I', value: 0x0C},
-  {keyName: 'O', value: 0x12},
-  {keyName: 'P', value: 0x13},
-  {keyName: 'A', value: 0x04},
-  {keyName: 'S', value: 0x16},
-  {keyName: 'D', value: 0x07},
-  {keyName: 'F', value: 0x09},
-  {keyName: 'G', value: 0x0A},
-  {keyName: 'H', value: 0x0B},
-  {keyName: 'J', value: 0x0D},
-  {keyName: 'K', value: 0x0E},
-  {keyName: 'L', value: 0x0F},
-  {keyName: 'Z', value: 0x1D},
-  {keyName: 'X', value: 0x1B},
-  {keyName: 'C', value: 0x06},
-  {keyName: 'V', value: 0x19},
-  {keyName: 'B', value: 0x05},
-  {keyName: 'N', value: 0x11},
-  {keyName: 'M', value: 0x10},
-  {keyName: '!1', value: 0x1E},
-  {keyName: '@2', value: 0x1F},
-  {keyName: '#3', value: 0x20},
-  {keyName: '$4', value: 0x21},
-  {keyName: '%5', value: 0x22},
-  {keyName: '^6', value: 0x23},
-  {keyName: '&7', value: 0x24},
-  {keyName: '*8', value: 0x25},
-  {keyName: '(9', value: 0x26},
-  {keyName: ')0', value: 0x27},
-];
-
-const FKeyBoardKeyItem = [
-  {keyName: 'F1', value: 0x3A},
-  {keyName: 'F2', value: 0x3B},
-  {keyName: 'F3', value: 0x3C},
-  {keyName: 'F4', value: 0x3D},
-  {keyName: 'F5', value: 0x3E},
-  {keyName: 'F6', value: 0x3F},
-  {keyName: 'F7', value: 0x40},
-  {keyName: 'F8', value: 0x41},
-  {keyName: 'F9', value: 0x42},
-  {keyName: 'F10', value: 0x43},
-  {keyName: 'F11', value: 0x44},
-  {keyName: 'F12', value: 0x45}
-];
-
-const NumPadKeyBoardKeyItem = [
-  {keyName: '/', value: 0x54},
-  {keyName: '*', value: 0x55},
-  {keyName: '-', value: 0x56},
-  {keyName: '+', value: 0x57},
-  {keyName: 'enter', value: 0x58},
-  {keyName: '1', value: 0x59},
-  {keyName: '2', value: 0x5A},
-  {keyName: '3', value: 0x5B},
-  {keyName: '4', value: 0x5C},
-  {keyName: '5', value: 0x5D},
-  {keyName: '6', value: 0x5E},
-  {keyName: '7', value: 0x5F},
-  {keyName: '8', value: 0x60},
-  {keyName: '9', value: 0x61},
-  {keyName: '0', value: 0x62},
-  {keyName: '.', value: 0x63}
-];
-
-const ControlKeyBoardKeyItem = [
-  {keyName: '~`', value: 0x35},
-  {keyName: '_-', value: 0x2D},
-  {keyName: '+=', value: 0x2E},
-  {keyName: '{[', value: 0x2F},
-  {keyName: ']}', value: 0x30},
-  {keyName: '|\\', value: 0x31},
-  {keyName: ':;', value: 0x33},
-  {keyName: '”’', value: 0x34},
-  {keyName: '<,', value: 0x36},
-  {keyName: '>.', value: 0x37},
-  {keyName: '?/', value: 0x38},
-  {keyName: 'Esc', value: 0x29},
-  {keyName: 'Tab', value: 0x2B},
-  {keyName: 'Back Space', value: 0x2A},
-  {keyName: 'Enter', value: 0x28},
-  {keyName: 'Space', value: 0x2C},
-  {keyName: 'Left Win', value: 0xE3},
-  {keyName: 'Right Win', value: 0xE7},
-  {keyName: 'Left Ctrl', value: 0xE0},
-  {keyName: 'Right Ctrl', value: 0xE4},
-  {keyName: 'Left Alt', value: 0xE2},
-  {keyName: 'Right Alt', value: 0xE6},
-  {keyName: 'Left Shift', value: 0xE1},
-  {keyName: 'Right Shift', value: 0xE5},
-  {keyName: 'Up', value: 0x52},
-  {keyName: 'Left', value: 0x50},
-  {keyName: 'Down', value: 0x51},
-  {keyName: 'Right', value: 0x4F},
-  {keyName: 'Print Screen', value: 0x46},
-  {keyName: 'Scroll Lock', value: 0x47},
-  {keyName: 'Pause', value: 0x48},
-  {keyName: 'Insert', value: 0x49},
-  {keyName: 'Home', value: 0x4A},
-  {keyName: 'Delete', value: 0x4C},
-  {keyName: 'End', value: 0x4D},
-  {keyName: 'Page Up', value: 0x4B},
-  {keyName: 'Page Down', value: 0x4E},
-  {keyName: 'Caps Lock', value: 0x39},
-  {keyName: 'Num Lock', value: 0x53}
-];
-
-
 
 
 // 当前选中的按钮
@@ -214,6 +53,11 @@ const handleButtonClick = (button: string) => {
     combineSelectKey.value = '';
     selectedButton.value = button;
     isShowButtonMenu.value = true;
+
+    //读取当前选择的键的配置
+    let selectKey: ButtonID = getButtonID(selectedButton.value)
+    const cmd = MouseCommandBuilder.readButtonConfig(selectKey)
+    sendDataToDevice(cmd)
   }
 };
 
@@ -231,6 +75,33 @@ const getOrder = (value: string): string | null => {
   const index = selectedOrder.value.indexOf(value);
   return index !== -1 ? `${index + 1}` : null;
 };
+
+const getOrderValue = (): number[] => {
+  let value = []
+  for (let selectedOrderKey in selectedOrder.value) {
+    const index = combinaKey.indexOf(selectedOrderKey)
+    switch (index) {
+      case 0:
+        value.push(0xE0)
+        break
+      case 1:
+        value.push(0xE1)
+
+        break
+      case 2:
+        value.push(0xE2)
+
+        break
+      case 3:
+        value.push(0xE3)
+        break
+    }
+  }
+
+  value.push(AllKeyBoardKeyEventKey.find(item => item[combineSelectKey.value])[combineSelectKey.value].value)
+  return value
+};
+
 // 处理复选框变化
 const handleCheckboxChange = (values: string[]) => {
   // 找出新增的值
@@ -260,6 +131,8 @@ const handleKeydown = (event: KeyboardEvent) => {
   // 获取按下的键值
   const key = event.key;
   combineSelectKey.value = key;
+
+
 };
 
 // 处理鼠标进入事件
@@ -289,15 +162,208 @@ const handleMacroBack = () => {
 };
 
 const macroList = ref([])
+const currentMacroIndex = ref(-1)
 const handleDeletMacro = (index: number) => {
-    macroList.value.splice(index, 1);
-    saveActionsListToLocalStorage(macroList.value)
+  macroList.value.splice(index, 1);
+  saveActionsListToLocalStorage(macroList.value)
 };
+
+const handleSetMacro = (index: number) => {
+  const macro = macroList.value.at(index)
+  currentMacroIndex.value = index
+  //todo 安装宏设置
+};
+
+
+const activeSystem = ref('');
+const activeKeyBoard = ref('');
+const activeTags = ref('系统按键');
+
+
+const handleData = (data: Uint8Array) => {
+  const [type, result] = ResponseParser.parse(Array.from(data))
+  if (type === ParamType.BUTTON) {
+    activeSystem.value = ''
+    activeKeyBoard.value = ''
+    activeTags.value = '系统按键'
+    switch (result.functionType) {
+      case KeyFunctionType.MOUSE:
+        // 鼠标功能相关处理
+        activeTags.value = '系统按键'
+        activeSystem.value = '0' + result.index
+        break;
+      case KeyFunctionType.PROFILE_CHANGE:
+        // 配置切换功能相关处理
+        activeTags.value = '系统按键'
+
+        activeSystem.value = '1' + result.index
+        break;
+      case KeyFunctionType.DPI_ACTION:
+        // DPI 功能相关处理
+        activeTags.value = '系统按键'
+
+        activeSystem.value = '2' + result.index
+        break;
+      case KeyFunctionType.WHEEL:
+        // 滚轮功能相关处理
+        activeTags.value = '系统按键'
+
+        activeSystem.value = '3' + result.index
+        break;
+      case KeyFunctionType.MULTIMEDIA:
+        // 多媒体功能相关处理
+        activeTags.value = '系统按键'
+
+        activeSystem.value = '4' + result.index
+        break;
+      case KeyFunctionType.ALPHANUMERIC:
+        // 字母数字键功能相关处理
+        activeTags.value = '键盘按键'
+
+        activeKeyBoard.value = '0' + result.index
+        break;
+      case KeyFunctionType.FUNCTION_KEY:
+        // 功能键相关处理
+        activeTags.value = '键盘按键'
+
+        activeKeyBoard.value = '1' + result.index
+        break;
+      case KeyFunctionType.NUMPAD:
+        // 数字小键盘功能相关处理
+        activeTags.value = '键盘按键'
+        activeKeyBoard.value = '2' + result.index
+        break;
+      case KeyFunctionType.CONTROL_KEY:
+        // 控制键功能相关处理
+        activeTags.value = '键盘按键'
+        activeKeyBoard.value = '3' + result.index
+        break;
+      case KeyFunctionType.BURST_FIRE:
+        // 连发功能相关处理
+        activeTags.value = '特殊按键'
+        const value = result.value
+        const diff = value[0]
+        const times = value[1]
+        hybetweenTime.value = diff
+        hyTimes.value = times
+        break;
+      case KeyFunctionType.COMBO_KEY:
+        // 组合键功能相关处理
+        activeTags.value = '特殊按键'
+
+        break;
+      case KeyFunctionType.MACRO:
+        // 宏功能相关处理
+        activeTags.value = '宏设置'
+        currentMacroIndex.value = result.value[0]
+        break;
+      default:
+        // 默认处理逻辑
+        break;
+    }
+
+
+  }
+}
+useHIDListener(handleData);
 
 // 生命周期钩子
 onMounted(() => {
   macroList.value = loadActionsListFromLocalStorage()
+
 })
+
+const getButtonID = (key): ButtonID => {
+  let selectKey: ButtonID
+  switch (key) {
+    case '左键':
+      selectKey = ButtonID.LEFT;
+      break;
+    case '右键':
+      selectKey = ButtonID.RIGHT;
+      break;
+    case '中键':
+      selectKey = ButtonID.MIDDLE;
+      break;
+    case '前进键':
+      selectKey = ButtonID.FORWARD;
+      break;
+    case '后退键':
+      selectKey = ButtonID.BACKWARD;
+      break;
+  }
+  return selectKey
+}
+
+
+const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
+  if (selectedButton.value === '') return
+  let selectKey: ButtonID = getButtonID(selectedButton.value)
+
+  let keytype: KeyFunctionType
+  //发送修改到
+  switch (type) {
+    case '鼠标按键':
+      keytype = KeyFunctionType.MOUSE
+      break;
+    case '板载配置':
+      keytype = KeyFunctionType.PROFILE_CHANGE
+
+      break;
+
+    case 'DPI切换':
+      keytype = KeyFunctionType.DPI_ACTION
+
+      // 在这里添加处理DPI切换的逻辑
+      break;
+    case '鼠标滚轮':
+      keytype = KeyFunctionType.WHEEL
+
+      break;
+    case '多媒体':
+      keytype = KeyFunctionType.MULTIMEDIA
+
+      break;
+    case '字母和数字键':
+      keytype = KeyFunctionType.ALPHANUMERIC
+
+      break;
+    case 'F区功能键':
+      keytype = KeyFunctionType.FUNCTION_KEY
+      break;
+    case '数字小键盘键':
+      keytype = KeyFunctionType.NUMPAD
+
+      break;
+    case '控制键与字符键':
+      keytype = KeyFunctionType.CONTROL_KEY
+      break;
+    case '火力键':
+      keytype = KeyFunctionType.BURST_FIRE
+      break;
+    case '组合键':
+      keytype = KeyFunctionType.COMBO_KEY
+      break;
+    default:
+      console.warn(`未知的类型: ${type}`);
+      break;
+  }
+
+
+  const cmd = MouseCommandBuilder.setButtonMapping(
+      selectKey,
+      keytype,
+      index, // 播放器
+      keyItem.value
+  );
+
+  sendDataToDevice(cmd)
+
+  ElMessage({
+    message: '设置成功',
+    type: 'success',
+  })
+}
 </script>
 <template>
   <div>
@@ -308,11 +374,15 @@ onMounted(() => {
           </h5>
           <el-button type="primary" plain class="" @click="isShowButtonMenu=false;selectedButton=''">→</el-button>
         </div>
-        <el-tabs type="border-card">
-          <el-tab-pane label="系统按键">
+        <!--        <div class="mb-2">-->
+        <!--          <el-text>当前分配:{{}}</el-text>-->
+        <!--        </div>-->
+        <el-tabs type="border-card" :model-value="activeTags">
+          <el-tab-pane label="系统按键" name="系统按键">
             <el-menu
                 class="el-menu-vertical-demo"
                 :unique-opened="true"
+                :default-active="activeSystem"
                 @open=""
                 @close=""
             >
@@ -321,7 +391,9 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">鼠标按键</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in MouseKeyItem" :index="'0'+index"><span>{{ keyItem.keyName }}</span>
+                  <el-menu-item v-for="(keyItem,index) in MouseKeyItem" :index="'0'+index"
+                                @click="handleOnMenuClick(keyItem,'鼠标按键',index)">
+                    <span>{{ keyItem.keyName }}</span>
                   </el-menu-item>
                 </el-sub-menu>
 
@@ -329,7 +401,9 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">板载配置</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in ProfileKeyItem" :index="'1'+index"><span>{{ keyItem.keyName }}</span>
+                  <el-menu-item v-for="(keyItem,index) in ProfileKeyItem" :index="'1'+index"
+                                @click="handleOnMenuClick(keyItem,'板载配置',index)">
+                    <span>{{ keyItem.keyName }}</span>
                   </el-menu-item>
                 </el-sub-menu>
 
@@ -337,7 +411,9 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">DPI切换</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in DPIKeyItem" :index="'2'+index"><span>{{ keyItem.keyName }}</span>
+                  <el-menu-item v-for="(keyItem,index) in DPIKeyItem" :index="'2'+index"
+                                @click="handleOnMenuClick(keyItem,'DPI切换',index)">
+                    <span>{{ keyItem.keyName }}</span>
                   </el-menu-item>
                 </el-sub-menu>
 
@@ -345,7 +421,9 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">鼠标滚轮</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in ScrollKeyItem" :index="'3'+index"><span>{{ keyItem.keyName }}</span>
+                  <el-menu-item v-for="(keyItem,index) in ScrollKeyItem" :index="'3'+index"
+                                @click="handleOnMenuClick(keyItem,'鼠标滚轮',index)">
+                    <span>{{ keyItem.keyName }}</span>
                   </el-menu-item>
                 </el-sub-menu>
 
@@ -353,17 +431,19 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">多媒体</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in ConsumerKeyItem" :index="'4'+index"><span>{{ keyItem.keyName }}</span>
+                  <el-menu-item v-for="(keyItem,index) in ConsumerKeyItem" :index="'4'+index"
+                                @click="handleOnMenuClick(keyItem,'多媒体',index)"><span>{{ keyItem.keyName }}</span>
                   </el-menu-item>
                 </el-sub-menu>
 
               </el-menu-item-group>
             </el-menu>
           </el-tab-pane>
-          <el-tab-pane label="键盘按键">
+          <el-tab-pane label="键盘按键" name="键盘按键">
             <el-menu
                 class="el-menu-vertical-demo"
                 :unique-opened="true"
+                :default-active="activeKeyBoard"
                 @open=""
                 @close=""
             >
@@ -372,7 +452,10 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">字母和数字键</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in KeyBoardKeyItem" :index="'0'+index"><span>{{ keyItem.keyName }}</span>
+                  <el-menu-item v-for="(keyItem,index) in KeyBoardKeyItem" :index="'0'+index"
+                                @click="handleOnMenuClick(keyItem,'字母和数字键',index)"><span>{{
+                      keyItem.keyName
+                    }}</span>
                   </el-menu-item>
                 </el-sub-menu>
 
@@ -380,7 +463,8 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">F区功能键</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in FKeyBoardKeyItem" :index="'1'+index"><span>{{
+                  <el-menu-item v-for="(keyItem,index) in FKeyBoardKeyItem" :index="'1'+index"
+                                @click="handleOnMenuClick(keyItem,'F区功能键',index)"><span>{{
                       keyItem.keyName
                     }}</span>
                   </el-menu-item>
@@ -390,7 +474,8 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">数字小键盘键</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in NumPadKeyBoardKeyItem" :index="'2'+index"><span>{{
+                  <el-menu-item v-for="(keyItem,index) in NumPadKeyBoardKeyItem" :index="'2'+index"
+                                @click="handleOnMenuClick(keyItem,'数字小键盘键',index)"><span>{{
                       keyItem.keyName
                     }}</span>
                   </el-menu-item>
@@ -400,7 +485,8 @@ onMounted(() => {
                   <template #title>
                     <span class="font-bold">控制键与字符键</span>
                   </template>
-                  <el-menu-item v-for="(keyItem,index) in ControlKeyBoardKeyItem" :index="'3'+index"><span>{{
+                  <el-menu-item v-for="(keyItem,index) in ControlKeyBoardKeyItem" :index="'3'+index"
+                                @click="handleOnMenuClick(keyItem,'控制键与字符键',index)"><span>{{
                       keyItem.keyName
                     }}</span>
                   </el-menu-item>
@@ -409,7 +495,7 @@ onMounted(() => {
               </el-menu-item-group>
             </el-menu>
           </el-tab-pane>
-          <el-tab-pane label="特殊按键">
+          <el-tab-pane label="特殊按键" name="特殊按键">
             <el-card class="box-card">
               <template #header>
                 <div class="card-header">
@@ -436,7 +522,9 @@ onMounted(() => {
                   <el-text type="warning">点击次数为0时，按下按键一直发，松开按键结束</el-text>
                 </div>
                 <div>
-                  <el-button type="primary" plain>保存并选择</el-button>
+                  <el-button type="primary" plain
+                             @click="handleOnMenuClick({value:[hybetweenTime,hyTimes]},'火力键',0)">保存并选择
+                  </el-button>
                 </div>
               </div>
             </el-card>
@@ -464,17 +552,20 @@ onMounted(() => {
                             readonly></el-input>
                 </div>
                 <div>
-                  <el-button type="primary" plain>保存并选择</el-button>
+                  <el-button type="primary" plain @click="handleOnMenuClick({value:getOrderValue()},'组合键',0)">
+                    保存并选择
+                  </el-button>
                   <el-button type="text" plain @click="combineSelectKey=''">清除</el-button>
                 </div>
               </div>
             </el-card>
           </el-tab-pane>
-          <el-tab-pane label="宏设置">
+          <el-tab-pane label="宏设置" name="宏设置">
             <el-card class="box-card">
               <template #header>
                 <div class="card-header flex justify-between">
                   <span>宏列表:</span>
+                  <span>当前设置编号{{ currentMacroIndex + 1 }}</span>
                   <el-button type="success" size="default" @click="isShowMacro=true">新建宏</el-button>
                 </div>
               </template>
@@ -482,8 +573,8 @@ onMounted(() => {
               <div class="flex justify-between" v-if="macroList.length > 0 " v-for="(item,index) in macroList">
                 {{ '宏编号 ' + (index + 1) }}
                 <div>
-                <el-button type="primary">启用</el-button>
-                <el-button type="danger" @click="handleDeletMacro(index)">删除</el-button>
+                  <el-button type="primary" @click="handleSetMacro(index)">启用</el-button>
+                  <el-button type="danger" @click="handleDeletMacro(index)">删除</el-button>
                 </div>
               </div>
             </el-card>
