@@ -81,7 +81,7 @@ onMounted(() => {
       :radial-gradient="true">
   </AuroraBackground>
 
-    <el-container class="z-50 overflow-auto">
+    <el-container class="z-50 overflow-hidden h-screen">
       <el-header>
           <el-page-header class="sm:text-2xl" @back="goBack">
             <template #content>
@@ -90,7 +90,7 @@ onMounted(() => {
           </el-page-header>
       </el-header>
 
-      <el-container class="z-50">
+      <el-container class="z-50 flex h-full">
 
         <el-aside class="bg-white rounded-md w-44">
           <div class="m-4 text-lg font-bold">配置列表</div>
@@ -108,7 +108,7 @@ onMounted(() => {
 
         </el-aside>
 
-        <el-main class="el-main-0">
+        <el-main class="el-main-0 flex-1 overflow-auto ">
           <el-container direction="vertical">
             <div class="join join-horizontal ml-10 mr-10">
               <el-button-group class="flex flex-1 w-10/12">

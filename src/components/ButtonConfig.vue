@@ -21,6 +21,7 @@ import {
   NumPadKeyBoardKeyItem, AllKeyBoardKeyEventKey
 } from "@/components/hidcode.ts";
 import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
+import {ElMessage} from "element-plus";
 
 const props = defineProps<{
   hard?: boolean; // should it interact with hardware or just dummy
@@ -368,7 +369,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 <template>
   <div>
     <el-row class="flex flex-row justify-center">
-      <el-col :span="11" v-if="isShowButtonMenu">
+      <el-col :span="11" v-if="isShowButtonMenu" class="max-h-screen">
         <div class="flex justify-between mb-1">
           <h5 class="mb-2">分配功能键
           </h5>
@@ -379,69 +380,71 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
         <!--        </div>-->
         <el-tabs type="border-card" :model-value="activeTags">
           <el-tab-pane label="系统按键" name="系统按键">
-            <el-menu
-                class="el-menu-vertical-demo"
-                :unique-opened="true"
-                :default-active="activeSystem"
-                @open=""
-                @close=""
-            >
-              <el-menu-item-group>
-                <el-sub-menu index="0">
-                  <template #title>
-                    <span class="font-bold">鼠标按键</span>
-                  </template>
-                  <el-menu-item v-for="(keyItem,index) in MouseKeyItem" :index="'0'+index"
-                                @click="handleOnMenuClick(keyItem,'鼠标按键',index)">
-                    <span>{{ keyItem.keyName }}</span>
-                  </el-menu-item>
-                </el-sub-menu>
+            <div class="menu-height overflow-y-auto">
+              <el-menu
+                  class="el-menu-vertical-demo"
+                  :unique-opened="true"
+                  :default-active="activeSystem"
+                  @open=""
+                  @close=""
+              >
+                <el-menu-item-group>
+                  <el-sub-menu index="0">
+                    <template #title>
+                      <span class="font-bold">鼠标按键</span>
+                    </template>
+                    <el-menu-item v-for="(keyItem,index) in MouseKeyItem" :index="'0'+index"
+                                  @click="handleOnMenuClick(keyItem,'鼠标按键',index)">
+                      <span>{{ keyItem.keyName }}</span>
+                    </el-menu-item>
+                  </el-sub-menu>
 
-                <el-sub-menu index="1">
-                  <template #title>
-                    <span class="font-bold">板载配置</span>
-                  </template>
-                  <el-menu-item v-for="(keyItem,index) in ProfileKeyItem" :index="'1'+index"
-                                @click="handleOnMenuClick(keyItem,'板载配置',index)">
-                    <span>{{ keyItem.keyName }}</span>
-                  </el-menu-item>
-                </el-sub-menu>
+                  <el-sub-menu index="1">
+                    <template #title>
+                      <span class="font-bold">板载配置</span>
+                    </template>
+                    <el-menu-item v-for="(keyItem,index) in ProfileKeyItem" :index="'1'+index"
+                                  @click="handleOnMenuClick(keyItem,'板载配置',index)">
+                      <span>{{ keyItem.keyName }}</span>
+                    </el-menu-item>
+                  </el-sub-menu>
 
-                <el-sub-menu index="2">
-                  <template #title>
-                    <span class="font-bold">DPI切换</span>
-                  </template>
-                  <el-menu-item v-for="(keyItem,index) in DPIKeyItem" :index="'2'+index"
-                                @click="handleOnMenuClick(keyItem,'DPI切换',index)">
-                    <span>{{ keyItem.keyName }}</span>
-                  </el-menu-item>
-                </el-sub-menu>
+                  <el-sub-menu index="2">
+                    <template #title>
+                      <span class="font-bold">DPI切换</span>
+                    </template>
+                    <el-menu-item v-for="(keyItem,index) in DPIKeyItem" :index="'2'+index"
+                                  @click="handleOnMenuClick(keyItem,'DPI切换',index)">
+                      <span>{{ keyItem.keyName }}</span>
+                    </el-menu-item>
+                  </el-sub-menu>
 
-                <el-sub-menu index="3">
-                  <template #title>
-                    <span class="font-bold">鼠标滚轮</span>
-                  </template>
-                  <el-menu-item v-for="(keyItem,index) in ScrollKeyItem" :index="'3'+index"
-                                @click="handleOnMenuClick(keyItem,'鼠标滚轮',index)">
-                    <span>{{ keyItem.keyName }}</span>
-                  </el-menu-item>
-                </el-sub-menu>
+                  <el-sub-menu index="3">
+                    <template #title>
+                      <span class="font-bold">鼠标滚轮</span>
+                    </template>
+                    <el-menu-item v-for="(keyItem,index) in ScrollKeyItem" :index="'3'+index"
+                                  @click="handleOnMenuClick(keyItem,'鼠标滚轮',index)">
+                      <span>{{ keyItem.keyName }}</span>
+                    </el-menu-item>
+                  </el-sub-menu>
 
-                <el-sub-menu index="4">
-                  <template #title>
-                    <span class="font-bold">多媒体</span>
-                  </template>
-                  <el-menu-item v-for="(keyItem,index) in ConsumerKeyItem" :index="'4'+index"
-                                @click="handleOnMenuClick(keyItem,'多媒体',index)"><span>{{ keyItem.keyName }}</span>
-                  </el-menu-item>
-                </el-sub-menu>
+                  <el-sub-menu index="4">
+                    <template #title>
+                      <span class="font-bold">多媒体</span>
+                    </template>
+                    <el-menu-item v-for="(keyItem,index) in ConsumerKeyItem" :index="'4'+index"
+                                  @click="handleOnMenuClick(keyItem,'多媒体',index)"><span>{{ keyItem.keyName }}</span>
+                    </el-menu-item>
+                  </el-sub-menu>
 
-              </el-menu-item-group>
-            </el-menu>
+                </el-menu-item-group>
+              </el-menu>
+            </div>
           </el-tab-pane>
-          <el-tab-pane label="键盘按键" name="键盘按键">
+          <el-tab-pane label="键盘按键" name="键盘按键" >
             <el-menu
-                class="el-menu-vertical-demo"
+                class="el-menu-vertical-demo menu-height overflow-y-auto"
                 :unique-opened="true"
                 :default-active="activeKeyBoard"
                 @open=""
@@ -560,7 +563,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
               </div>
             </el-card>
           </el-tab-pane>
-          <el-tab-pane label="宏设置" name="宏设置">
+          <el-tab-pane label="宏设置" name="宏设置" class="menu-height overflow-y-auto">
             <el-card class="box-card">
               <template #header>
                 <div class="card-header flex justify-between">
@@ -716,5 +719,8 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
   width: 100%;
   min-height: 100%;
   height: 100%;
+}
+.menu-height{
+  max-height: 450px;
 }
 </style>
