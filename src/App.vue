@@ -61,33 +61,9 @@ window.addEventListener("unhandledrejection", (event) => {
                    @device-not-created="connected = true; hard = false;"/>
     <DeviceMain v-else :hard="hard" :currentDevice="currentDevice" @back="connected = false"/>
   </div>
-  <div class="h-96"></div>
-  <!--  <footer>-->
-  <!--    <div class="flex flex-row gap-2 items-baseline">-->
-  <!--      <button class="btn btn-sm" @click="showConsole = !showConsole; if(logConsole) {logConsole.scrollToBottom()}">-->
-  <!--        Console-->
-  <!--      </button>-->
-  <!--      <LogGlance :messages="logs"></LogGlance>-->
-  <!--    </div>-->
-  <!--    <LogConsole v-show="showConsole" ref="logConsole" :messages="logs"/>-->
-  <!--  </footer>-->
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
 
 footer {
   position: fixed;
