@@ -498,7 +498,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
               </el-menu-item-group>
             </el-menu>
           </el-tab-pane>
-          <el-tab-pane label="特殊按键" name="特殊按键">
+          <el-tab-pane label="特殊按键" name="特殊按键" class="menu-height overflow-y-auto">
             <el-card class="box-card">
               <template #header>
                 <div class="card-header">

@@ -197,7 +197,7 @@ onMounted(() => {
 
 <style scoped>
 .btn-active {
-  background-color: dodgerblue;
+  background-color: #409EFF;
   color: white !important;
 }
 
@@ -211,7 +211,7 @@ onMounted(() => {
 }
 
 .el-menu-item.is-active {
-  background-color: #1e90ff;
+  background-color: #409EFF;
   color: white;
 }
 
