@@ -55,7 +55,7 @@ window.addEventListener("unhandledrejection", (event) => {
 </script>
 
 <template>
-  <div>
+  <div class="global-font">
     <ConnectDevice v-if="!connected"
                    @device-created="(payload) => {connected = true; hard = false;currentDevice = payload;setHIDDevice(currentDevice)}"
                    @device-not-created="connected = true; hard = false;"/>
@@ -71,5 +71,9 @@ footer {
   bottom: 0;
   padding: 1em 0;
   width: 100%;
+}
+
+.global-font{
+  font-family: "PingFang SC",sans-serif;
 }
 </style>

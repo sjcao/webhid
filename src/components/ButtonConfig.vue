@@ -566,7 +566,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
               <template #header>
                 <div class="card-header flex justify-between">
                   <span>宏列表:</span>
-                  <span>当前设置编号{{ currentMacroIndex + 1 }}</span>
+<!--                  <span>当前设置编号{{ currentMacroIndex + 1 }}</span>-->
                   <el-button type="success" size="default" @click="isShowMacro=true">新建宏</el-button>
                 </div>
               </template>
@@ -574,7 +574,8 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
               <div class="flex justify-between" v-if="macroList.length > 0 " v-for="(item,index) in macroList">
                 {{ '宏编号 ' + (index + 1) }}
                 <div>
-                  <el-button type="primary" @click="handleSetMacro(index)">启用</el-button>
+                  <el-checkbox v-if="currentMacroIndex === index" :checked="true" label="已启用" size="large" />
+                  <el-button type="primary" @click="handleSetMacro(index)" class="ml-2">启用</el-button>
                   <el-button type="danger" @click="handleDeletMacro(index)">删除</el-button>
                 </div>
               </div>
