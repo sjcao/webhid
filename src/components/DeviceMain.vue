@@ -10,8 +10,8 @@ import LedConfig from './LedConfig.vue';
 import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
 import {AuroraBackground} from "@/components/ui/aurora-background";
 import {MouseCommandBuilder, ParamType, ResponseParser} from "@/components/command.ts";
-import {SwitchFilled, Document,InfoFilled,HomeFilled,Opportunity,Tools} from '@element-plus/icons-vue'
-
+import {Switch, SwitchFilled, Document, InfoFilled, HomeFilled, Opportunity, Tools} from '@element-plus/icons-vue'
+import {useDark, useToggle} from '@vueuse/core'
 
 const emit = defineEmits(['back']);
 
@@ -55,6 +55,13 @@ const goBack = () => {
   emit("back");
 }
 
+const isDark = useDark({});
+
+const toggleTheme = useToggle(isDark)
+
+console.log('isDark:', isDark.value);
+
+
 const handleSelectProfile = (index: number) => {
   activeProfile.value = index
   //切换
@@ -79,22 +86,21 @@ onMounted(() => {
 })
 </script>
 <template>
-  <AuroraBackground class="fixed top-0 left-0 w-full h-full z-0"
+  <AuroraBackground class="fixed top-0 left-0 w-full h-full z-0 "
                     :radial-gradient="true">
   </AuroraBackground>
 
   <el-container class="z-50 overflow-hidden h-full w-full">
     <el-header>
-      <div class="top-0 left-0 flex flex-row">
+      <div class="relative top-0 left-0 flex flex-row">
         <el-page-header class="sm:text-2xl" @back="goBack">
           <template #content>
             <span
                 class="text-center text-xl text-black sm:mb-20 sm:text-2xl dark:text-white"> WebHID 鼠标配置工具 </span>
           </template>
         </el-page-header>
-        <el-icon :size="31">
-          <SwitchFilled/>
-        </el-icon>
+        <el-button :icon="Switch" @click="">切换语言</el-button>
+        <el-button :icon="SwitchFilled" @click="toggleTheme()">{{ isDark ? '亮色模式' : '暗色模式' }}</el-button>
       </div>
     </el-header>
 
