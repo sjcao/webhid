@@ -380,9 +380,8 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
         <!--        </div>-->
         <el-tabs type="border-card" :model-value="activeTags">
           <el-tab-pane label="系统按键" name="系统按键">
-            <div class="menu-height overflow-y-auto">
               <el-menu
-                  class="el-menu-vertical-demo"
+                  class="el-menu-vertical-demo menu-height overflow-y-auto"
                   :unique-opened="true"
                   :default-active="activeSystem"
                   @open=""
@@ -440,7 +439,6 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                 </el-menu-item-group>
               </el-menu>
-            </div>
           </el-tab-pane>
           <el-tab-pane label="键盘按键" name="键盘按键" >
             <el-menu
@@ -498,7 +496,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
               </el-menu-item-group>
             </el-menu>
           </el-tab-pane>
-          <el-tab-pane label="特殊按键" name="特殊按键" class="menu-height overflow-y-auto">
+          <el-tab-pane label="特殊按键" name="特殊按键" class="max-h-fit overflow-y-auto">
             <el-card class="box-card">
               <template #header>
                 <div class="card-header">
@@ -721,6 +719,6 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
   height: 100%;
 }
 .menu-height{
-  max-height: 450px;
+  max-height: 460px;
 }
 </style>
