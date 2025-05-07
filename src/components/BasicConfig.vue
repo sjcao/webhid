@@ -215,11 +215,11 @@ onMounted(() => {
             />
 
             <div class="mt-10">
-              <el-radio-group v-model="radioIndex" class="flex justify-center" @change="handleRadioChage">
-                <el-radio :label=0 size="large" border class="w-24">400</el-radio>
-                <el-radio :label=1 size="large" border class="w-24">800</el-radio>
-                <el-radio :label=2 size="large" border class="w-24">1600</el-radio>
-                <el-radio :label=3 size="large" border class="w-24 ">3200</el-radio>
+              <el-radio-group v-model="radioIndex" class="flex justify-center " @change="handleRadioChage">
+                <el-radio :label=0 size="large" border class="w-24 dark:text-white">400</el-radio>
+                <el-radio :label=1 size="large" border class="w-24 dark:text-white">800</el-radio>
+                <el-radio :label=2 size="large" border class="w-24 dark:text-white">1600</el-radio>
+                <el-radio :label=3 size="large" border class="w-24  dark:text-white">3200</el-radio>
               </el-radio-group>
             </div>
 

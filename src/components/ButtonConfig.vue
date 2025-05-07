@@ -22,12 +22,15 @@ import {
 } from "@/components/hidcode.ts";
 import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
 import {ElMessage} from "element-plus";
+import {useDark} from "@vueuse/core";
 
 const props = defineProps<{
   hard?: boolean; // should it interact with hardware or just dummy
   activeProfile: number;
   currentDevice?: HIDDevice;
 }>();
+
+const isDark = useDark({});
 
 const imgMouse = new URL(`/ic-moouse.png`, import.meta.url).href
 
@@ -374,24 +377,29 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
           <div class="flex justify-between mb-1">
             <h5 class="mb-2">分配功能键
             </h5>
-            <el-button type="primary" plain class="" @click="isShowButtonMenu=false;selectedButton=''">→</el-button>
+            <el-button :type="isDark?'':'primary'" plain class="" @click="isShowButtonMenu=false;selectedButton=''">→</el-button>
           </div>
           <!--        <div class="mb-2">-->
           <!--          <el-text>当前分配:{{}}</el-text>-->
           <!--        </div>-->
-          <el-tabs type="border-card" :model-value="activeTags">
-            <el-tab-pane label="系统按键" name="系统按键">
+          <el-tabs :type="isDark?'card':'border-card'"  class="dark:bg-zinc-900 dark:text-white" :model-value="activeTags">
+            <el-tab-pane  name="系统按键" class="dark:bg-zinc-900">
+              <template #label>
+                <span class="dark:text-white">系统按键</span>
+              </template>
               <el-menu
-                  class="el-menu-vertical-demo menu-height overflow-y-auto"
+                  class="el-menu-vertical-demo menu-height overflow-y-auto dark:bg-zinc-900"
                   :unique-opened="true"
                   :default-active="activeSystem"
+                  :text-color="isDark?'#FFF':''"
+                  :background-color="isDark?'#18181B':''"
                   @open=""
                   @close=""
               >
                 <el-menu-item-group>
                   <el-sub-menu index="0">
                     <template #title>
-                      <span class="font-bold">鼠标按键</span>
+                      <span class="font-bold dark:text-white">鼠标按键</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in MouseKeyItem" :index="'0'+index"
                                   @click="handleOnMenuClick(keyItem,'鼠标按键',index)">
@@ -401,7 +409,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="1">
                     <template #title>
-                      <span class="font-bold">板载配置</span>
+                      <span class="font-bold dark:text-white">板载配置</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ProfileKeyItem" :index="'1'+index"
                                   @click="handleOnMenuClick(keyItem,'板载配置',index)">
@@ -411,7 +419,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="2">
                     <template #title>
-                      <span class="font-bold">DPI切换</span>
+                      <span class="font-bold dark:text-white">DPI切换</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in DPIKeyItem" :index="'2'+index"
                                   @click="handleOnMenuClick(keyItem,'DPI切换',index)">
@@ -421,7 +429,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="3">
                     <template #title>
-                      <span class="font-bold">鼠标滚轮</span>
+                      <span class="font-bold dark:text-white">鼠标滚轮</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ScrollKeyItem" :index="'3'+index"
                                   @click="handleOnMenuClick(keyItem,'鼠标滚轮',index)">
@@ -431,7 +439,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="4">
                     <template #title>
-                      <span class="font-bold">多媒体</span>
+                      <span class="font-bold dark:text-white">多媒体</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ConsumerKeyItem" :index="'4'+index"
                                   @click="handleOnMenuClick(keyItem,'多媒体',index)"><span>{{ keyItem.keyName }}</span>
@@ -441,13 +449,18 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                 </el-menu-item-group>
               </el-menu>
             </el-tab-pane>
-            <el-tab-pane label="键盘按键" name="键盘按键">
+            <el-tab-pane name="键盘按键">
+              <template #label>
+                <span class="dark:text-white">键盘按键</span>
+              </template>
               <el-menu
                   class="el-menu-vertical-demo menu-height overflow-y-auto"
                   :unique-opened="true"
                   :default-active="activeKeyBoard"
                   @open=""
                   @close=""
+                  :text-color="isDark?'#FFF':''"
+                  :background-color="isDark?'#18181B':''"
               >
                 <el-menu-item-group>
                   <el-sub-menu index="0">
@@ -497,27 +510,30 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                 </el-menu-item-group>
               </el-menu>
             </el-tab-pane>
-            <el-tab-pane label="特殊按键" name="特殊按键" class="max-h-fit overflow-y-auto">
-              <el-card class="box-card">
+            <el-tab-pane name="特殊按键" class="max-h-fit overflow-y-auto">
+              <template #label>
+                <span class="dark:text-white">特殊按键</span>
+              </template>
+              <el-card class="box-card dark:bg-zinc-900 dark:text-white">
                 <template #header>
-                  <div class="card-header">
+                  <div class="card-header dark:text-white">
                     <span>火力键</span>
                   </div>
                 </template>
-                <div class="flex flex-col justify-center items-center gap-2">
+                <div class="flex flex-col justify-center items-center gap-2 ">
                   <div>
-                    <el-text>根据设置的间隔和次数持续点击左键</el-text>
+                    <el-text class="dark:text-white">根据设置的间隔和次数持续点击左键</el-text>
                   </div>
                   <div>
                     <div>
-                      <el-text>点击间隔:</el-text>
-                      <el-input-number size="default" v-model="hybetweenTime" :min="0"></el-input-number>
-                      <el-text>ms</el-text>
+                      <el-text class="dark:text-white">点击间隔:</el-text>
+                      <el-input-number class="dark:text-white" size="default" v-model="hybetweenTime" :min="0"></el-input-number>
+                      <el-text class="dark:text-white">ms</el-text>
                     </div>
                     <div class="mt-2">
-                      <el-text>点击次数:</el-text>
-                      <el-input-number size="default" v-model="hyTimes" :min="0"></el-input-number>
-                      <el-text>次</el-text>
+                      <el-text class="dark:text-white">点击次数:</el-text>
+                      <el-input-number  class="dark:text-white" size="default" v-model="hyTimes" :min="0"></el-input-number>
+                      <el-text class="dark:text-white" >次</el-text>
                     </div>
                   </div>
                   <div>
@@ -531,7 +547,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                 </div>
               </el-card>
 
-              <el-card class="box-card mt-2">
+              <el-card class="box-card mt-2  dark:bg-zinc-900 dark:text-white">
                 <template #header>
                   <div class="card-header">
                     <span>组合键</span>
@@ -547,7 +563,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                         </el-tag>
                       </el-checkbox-button>
                     </el-checkbox-group>
-                    <el-text>+</el-text>
+                    <el-text class="dark:text-white">+</el-text>
                     <el-input class="1" ref="inputRef" placeholder="请输入键盘按键" v-model="combineSelectKey"
                               @keydown="handleKeydown" @mouseenter="handleMouseEnter"
                               @mouseleave="handleMouseLeave"
@@ -562,17 +578,20 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                 </div>
               </el-card>
             </el-tab-pane>
-            <el-tab-pane label="宏设置" name="宏设置" class="menu-height overflow-y-auto">
-              <el-card class="box-card">
+            <el-tab-pane name="宏设置" class="menu-height overflow-y-auto dark:bg-zinc-900">
+              <template #label>
+                <span class="dark:text-white">宏设置</span>
+              </template>
+              <el-card class="box-card dark:bg-zinc-900">
                 <template #header>
                   <div class="card-header flex justify-between">
-                    <span>宏列表:</span>
+                    <span class="dark:text-white" >宏列表:</span>
                     <!--                  <span>当前设置编号{{ currentMacroIndex + 1 }}</span>-->
                     <el-button type="success" size="default" @click="isShowMacro=true">新建宏</el-button>
                   </div>
                 </template>
                 <el-empty :image-size="100" v-if="macroList.length===0"/>
-                <div class="flex justify-between" v-if="macroList.length > 0 " v-for="(item,index) in macroList">
+                <div class="flex justify-between dark:text-white mt-2" v-if="macroList.length > 0 " v-for="(item,index) in macroList">
                   {{ '宏编号 ' + (index + 1) }}
                   <div>
                     <el-checkbox v-if="currentMacroIndex === index" :checked="true" label="已启用" size="large"/>
@@ -590,7 +609,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
       <el-col :span="12">
         <CardContainer>
           <CardBody
-              class="group/card relative size-auto rounded-xl border border-black/[0.1] bg-gray-50 p-6 sm:w-[19rem] dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]"
+              class="group/card relative size-auto rounded-xl border border-black/[0.1] bg-gray-50 p-6 sm:w-[19rem] dark:border-white/[0.2] dark:bg-zinc-900 dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]"
           >
             <CardItem
                 :translate-z="50"
@@ -613,7 +632,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                 <el-button
                     class="absolute top-button-right   px-4 py-2 rounded-md"
                     @click="handleButtonClick('右键')"
-                    :type="selectedButton === '右键' ? 'warning' : 'primary'"
+                    :type="selectedButton === '右键' ? 'warning' : isDark?'':'primary'"
                     :plain="selectedButton!=='右键'"
                 >
                   右键
@@ -621,13 +640,13 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                 <el-button
                     class="absolute top-button-mid left-1/2  px-4 py-2 rounded-md"
                     @click="handleButtonClick('中键')"
-                    :type="selectedButton === '中键' ? 'warning' : 'primary'"
+                    :type="selectedButton === '中键' ? 'warning' : isDark?'': 'primary'"
                     :plain="selectedButton!=='中键'"
                 >
                   中键
                 </el-button>
                 <el-button
-                    :type="selectedButton === '左键' ? 'warning' : 'primary'"
+                    :type="selectedButton === '左键' ? 'warning' : isDark?'': 'primary'"
                     class="absolute top-button-left  px-4 py-2 rounded-md"
                     @click="handleButtonClick('左键')"
                     :plain="selectedButton!=='左键'"
@@ -638,7 +657,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                 <el-button
                     class="absolute top-button-next   px-4 py-2 rounded-md"
                     @click="handleButtonClick('前进键')"
-                    :type="selectedButton === '前进键' ? 'warning' : 'primary'"
+                    :type="selectedButton === '前进键' ? 'warning': isDark?'' : 'primary'"
                     :plain="selectedButton!=='前进键'"
                 >
                   前进键
@@ -647,7 +666,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                 <el-button
                     class="absolute top-button-back   px-4 py-2 rounded-md"
                     @click="handleButtonClick('后退键')"
-                    :type="selectedButton === '后退键' ? 'warning' : 'primary'"
+                    :type="selectedButton === '后退键' ? 'warning' : isDark?'': 'primary'"
                     :plain="selectedButton!=='后退键'"
                 >
                   后退键
@@ -666,8 +685,9 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
       title="提示"
       width="30%"
       align-center
+      class="dark:bg-zinc-900 dark:text-warning"
   >
-    <span>当前只有一个左键改了后可能无法点击</span>
+    <span class="dark:text-warning">当前只有一个左键改了后可能无法点击</span>
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="leftDialogVisible = false">取消</el-button>
@@ -678,7 +698,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
     </template>
   </el-dialog>
 
-  <el-drawer ref="elDrawerMacro" v-model="isShowMacro" :show-close="false" class="demo-drawer" :size="'96%'"
+  <el-drawer ref="elDrawerMacro" v-model="isShowMacro" :show-close="false" class="demo-drawer dark:bg-zinc-900" :size="'96%'"
              :lock-scroll="true" :destroy-on-close="true"
              :close-on-click-modal="false" :close-on-press-escape="false" :with-header="false">
     <div class="demo-drawer__content">

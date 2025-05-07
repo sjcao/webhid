@@ -3,6 +3,7 @@
 import {MouseCommandBuilder, ParamType, ResponseParser} from "@/components/command.ts";
 import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
 import {onMounted, ref} from "vue";
+import {useDark} from "@vueuse/core";
 
 const props = defineProps<{
   currentDevice?: HIDDevice;
@@ -47,10 +48,15 @@ onMounted(() => {
   sendDataToDevice(MouseCommandBuilder.readProfile())
 })
 
+const isDark = useDark({});
+
 </script>
 <template>
-  <div class="flex w-full h-full">
-    <el-descriptions title="鼠标信息" :column="1" border>
+  <div class="flex w-full h-full dark:bg-transparent dark:text-white">
+    <el-descriptions :column="1" border>
+      <template #title>
+        <span class="dark:text-white">鼠标信息</span>
+      </template>
       <el-descriptions-item
           label="型号"
           label-align="right"
@@ -62,12 +68,18 @@ onMounted(() => {
       </el-descriptions-item
       >
       <el-descriptions-item label="版本号" label-align="right" align="center"
+                            label-class-name="my-label"
+                            class-name="my-content"
       >{{ver}}
       </el-descriptions-item>
       <el-descriptions-item label="工作模式" label-align="right" align="center"
+                            label-class-name="my-label"
+                            class-name="my-content"
       >{{workMode}}
       </el-descriptions-item>
       <el-descriptions-item label="配置编号" label-align="right" align="center"
+                            label-class-name="my-label"
+                            class-name="my-content"
       >{{profile}}
       </el-descriptions-item>
     </el-descriptions>
@@ -75,10 +87,12 @@ onMounted(() => {
 </template>
 <style lang="scss" scoped>
 :deep(.my-label) {
-  background: var(--el-color-success-light-9) !important;
+  background: v-bind("isDark ? '#18181B' : ''") !important;
+  color: v-bind("isDark ? '#FFF' : ''") !important;
 }
 
 :deep(.my-content) {
-
+  background: v-bind("isDark ? '#18181B' : ''");
+  color: v-bind("isDark ? '#FFF' : ''") !important;
 }
 </style>

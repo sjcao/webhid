@@ -1,7 +1,7 @@
 <template>
-  <div class="macro-recorder">
+  <div class="macro-recorder dark:bg-zinc-900 dark:text-white">
     <el-radio-group v-model="loopType">
-      <el-text>循环方式：</el-text>
+      <el-text class="dark:bg-zinc-900 dark:text-white">循环方式：</el-text>
       <el-radio label="1" size="large" border>按住循环</el-radio>
       <el-radio label="2" size="large" border>循环至此键按下</el-radio>
       <el-radio label="3" size="large" border>循环至任何键按下</el-radio>
@@ -57,7 +57,7 @@
             class="flex h-20 items-center"
         >
           <!-- 延迟显示 -->
-          <el-card class="delay-display" v-if="index > 0 && action.isDeleteDelay !== true">
+          <el-card class="delay-display dark:bg-zinc-900" v-if="index > 0 && action.isDeleteDelay !== true">
             <el-text type="success" class="delay-text">
               <el-icon>
                 <Stopwatch/>
@@ -90,7 +90,7 @@
             <Right/>
           </el-icon>
           <!-- 按键显示 -->
-          <el-card class="key-display">
+          <el-card class="key-display dark:bg-zinc-900">
             <el-text type="primary" class="key-icon">
               <el-icon v-if="action.type===KeyType.MOUSE" class="h-4">
                 <Mouse/>
@@ -158,6 +158,9 @@ import {onBeforeUnmount, onMounted, ref} from 'vue'
 import {Bottom, Edit, Mouse, Right, Stopwatch, Top, VideoPause, VideoPlay} from '@element-plus/icons-vue'
 import {KeyActionType, KeyType, MacroAction, saveActionsToLocalStorage} from "@/components/macro.ts";
 import {AllKeyBoardKeyEventKey, MouseKeyItem} from "@/components/hidcode.ts";
+import {useDark} from "@vueuse/core";
+
+const isDark = useDark({});
 
 const calculateTime = (index: number): number => {
   if (index === 0 || actions.value.length < 2) return 0;
@@ -463,7 +466,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .macro-recorder {
   padding: 20px;
-  background: #f5f7fa;
+  background: v-bind("isDark ? '#18181B' : '#f5f7fa'");
   border-radius: 8px;
   width: 100%;
   height: 100%;

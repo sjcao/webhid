@@ -12,6 +12,7 @@ import {SyncClient} from 'comsync';
 
 import { ref } from 'vue';
 import type { Ref } from 'vue';
+import i18n from "./components/lang/i18n.ts";
 
 
 export type RunPython = (code: string, options?: object) => Promise<any>;
@@ -26,6 +27,8 @@ const app = createApp(App);
 app.use(ElementPlus,{
   locale: zhCn
 })
+app.use(i18n);
+
 app.provide('pyClient', pyClient);
 app.provide('notifyCallback', _notifyCallback);
 app.provide('runPython', _runPython);

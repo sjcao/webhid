@@ -4,8 +4,11 @@ import {ElMessage} from "element-plus";
 import {AuroraBackground} from "@/components/ui/aurora-background";
 import {Motion} from "motion-v";
 import {BentoGrid, BentoGridCard, BentoGridItem} from "@/components/ui/bento-grid";
+import {useDark} from "@vueuse/core";
 
 const emit = defineEmits(['deviceCreated', 'deviceNotCreated']);
+
+const isDark = useDark({});
 
 // 设备列表
 const devices = ref<HIDDevice[]>([])
@@ -121,7 +124,7 @@ const isPythonReady = computed(() => {
 <template>
   <AuroraBackground
       class="fixed overflow-auto flex-1 top-0 left-0 w-full h-full flex flex-col items-center justify-center gap-4 px-4"
-      :radial-gradient="true">
+      :radial-gradient="true" :class="isDark">
     <Motion
         as="div"
         :initial="{ opacity: 0, y: 40, filter: 'blur(10px)' }"

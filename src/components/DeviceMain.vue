@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {onMounted, ref} from 'vue';
+import {onMounted, ref, computed} from 'vue';
 import MouseInfo from './MouseInfo.vue';
 import BasicConfig from './BasicConfig.vue';
 import ProfileConfig from './ProfileConfig.vue';
@@ -12,6 +12,10 @@ import {AuroraBackground} from "@/components/ui/aurora-background";
 import {MouseCommandBuilder, ParamType, ResponseParser} from "@/components/command.ts";
 import {Switch, SwitchFilled, Document, InfoFilled, HomeFilled, Opportunity, Tools} from '@element-plus/icons-vue'
 import {useDark, useToggle} from '@vueuse/core'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+import en from 'element-plus/dist/locale/en.mjs'
+import { useI18n } from 'vue-i18n';
+
 
 const emit = defineEmits(['back']);
 
@@ -19,6 +23,16 @@ const props = defineProps<{
   hard?: boolean;
   currentDevice?: HIDDevice;
 }>();
+
+const language = ref('zh-cn')
+
+const localeI18n = useI18n();
+const locale = computed(() => (language.value === 'zh-cn' ? zhCn : en))
+
+const toggle = () => {
+  language.value = language.value === 'zh-cn' ? 'en' : 'zh-cn'
+  localeI18n.locale.value = language.value
+}
 
 const allProfileList = ['配置文件1', '配置文件2', '配置文件3', '配置文件4'];
 const activeProfile = ref(0);
@@ -89,32 +103,33 @@ onMounted(() => {
   <AuroraBackground class="fixed top-0 left-0 w-full h-full z-0 "
                     :radial-gradient="true">
   </AuroraBackground>
-
+  <el-config-provider :locale="locale">
   <el-container class="z-50 overflow-hidden h-full w-full">
     <el-header>
       <div class="relative top-0 left-0 flex flex-row">
         <el-page-header class="sm:text-2xl" @back="goBack">
           <template #content>
             <span
-                class="text-center text-xl text-black sm:mb-20 sm:text-2xl dark:text-white"> WebHID 鼠标配置工具 </span>
+                class="text-center text-xl text-black sm:mb-20 sm:text-2xl dark:text-white"> {{$t('top_title')}} </span>
           </template>
         </el-page-header>
-        <el-button :icon="Switch" @click="">切换语言</el-button>
+        <el-button :icon="Switch" @click="toggle">{{locale===zhCn?'切换语言':'Language'}}</el-button>
         <el-button :icon="SwitchFilled" @click="toggleTheme()">{{ isDark ? '亮色模式' : '暗色模式' }}</el-button>
       </div>
     </el-header>
 
     <el-container class="z-50 flex h-full">
 
-      <el-aside class="bg-white rounded-md w-44 aside">
+      <el-aside class="bg-white dark:bg-zinc-900 rounded-md w-44 aside">
         <h5 class="m-4">配置列表</h5>
         <el-menu
             :default-active="0"
-            class="el-menu--vertical"
+            class="el-menu--vertical dark:bg-zinc-900 dark:text-white"
             @select="handleSelectProfile"
+            :text-color="isDark?'#FFF':''"
         >
           <!-- 单层菜单项 -->
-          <el-menu-item v-for="(item,index) in allProfileList" :key="index" :index="index">
+          <el-menu-item v-for="(item,index) in allProfileList" :key="index" :index="index" class="">
             <template #title>
               <el-icon>
                 <Document/>
@@ -131,12 +146,12 @@ onMounted(() => {
         <el-container direction="vertical">
           <el-tabs
               v-model="activeTab"
-              class="demo-tabs ml-10"
+              class="demo-tabs ml-10 dark:text-white"
               @tab-click=""
           >
             <el-tab-pane name="button">
               <template #label>
-                <span class="custom-tabs-label">
+                <span class="custom-tabs-label dark:text-white">
                   <el-icon size="25"><HomeFilled/></el-icon>
                   <span class="ml-1">按键设置</span>
                 </span>
@@ -150,7 +165,7 @@ onMounted(() => {
             </el-tab-pane>
             <el-tab-pane name="basic">
               <template #label>
-                <span class="custom-tabs-label">
+                <span class="custom-tabs-label dark:text-white">
                   <el-icon size="25"><Tools/></el-icon>
                   <span class="ml-1">DPI设置</span>
                 </span>
@@ -164,7 +179,7 @@ onMounted(() => {
             </el-tab-pane>
             <el-tab-pane name="led">
               <template #label>
-                <span class="custom-tabs-label">
+                <span class="custom-tabs-label dark:text-white">
                   <el-icon size="25"><Opportunity/></el-icon>
                   <span class="ml-1">LED灯光</span>
                 </span>
@@ -177,7 +192,7 @@ onMounted(() => {
             </el-tab-pane>
             <el-tab-pane name="info">
               <template #label>
-                <span class="custom-tabs-label">
+                <span class="custom-tabs-label dark:text-white">
                   <el-icon size="25"><InfoFilled/></el-icon>
                   <span class="ml-1">鼠标信息</span>
                 </span>
@@ -220,6 +235,7 @@ onMounted(() => {
     </el-container>
     <!--    <el-footer>...</el-footer>-->
   </el-container>
+  </el-config-provider>
 </template>
 
 <style scoped>
