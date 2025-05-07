@@ -5,10 +5,20 @@ import {AuroraBackground} from "@/components/ui/aurora-background";
 import {Motion} from "motion-v";
 import {BentoGrid, BentoGridCard, BentoGridItem} from "@/components/ui/bento-grid";
 import {useDark} from "@vueuse/core";
+import {useI18n} from "vue-i18n";
+import {Switch, SwitchFilled} from "@element-plus/icons-vue";
+import {useToggle} from "@vueuse/core";
 
 const emit = defineEmits(['deviceCreated', 'deviceNotCreated']);
 
 const isDark = useDark({});
+const toggleTheme = useToggle(isDark)
+
+const localeI18n = useI18n();
+
+const toggle = () => {
+  localeI18n.locale.value = localeI18n.locale.value === 'zh-cn' ? 'en' : 'zh-cn'
+}
 
 // 设备列表
 const devices = ref<HIDDevice[]>([])
@@ -18,7 +28,7 @@ const imgMouse = new URL(`/ic-moouse.png`, import.meta.url).href
 async function requestDevice() {
   if (!hasHid()) {
     ElMessage({
-      message: '你的浏览器不支持 WebHID 😭',
+      message: localeI18n.t('message_browser_not_support'),
       type: 'warning',
     })
     return;
@@ -33,7 +43,7 @@ async function requestDevice() {
   });
   if (!(devices.length > 0)) {
     ElMessage({
-      message: '没有选择设备！ 😭',
+      message: localeI18n.t('message_no_select_device'),
       type: 'warning',
     })
     return;
@@ -77,7 +87,7 @@ const connectDevice = async (device: HIDDevice) => {
 
       emit('deviceCreated', device);
 
-      ElMessage.success('设备连接成功')
+      ElMessage.success(localeI18n.t('message_connect_success'))
       await refreshDeviceList()
     }
   } catch (error) {
@@ -93,7 +103,7 @@ const enterSetting = async (device: HIDDevice) => {
 
       emit('deviceCreated', device);
 
-      ElMessage.success('设备连接成功')
+      ElMessage.success(localeI18n.t('message_connect_success'))
       await refreshDeviceList()
     } else {
       emit('deviceCreated', device);
@@ -108,7 +118,7 @@ const disconnectDevice = async (device: HIDDevice) => {
   try {
     if (device.opened) {
       await device.close()
-      ElMessage.success('设备已断开')
+      ElMessage.success(localeI18n.t('bt_disconnect'))
       await refreshDeviceList()
     }
   } catch (error) {
@@ -142,15 +152,20 @@ const isPythonReady = computed(() => {
     >
 
       <el-container class="connect-device-container">
+        <div class="fixed top-10 right-10">
+        <el-button :icon="Switch" @click="toggle">{{$t('switchLanguage')}}</el-button>
+        <el-button :icon="SwitchFilled" @click="toggleTheme()">{{ isDark ? $t('lightTheme') : $t('darkTheme') }}</el-button>
+        </div>
+
         <el-header class="mt-10">
-          <div class="text-center text-xl font-bold md:text-4xl dark:text-white"> WebHID 鼠标配置工具</div>
+          <div class="text-center text-xl font-bold md:text-4xl dark:text-white"> {{$t('top_title')}}</div>
         </el-header>
 
         <div class="py-4 text-base font-extralight md:text-xl dark:text-neutral-200">
-          仅支持 Chrome、Edge、Opera 等内核的浏览器。
+          {{$t('tip_chrome')}}
         </div>
         <div class="py-4 text-base font-extralight md:text-xl dark:text-neutral-200">
-          如列表中无设备显示，请点击按钮，以允许浏览器连接到您的设备
+          {{$t('tip_connect')}}
         </div>
 
         <div>
@@ -158,12 +173,12 @@ const isPythonReady = computed(() => {
           <el-button
               class="w-fit rounded-xl bg-black px-4 py-2 text-white dark:bg-white dark:text-black"
               size="large" type="primary" @click="requestDevice">
-            请求浏览器访问设备
+            {{$t('bt_request_connect_device')}}
           </el-button>
 
           <el-button
               class="w-fit rounded-xl bg-white px-4 py-2 text-black dark:bg-white dark:text-black"
-              size="large" @click="noHardwareMode">无设备模式
+              size="large" @click="noHardwareMode">{{$t('bt_no_device')}}
           </el-button>
         </div>
 
@@ -192,7 +207,7 @@ const isPythonReady = computed(() => {
               <template #description>
                 <div class="flex items-center justify-center">
                   <el-tag :type="item.opened ? 'success' : 'danger'">
-                    {{ item.opened ? '已连接' : '未连接' }}
+                    {{ item.opened ? $t('status_connect') : $t('status_disconnect') }}
                   </el-tag>
                 </div>
 
@@ -202,7 +217,7 @@ const isPythonReady = computed(() => {
                       size="large"
                       type="success"
                       @click="connectDevice(item)"
-                  >连接
+                  >{{$t('bt_connect')}}
                   </el-button>
 
                   <el-button
@@ -210,7 +225,7 @@ const isPythonReady = computed(() => {
                       size="large"
                       type="danger"
                       @click="disconnectDevice(item)"
-                  >断开
+                  >{{$t('bt_disconnect')}}
                   </el-button>
 
                   <el-button
@@ -218,7 +233,7 @@ const isPythonReady = computed(() => {
                       size="large"
                       type="success"
                       @click="enterSetting(item)"
-                  >进入设置
+                  >{{$t('bt_enter')}}
                   </el-button>
                 </div>
 

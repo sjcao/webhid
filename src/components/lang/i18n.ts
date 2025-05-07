@@ -1,16 +1,11 @@
 import {createI18n} from 'vue-i18n';
-import {cn} from "../../lib/utils.ts";
+import en from '@/components/lang/en.json'; // 导入英文语言包
+import zhCn from '@/components/lang/zh-cn.json'; // 导入中文语言包
 
 // 定义语言包
 const messages = {
-    en: {
-        top_title: 'WebHID Mouse Configurator',
-        greeting: 'Hello, {name}!',
-    },
-    'zh-cn': {
-        top_title: 'WebHID 鼠标配置工具',
-        greeting: '你好，{name}！',
-    },
+    en: en,
+    'zh-cn': zhCn,
 };
 
 // 创建 i18n 实例

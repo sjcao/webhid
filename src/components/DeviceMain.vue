@@ -73,8 +73,6 @@ const isDark = useDark({});
 
 const toggleTheme = useToggle(isDark)
 
-console.log('isDark:', isDark.value);
-
 
 const handleSelectProfile = (index: number) => {
   activeProfile.value = index
@@ -101,7 +99,7 @@ onMounted(() => {
 </script>
 <template>
   <AuroraBackground class="fixed top-0 left-0 w-full h-full z-0 "
-                    :radial-gradient="true">
+                    :radial-gradient="true" :class="isDark">
   </AuroraBackground>
   <el-config-provider :locale="locale">
   <el-container class="z-50 overflow-hidden h-full w-full">
@@ -113,15 +111,15 @@ onMounted(() => {
                 class="text-center text-xl text-black sm:mb-20 sm:text-2xl dark:text-white"> {{$t('top_title')}} </span>
           </template>
         </el-page-header>
-        <el-button :icon="Switch" @click="toggle">{{locale===zhCn?'切换语言':'Language'}}</el-button>
-        <el-button :icon="SwitchFilled" @click="toggleTheme()">{{ isDark ? '亮色模式' : '暗色模式' }}</el-button>
+        <el-button :icon="Switch" @click="toggle">{{$t('switchLanguage')}}</el-button>
+        <el-button :icon="SwitchFilled" @click="toggleTheme()">{{ isDark ? $t('lightTheme') : $t('darkTheme') }}</el-button>
       </div>
     </el-header>
 
     <el-container class="z-50 flex h-full">
 
       <el-aside class="bg-white dark:bg-zinc-900 rounded-md w-44 aside">
-        <h5 class="m-4">配置列表</h5>
+        <h5 class="m-4">{{$t('profileList')}}</h5>
         <el-menu
             :default-active="0"
             class="el-menu--vertical dark:bg-zinc-900 dark:text-white"
