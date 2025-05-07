@@ -140,7 +140,7 @@ onMounted(() => {
                 <el-icon>
                   <Document/>
                 </el-icon>
-                <span>{{ $t('menu_profile',{number:index.toString()}) }}</span>
+                <span>{{ $t('menu_profile',{number:index.toString}) }}</span>
               </template>
             </el-menu-item>
 
