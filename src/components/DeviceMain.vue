@@ -14,7 +14,7 @@ import {Switch, SwitchFilled, Document, InfoFilled, HomeFilled, Opportunity, Too
 import {useDark, useToggle} from '@vueuse/core'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import en from 'element-plus/dist/locale/en.mjs'
-import { useI18n } from 'vue-i18n';
+import {useI18n} from 'vue-i18n';
 
 
 const emit = defineEmits(['back']);
@@ -24,9 +24,9 @@ const props = defineProps<{
   currentDevice?: HIDDevice;
 }>();
 
-const language = ref('zh-cn')
-
 const localeI18n = useI18n();
+
+const language = localeI18n.locale
 const locale = computed(() => (language.value === 'zh-cn' ? zhCn : en))
 
 const toggle = () => {
@@ -34,7 +34,10 @@ const toggle = () => {
   localeI18n.locale.value = language.value
 }
 
-const allProfileList = ['配置文件1', '配置文件2', '配置文件3', '配置文件4'];
+const allProfileList = [localeI18n.t('menu_profile', {number: '1'})
+  , localeI18n.t('menu_profile', {number: '2'})
+  , localeI18n.t('menu_profile', {number: '3'})
+  , localeI18n.t('menu_profile', {number: '4'})];
 const activeProfile = ref(0);
 const activeTab = ref('button');
 const refreshKey = ref(0);
@@ -102,137 +105,142 @@ onMounted(() => {
                     :radial-gradient="true" :class="isDark">
   </AuroraBackground>
   <el-config-provider :locale="locale">
-  <el-container class="z-50 overflow-hidden h-full w-full">
-    <el-header>
-      <div class="relative top-0 left-0 flex flex-row">
-        <el-page-header class="sm:text-2xl" @back="goBack">
-          <template #content>
+    <el-container class="z-50 overflow-hidden h-full w-full">
+      <el-header>
+        <div class="relative top-0 left-0 flex flex-row">
+          <el-page-header class="sm:text-2xl" @back="goBack">
+            <template #content>
             <span
-                class="text-center text-xl text-black sm:mb-20 sm:text-2xl dark:text-white"> {{$t('top_title')}} </span>
-          </template>
-        </el-page-header>
-        <el-button :icon="Switch" @click="toggle">{{$t('switchLanguage')}}</el-button>
-        <el-button :icon="SwitchFilled" @click="toggleTheme()">{{ isDark ? $t('lightTheme') : $t('darkTheme') }}</el-button>
-      </div>
-    </el-header>
-
-    <el-container class="z-50 flex h-full">
-
-      <el-aside class="bg-white dark:bg-zinc-900 rounded-md w-44 aside">
-        <h5 class="m-4">{{$t('profileList')}}</h5>
-        <el-menu
-            :default-active="0"
-            class="el-menu--vertical dark:bg-zinc-900 dark:text-white"
-            @select="handleSelectProfile"
-            :text-color="isDark?'#FFF':''"
-        >
-          <!-- 单层菜单项 -->
-          <el-menu-item v-for="(item,index) in allProfileList" :key="index" :index="index" class="">
-            <template #title>
-              <el-icon>
-                <Document/>
-              </el-icon>
-              <span>{{ item }}</span>
+                class="text-center text-xl text-black sm:mb-20 sm:text-2xl dark:text-white"> {{
+                $t('top_title')
+              }} </span>
             </template>
-          </el-menu-item>
+          </el-page-header>
+          <el-button :icon="Switch" @click="toggle">{{ $t('switchLanguage') }}</el-button>
+          <el-button :icon="SwitchFilled" @click="toggleTheme()">{{
+              isDark ? $t('lightTheme') : $t('darkTheme')
+            }}
+          </el-button>
+        </div>
+      </el-header>
 
-        </el-menu>
+      <el-container class="z-50 flex h-full">
 
-      </el-aside>
-
-      <el-main class="el-main-0 flex-1 overflow-auto ">
-        <el-container direction="vertical">
-          <el-tabs
-              v-model="activeTab"
-              class="demo-tabs ml-10 dark:text-white"
-              @tab-click=""
+        <el-aside class="bg-white dark:bg-zinc-900 rounded-md w-44 aside">
+          <h5 class="m-4">{{ $t('profileList') }}</h5>
+          <el-menu
+              :default-active="0"
+              class="el-menu--vertical dark:bg-zinc-900 dark:text-white"
+              @select="handleSelectProfile"
+              :text-color="isDark?'#FFF':''"
           >
-            <el-tab-pane name="button">
-              <template #label>
+            <!-- 单层菜单项 -->
+            <el-menu-item v-for="(item,index) in allProfileList" :key="index" :index="index" class="">
+              <template #title>
+                <el-icon>
+                  <Document/>
+                </el-icon>
+                <span>{{ $t('menu_profile',{number:index.toString()}) }}</span>
+              </template>
+            </el-menu-item>
+
+          </el-menu>
+
+        </el-aside>
+
+        <el-main class="el-main-0 flex-1 overflow-auto ">
+          <el-container direction="vertical">
+            <el-tabs
+                v-model="activeTab"
+                class="demo-tabs ml-10 dark:text-white"
+                @tab-click=""
+            >
+              <el-tab-pane name="button">
+                <template #label>
                 <span class="custom-tabs-label dark:text-white">
                   <el-icon size="25"><HomeFilled/></el-icon>
-                  <span class="ml-1">按键设置</span>
+                  <span class="ml-1">{{$t('tab_button_config')}}</span>
                 </span>
-              </template>
-              <ButtonConfig v-if="activeTab === 'button' || enableAllConfigSections"
-                            v-show="!enableAllConfigSections"
-                            :key="refreshKey" :active-profile="activeProfile" :hard="hard"
-                            :currentDevice="currentDevice"
-                            v-model:bridge-data="profileConfigData.button"
-                            v-model:bridge-status="profileConfigStatus.button"/>
-            </el-tab-pane>
-            <el-tab-pane name="basic">
-              <template #label>
+                </template>
+                <ButtonConfig v-if="activeTab === 'button' || enableAllConfigSections"
+                              v-show="!enableAllConfigSections"
+                              :key="refreshKey" :active-profile="activeProfile" :hard="hard"
+                              :currentDevice="currentDevice"
+                              v-model:bridge-data="profileConfigData.button"
+                              v-model:bridge-status="profileConfigStatus.button"/>
+              </el-tab-pane>
+              <el-tab-pane name="basic">
+                <template #label>
                 <span class="custom-tabs-label dark:text-white">
                   <el-icon size="25"><Tools/></el-icon>
-                  <span class="ml-1">DPI设置</span>
+                  <span class="ml-1">{{$t('tab_dpi_config')}}</span>
                 </span>
-              </template>
-              <BasicConfig v-if="activeTab === 'basic' || enableAllConfigSections"
-                           v-show="!enableAllConfigSections"
-                           :key="refreshKey" :active-profile="activeProfile" :hard="hard"
-                           :currentDevice="currentDevice"
-                           v-model:bridge-data="profileConfigData.basic"
-                           v-model:bridge-status="profileConfigStatus.basic"/>
-            </el-tab-pane>
-            <el-tab-pane name="led">
-              <template #label>
+                </template>
+                <BasicConfig v-if="activeTab === 'basic' || enableAllConfigSections"
+                             v-show="!enableAllConfigSections"
+                             :key="refreshKey" :active-profile="activeProfile" :hard="hard"
+                             :currentDevice="currentDevice"
+                             v-model:bridge-data="profileConfigData.basic"
+                             v-model:bridge-status="profileConfigStatus.basic"/>
+              </el-tab-pane>
+              <el-tab-pane name="led">
+                <template #label>
                 <span class="custom-tabs-label dark:text-white">
                   <el-icon size="25"><Opportunity/></el-icon>
-                  <span class="ml-1">LED灯光</span>
+                  <span class="ml-1">{{$t('tab_led_config')}}</span>
                 </span>
-              </template>
-              <LedConfig v-if="activeTab === 'led' || enableAllConfigSections" v-show="!enableAllConfigSections"
-                         :key="refreshKey" :active-profile="activeProfile" :hard="hard"
-                         :currentDevice="currentDevice"
-                         v-model:bridge-data="profileConfigData.led"
-                         v-model:bridge-status="profileConfigStatus.led"/>
-            </el-tab-pane>
-            <el-tab-pane name="info">
-              <template #label>
+                </template>
+                <LedConfig v-if="activeTab === 'led' || enableAllConfigSections" v-show="!enableAllConfigSections"
+                           :key="refreshKey" :active-profile="activeProfile" :hard="hard"
+                           :currentDevice="currentDevice"
+                           v-model:bridge-data="profileConfigData.led"
+                           v-model:bridge-status="profileConfigStatus.led"/>
+              </el-tab-pane>
+              <el-tab-pane name="info">
+                <template #label>
                 <span class="custom-tabs-label dark:text-white">
                   <el-icon size="25"><InfoFilled/></el-icon>
-                  <span class="ml-1">鼠标信息</span>
+                  <span class="ml-1">{{$t('tab_mouse_info')}}</span>
                 </span>
-              </template>
-              <MouseInfo v-if="activeTab === 'info'"
-                         :key="refreshKey" :currentDevice="currentDevice"/>
-            </el-tab-pane>
-          </el-tabs>
-
-          <div class="ml-10 mr-10 mt-5">
-            <div>
-              <Suspense>
-                <div>
-
-
-                  <MacroConfig v-if="activeTab === 'macro'"
-                               :key="refreshKey" :active-profile="activeProfile" :hard="hard"
-                               :currentDevice="currentDevice"/>
-                  <SensorConfig v-if="activeTab === 'sensor'"
-                                :key="refreshKey" :active-profile="activeProfile" :hard="hard"
-                                :currentDevice="currentDevice"/>
-
-                  <!--                    <div v-if="activeTab === 'info' && !hard">No hardware connected</div>-->
-                  <!--                  <PythonRunner v-if="activeTab === 'info'"/>-->
-                  <!--                  v-show is used to load available profiles when initially loaded-->
-                  <ProfileConfig v-show="activeTab === 'profile'"
-                                 :key="refreshKey" :hard="hard" @update="updateHasProfileList"
-                                 :is-config-all-idle="isConfigAllIdle"
-                                 v-model:profile-config-data="profileConfigData"
-                                 v-model:enable-all-config-sections="enableAllConfigSections"/>
-                </div>
-                <template #fallback>
-                  <div>Loading...</div>
                 </template>
-              </Suspense>
+                <MouseInfo v-if="activeTab === 'info'"
+                           :key="refreshKey" :currentDevice="currentDevice"/>
+              </el-tab-pane>
+            </el-tabs>
+
+            <div class="ml-10 mr-10 mt-5">
+              <div>
+                <Suspense>
+                  <div>
+
+
+                    <MacroConfig v-if="activeTab === 'macro'"
+                                 :key="refreshKey" :active-profile="activeProfile" :hard="hard"
+                                 :currentDevice="currentDevice"/>
+                    <SensorConfig v-if="activeTab === 'sensor'"
+                                  :key="refreshKey" :active-profile="activeProfile" :hard="hard"
+                                  :currentDevice="currentDevice"/>
+
+                    <!--                    <div v-if="activeTab === 'info' && !hard">No hardware connected</div>-->
+                    <!--                  <PythonRunner v-if="activeTab === 'info'"/>-->
+                    <!--                  v-show is used to load available profiles when initially loaded-->
+                    <ProfileConfig v-show="activeTab === 'profile'"
+                                   :key="refreshKey" :hard="hard" @update="updateHasProfileList"
+                                   :is-config-all-idle="isConfigAllIdle"
+                                   v-model:profile-config-data="profileConfigData"
+                                   v-model:enable-all-config-sections="enableAllConfigSections"/>
+                  </div>
+                  <template #fallback>
+                    <div>Loading...</div>
+                  </template>
+                </Suspense>
+              </div>
             </div>
-          </div>
-        </el-container>
-      </el-main>
+          </el-container>
+        </el-main>
+      </el-container>
+      <!--    <el-footer>...</el-footer>-->
     </el-container>
-    <!--    <el-footer>...</el-footer>-->
-  </el-container>
   </el-config-provider>
 </template>
 

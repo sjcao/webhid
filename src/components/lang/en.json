@@ -6,6 +6,7 @@
   "bt_request_connect_device": "Request browser access to the device",
   "darkTheme": "DarkTheme",
   "lightTheme": "LightTheme",
+  "menu_profile": "Profiles {number}",
   "message_browser_not_support": "Your browser does not support WebHID 😭",
   "message_connect_success": "The device is connected successfully",
   "message_no_select_device": "No Device selected!",
@@ -13,6 +14,10 @@
   "status_connect": "Connected",
   "status_disconnect": "Disconnected",
   "switchLanguage": "Language",
+  "tab_button_config": "Key Settings",
+  "tab_dpi_config": "DPI Settings",
+  "tab_led_config": "LED lights",
+  "tab_mouse_info": "Mouse info",
   "tip_chrome": "Only browsers such as Chrome, Edge, Opera are supported.",
   "tip_connect": "If no device appears in the list, click the button to allow the browser to connect to your device",
   "top_title": "WebHID Mouse Configurator"

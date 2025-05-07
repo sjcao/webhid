@@ -6,6 +6,7 @@
   "bt_request_connect_device": "请求浏览器访问设备",
   "darkTheme": "暗色模式",
   "lightTheme": "亮色模式",
+  "menu_profile": "配置文件 {number}",
   "message_browser_not_support": "你的浏览器不支持 WebHID 😭",
   "message_connect_success": "设备连接成功",
   "message_no_select_device": "没有选择设备！ 😭",
@@ -13,6 +14,10 @@
   "status_connect": "已连接",
   "status_disconnect": "未连接",
   "switchLanguage": "切换语言",
+  "tab_button_config": "按键设置",
+  "tab_dpi_config": "DPI设置",
+  "tab_led_config": "LED灯光",
+  "tab_mouse_info": "鼠标信息",
   "tip_chrome": "仅支持 Chrome、Edge、Opera 等内核的浏览器。",
   "tip_connect": "如列表中无设备显示，请点击按钮，以允许浏览器连接到您的设备",
   "top_title": "WebHID 鼠标配置工具"
