@@ -15,6 +15,7 @@ import {useDark, useToggle} from '@vueuse/core'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import en from 'element-plus/dist/locale/en.mjs'
 import {useI18n} from 'vue-i18n';
+import {switchLanguage} from "@/components/lang/i18n.ts";
 
 
 const emit = defineEmits(['back']);
@@ -30,8 +31,7 @@ const language = localeI18n.locale
 const locale = computed(() => (language.value === 'zh-cn' ? zhCn : en))
 
 const toggle = () => {
-  language.value = language.value === 'zh-cn' ? 'en' : 'zh-cn'
-  localeI18n.locale.value = language.value
+  switchLanguage()
 }
 
 const allProfileList = [localeI18n.t('menu_profile', {number: '1'})
@@ -140,7 +140,7 @@ onMounted(() => {
                 <el-icon>
                   <Document/>
                 </el-icon>
-                <span>{{ $t('menu_profile',{number:String(index)}) }}</span>
+                <span>{{ $t('menu_profile')}}</span>
               </template>
             </el-menu-item>
 

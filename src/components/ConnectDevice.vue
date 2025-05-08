@@ -8,6 +8,8 @@ import {useDark} from "@vueuse/core";
 import {useI18n} from "vue-i18n";
 import {Switch, SwitchFilled} from "@element-plus/icons-vue";
 import {useToggle} from "@vueuse/core";
+import { switchLanguage } from "@/components/lang/i18n.ts";
+
 
 const emit = defineEmits(['deviceCreated', 'deviceNotCreated']);
 
@@ -16,8 +18,8 @@ const toggleTheme = useToggle(isDark)
 
 const localeI18n = useI18n();
 
-const toggle = () => {
-  localeI18n.locale.value = localeI18n.locale.value === 'zh-cn' ? 'en' : 'zh-cn'
+const toggleLanguage = () => {
+  switchLanguage()
 }
 
 // 设备列表
@@ -153,7 +155,7 @@ const isPythonReady = computed(() => {
 
       <el-container class="connect-device-container">
         <div class="fixed top-10 right-10">
-        <el-button :icon="Switch" @click="toggle">{{$t('switchLanguage')}}</el-button>
+        <el-button :icon="Switch" @click="toggleLanguage">{{$t('switchLanguage')}}</el-button>
         <el-button :icon="SwitchFilled" @click="toggleTheme()">{{ isDark ? $t('lightTheme') : $t('darkTheme') }}</el-button>
         </div>
 
