@@ -178,7 +178,7 @@ onMounted(() => {
 </script>
 <template>
   <div class="form-control">
-    <h2>灵敏度设置</h2>
+    <h2>{{ $t('dpiSetting_title') }}</h2>
 
     <div class="dpi-container">
       <!-- DPI滑动条 -->
@@ -204,8 +204,8 @@ onMounted(() => {
             </div>
 
             <BalanceSlider
-                left-content="慢"
-                right-content="快"
+                :left-content="$t('slow')"
+                :right-content="$t('fast')"
                 right-color="#ffffff"
                 left-color="#409EFF"
                 indicator-color="#409EFF"
@@ -231,7 +231,7 @@ onMounted(() => {
         <el-button
             type="info"
             @click="restoreDefaultSettings"
-        >恢复默认设置
+        >{{ $t('bt_restore') }}
         </el-button>
 
       </div>

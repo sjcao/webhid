@@ -34,10 +34,10 @@ const toggle = () => {
   switchLanguage()
 }
 
-const allProfileList = [localeI18n.t('menu_profile', {number: '1'})
-  , localeI18n.t('menu_profile', {number: '2'})
-  , localeI18n.t('menu_profile', {number: '3'})
-  , localeI18n.t('menu_profile', {number: '4'})];
+const allProfileList = [localeI18n.t('menu_profile1')
+  , localeI18n.t('menu_profile2')
+  , localeI18n.t('menu_profile3')
+  , localeI18n.t('menu_profile4')];
 const activeProfile = ref(0);
 const activeTab = ref('button');
 const refreshKey = ref(0);
@@ -140,7 +140,8 @@ onMounted(() => {
                 <el-icon>
                   <Document/>
                 </el-icon>
-                <span>{{$t('menu_profile',{number:index})}}</span>
+                <span>{{ $t('menu_profile') }}</span>
+                <span>{{ index}}</span>
               </template>
             </el-menu-item>
 
@@ -159,7 +160,7 @@ onMounted(() => {
                 <template #label>
                 <span class="custom-tabs-label dark:text-white">
                   <el-icon size="25"><HomeFilled/></el-icon>
-                  <span class="ml-1">{{$t('tab_button_config')}}</span>
+                  <span class="ml-1">{{ $t('tab_button_config') }}</span>
                 </span>
                 </template>
                 <ButtonConfig v-if="activeTab === 'button' || enableAllConfigSections"
@@ -173,7 +174,7 @@ onMounted(() => {
                 <template #label>
                 <span class="custom-tabs-label dark:text-white">
                   <el-icon size="25"><Tools/></el-icon>
-                  <span class="ml-1">{{$t('tab_dpi_config')}}</span>
+                  <span class="ml-1">{{ $t('tab_dpi_config') }}</span>
                 </span>
                 </template>
                 <BasicConfig v-if="activeTab === 'basic' || enableAllConfigSections"
@@ -187,7 +188,7 @@ onMounted(() => {
                 <template #label>
                 <span class="custom-tabs-label dark:text-white">
                   <el-icon size="25"><Opportunity/></el-icon>
-                  <span class="ml-1">{{$t('tab_led_config')}}</span>
+                  <span class="ml-1">{{ $t('tab_led_config') }}</span>
                 </span>
                 </template>
                 <LedConfig v-if="activeTab === 'led' || enableAllConfigSections" v-show="!enableAllConfigSections"
@@ -200,7 +201,7 @@ onMounted(() => {
                 <template #label>
                 <span class="custom-tabs-label dark:text-white">
                   <el-icon size="25"><InfoFilled/></el-icon>
-                  <span class="ml-1">{{$t('tab_mouse_info')}}</span>
+                  <span class="ml-1">{{ $t('tab_mouse_info') }}</span>
                 </span>
                 </template>
                 <MouseInfo v-if="activeTab === 'info'"

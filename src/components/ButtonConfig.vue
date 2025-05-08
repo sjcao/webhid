@@ -23,6 +23,7 @@ import {
 import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
 import {ElMessage} from "element-plus";
 import {useDark} from "@vueuse/core";
+import {useI18n} from "vue-i18n";
 
 const props = defineProps<{
   hard?: boolean; // should it interact with hardware or just dummy
@@ -31,6 +32,7 @@ const props = defineProps<{
 }>();
 
 const isDark = useDark({});
+const localeI18n = useI18n();
 
 const imgMouse = new URL(`/ic-moouse.png`, import.meta.url).href
 
@@ -364,7 +366,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
   sendDataToDevice(cmd)
 
   ElMessage({
-    message: '设置成功',
+    message: localeI18n.t('message_setting_success'),
     type: 'success',
   })
 }
@@ -375,7 +377,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
       <transition name="el-zoom-in-top">
         <el-col :span="11" v-if="isShowButtonMenu" class="max-h-screen">
           <div class="flex justify-between mb-1">
-            <h5 class="mb-2">分配功能键
+            <h5 class="mb-2">{{$t('keySetting_keyMenu_title')}}
             </h5>
             <el-button :type="isDark?'':'primary'" plain class="" @click="isShowButtonMenu=false;selectedButton=''">→</el-button>
           </div>
@@ -385,7 +387,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
           <el-tabs :type="isDark?'card':'border-card'"  class="dark:bg-zinc-900 dark:text-white" :model-value="activeTags">
             <el-tab-pane  name="系统按键" class="dark:bg-zinc-900">
               <template #label>
-                <span class="dark:text-white">系统按键</span>
+                <span class="dark:text-white">{{$t('keySetting_keyMenu_system_button')}}</span>
               </template>
               <el-menu
                   class="el-menu-vertical-demo menu-height overflow-y-auto dark:bg-zinc-900"
@@ -399,50 +401,51 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                 <el-menu-item-group>
                   <el-sub-menu index="0">
                     <template #title>
-                      <span class="font-bold dark:text-white">鼠标按键</span>
+                      <span class="font-bold dark:text-white">{{$t('keySetting_keyMenu_system_mouse')}}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in MouseKeyItem" :index="'0'+index"
                                   @click="handleOnMenuClick(keyItem,'鼠标按键',index)">
-                      <span>{{ keyItem.keyName }}</span>
+                      <span>{{ localeI18n.locale.value === 'zhcn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
                     </el-menu-item>
                   </el-sub-menu>
 
                   <el-sub-menu index="1">
                     <template #title>
-                      <span class="font-bold dark:text-white">板载配置</span>
+                      <span class="font-bold dark:text-white">{{$t('keySetting_keyMenu_system_profile')}}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ProfileKeyItem" :index="'1'+index"
                                   @click="handleOnMenuClick(keyItem,'板载配置',index)">
-                      <span>{{ keyItem.keyName }}</span>
+                      <span>{{ localeI18n.locale.value === 'zhcn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
                     </el-menu-item>
                   </el-sub-menu>
 
                   <el-sub-menu index="2">
                     <template #title>
-                      <span class="font-bold dark:text-white">DPI切换</span>
+                      <span class="font-bold dark:text-white">{{$t('keySetting_keyMenu_system_dpi')}}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in DPIKeyItem" :index="'2'+index"
                                   @click="handleOnMenuClick(keyItem,'DPI切换',index)">
-                      <span>{{ keyItem.keyName }}</span>
+                      <span>{{ localeI18n.locale.value === 'zhcn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
                     </el-menu-item>
                   </el-sub-menu>
 
                   <el-sub-menu index="3">
                     <template #title>
-                      <span class="font-bold dark:text-white">鼠标滚轮</span>
+                      <span class="font-bold dark:text-white">{{$t('keySetting_keyMenu_system_scroll')}}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ScrollKeyItem" :index="'3'+index"
                                   @click="handleOnMenuClick(keyItem,'鼠标滚轮',index)">
-                      <span>{{ keyItem.keyName }}</span>
+                      <span>{{ localeI18n.locale.value === 'zhcn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
                     </el-menu-item>
                   </el-sub-menu>
 
                   <el-sub-menu index="4">
                     <template #title>
-                      <span class="font-bold dark:text-white">多媒体</span>
+                      <span class="font-bold dark:text-white">{{$t('keySetting_keyMenu_system_media')}}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ConsumerKeyItem" :index="'4'+index"
-                                  @click="handleOnMenuClick(keyItem,'多媒体',index)"><span>{{ keyItem.keyName }}</span>
+                                  @click="handleOnMenuClick(keyItem,'多媒体',index)">
+                      <span>{{ localeI18n.locale.value === 'zhcn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
                     </el-menu-item>
                   </el-sub-menu>
 
@@ -451,7 +454,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
             </el-tab-pane>
             <el-tab-pane name="键盘按键">
               <template #label>
-                <span class="dark:text-white">键盘按键</span>
+                <span class="dark:text-white">{{$t('keySetting_keyMenu_keyboard_button')}}</span>
               </template>
               <el-menu
                   class="el-menu-vertical-demo menu-height overflow-y-auto"
@@ -465,7 +468,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                 <el-menu-item-group>
                   <el-sub-menu index="0">
                     <template #title>
-                      <span class="font-bold">字母和数字键</span>
+                      <span class="font-bold">{{$t('keySetting_keyMenu_keyboard_a_n')}}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in KeyBoardKeyItem" :index="'0'+index"
                                   @click="handleOnMenuClick(keyItem,'字母和数字键',index)"><span>{{
@@ -476,7 +479,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="1">
                     <template #title>
-                      <span class="font-bold">F区功能键</span>
+                      <span class="font-bold">{{$t('keySetting_keyMenu_keyboard_f')}}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in FKeyBoardKeyItem" :index="'1'+index"
                                   @click="handleOnMenuClick(keyItem,'F区功能键',index)"><span>{{
@@ -487,7 +490,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="2">
                     <template #title>
-                      <span class="font-bold">数字小键盘键</span>
+                      <span class="font-bold">{{$t('keySetting_keyMenu_keyboard_numpad')}}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in NumPadKeyBoardKeyItem" :index="'2'+index"
                                   @click="handleOnMenuClick(keyItem,'数字小键盘键',index)"><span>{{
@@ -498,7 +501,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="3">
                     <template #title>
-                      <span class="font-bold">控制键与字符键</span>
+                      <span class="font-bold">{{$t('keySetting_keyMenu_keyboard_control')}}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ControlKeyBoardKeyItem" :index="'3'+index"
                                   @click="handleOnMenuClick(keyItem,'控制键与字符键',index)"><span>{{
@@ -512,36 +515,36 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
             </el-tab-pane>
             <el-tab-pane name="特殊按键" class="max-h-fit overflow-y-auto">
               <template #label>
-                <span class="dark:text-white">特殊按键</span>
+                <span class="dark:text-white">{{$t('keySetting_keyMenu_special_button')}}</span>
               </template>
               <el-card class="box-card dark:bg-zinc-900 dark:text-white">
                 <template #header>
                   <div class="card-header dark:text-white">
-                    <span>火力键</span>
+                    <span>{{ $t('keySetting_tabs_special_fireKey') }}</span>
                   </div>
                 </template>
                 <div class="flex flex-col justify-center items-center gap-2 ">
                   <div>
-                    <el-text class="dark:text-white">根据设置的间隔和次数持续点击左键</el-text>
+                    <el-text class="dark:text-white">{{ $t('keySetting_tabs_special_fireKey_h1') }}</el-text>
                   </div>
                   <div>
                     <div>
-                      <el-text class="dark:text-white">点击间隔:</el-text>
+                      <el-text class="dark:text-white">{{ $t('keySetting_tabs_special_fireKey_click_delay') }}</el-text>
                       <el-input-number class="dark:text-white" size="default" v-model="hybetweenTime" :min="0"></el-input-number>
                       <el-text class="dark:text-white">ms</el-text>
                     </div>
                     <div class="mt-2">
-                      <el-text class="dark:text-white">点击次数:</el-text>
+                      <el-text class="dark:text-white">{{ $t('keySetting_tabs_special_fireKey_click_times') }}</el-text>
                       <el-input-number  class="dark:text-white" size="default" v-model="hyTimes" :min="0"></el-input-number>
-                      <el-text class="dark:text-white" >次</el-text>
+                      <el-text class="dark:text-white" >{{ $t('unit_times') }}</el-text>
                     </div>
                   </div>
                   <div>
-                    <el-text type="warning">点击次数为0时，按下按键一直发，松开按键结束</el-text>
+                    <el-text type="warning">{{$t('keySetting_tabs_special_fireKey_h2')}}</el-text>
                   </div>
                   <div>
                     <el-button type="primary" plain
-                               @click="handleOnMenuClick({value:[hybetweenTime,hyTimes]},'火力键',0)">保存并选择
+                               @click="handleOnMenuClick({value:[hybetweenTime,hyTimes]},'火力键',0)">{{$t('bt_save_select')}}
                     </el-button>
                   </div>
                 </div>
@@ -550,7 +553,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
               <el-card class="box-card mt-2  dark:bg-zinc-900 dark:text-white">
                 <template #header>
                   <div class="card-header">
-                    <span>组合键</span>
+                    <span>{{ $t('keySetting_tabs_special_combine') }}</span>
                   </div>
                 </template>
 
@@ -564,39 +567,39 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                       </el-checkbox-button>
                     </el-checkbox-group>
                     <el-text class="dark:text-white">+</el-text>
-                    <el-input class="1" ref="inputRef" placeholder="请输入键盘按键" v-model="combineSelectKey"
+                    <el-input class="1" ref="inputRef" :placeholder="$t('input_key_hint')" v-model="combineSelectKey"
                               @keydown="handleKeydown" @mouseenter="handleMouseEnter"
                               @mouseleave="handleMouseLeave"
                               readonly></el-input>
                   </div>
                   <div>
                     <el-button type="primary" plain @click="handleOnMenuClick({value:getOrderValue()},'组合键',0)">
-                      保存并选择
+                      {{$t('bt_save_select')}}
                     </el-button>
-                    <el-button type="text" plain @click="combineSelectKey=''">清除</el-button>
+                    <el-button type="text" plain @click="combineSelectKey=''">{{$t('bt_clear')}}</el-button>
                   </div>
                 </div>
               </el-card>
             </el-tab-pane>
             <el-tab-pane name="宏设置" class="menu-height overflow-y-auto dark:bg-zinc-900">
               <template #label>
-                <span class="dark:text-white">宏设置</span>
+                <span class="dark:text-white">{{$t('keySetting_keyMenu_macro_button')}}</span>
               </template>
               <el-card class="box-card dark:bg-zinc-900">
                 <template #header>
                   <div class="card-header flex justify-between">
-                    <span class="dark:text-white" >宏列表:</span>
+                    <span class="dark:text-white" >{{ $t('macro_list') }}:</span>
                     <!--                  <span>当前设置编号{{ currentMacroIndex + 1 }}</span>-->
-                    <el-button type="success" size="default" @click="isShowMacro=true">新建宏</el-button>
+                    <el-button type="success" size="default" @click="isShowMacro=true">{{ $t('bt_create_macro') }}</el-button>
                   </div>
                 </template>
                 <el-empty :image-size="100" v-if="macroList.length===0"/>
                 <div class="flex justify-between dark:text-white mt-2" v-if="macroList.length > 0 " v-for="(item,index) in macroList">
-                  {{ '宏编号 ' + (index + 1) }}
+                  {{ $t('item_macro') + (index + 1) }}
                   <div>
-                    <el-checkbox v-if="currentMacroIndex === index" :checked="true" label="已启用" size="large"/>
-                    <el-button type="primary" @click="handleSetMacro(index)" class="ml-2">启用</el-button>
-                    <el-button type="danger" @click="handleDeletMacro(index)">删除</el-button>
+                    <el-checkbox v-if="currentMacroIndex === index" :checked="true" :label="$t('status_opened')" size="large"/>
+                    <el-button type="primary" @click="handleSetMacro(index)" class="ml-2">{{ $t('bt_open') }}</el-button>
+                    <el-button type="danger" @click="handleDeletMacro(index)">{{$t('bt_del')}}</el-button>
                   </div>
                 </div>
               </el-card>
@@ -615,7 +618,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                 :translate-z="50"
                 class="text-xl font-bold text-neutral-600 dark:text-white"
             >
-              选中需要设置的按键
+              {{ $t('keySetting_selectKey_tip') }}
             </CardItem>
 
             <CardItem
@@ -635,7 +638,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                     :type="selectedButton === '右键' ? 'warning' : isDark?'':'primary'"
                     :plain="selectedButton!=='右键'"
                 >
-                  右键
+                  {{ $t('mouseKey_right') }}
                 </el-button>
                 <el-button
                     class="absolute top-button-mid left-1/2  px-4 py-2 rounded-md"
@@ -643,7 +646,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                     :type="selectedButton === '中键' ? 'warning' : isDark?'': 'primary'"
                     :plain="selectedButton!=='中键'"
                 >
-                  中键
+                  {{ $t('mouseKey_mid') }}
                 </el-button>
                 <el-button
                     :type="selectedButton === '左键' ? 'warning' : isDark?'': 'primary'"
@@ -651,7 +654,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                     @click="handleButtonClick('左键')"
                     :plain="selectedButton!=='左键'"
                 >
-                  左键
+                  {{ $t('mouseKey_left') }}
                 </el-button>
 
                 <el-button
@@ -660,7 +663,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                     :type="selectedButton === '前进键' ? 'warning': isDark?'' : 'primary'"
                     :plain="selectedButton!=='前进键'"
                 >
-                  前进键
+                  {{ $t('mouseKey_forward') }}
                 </el-button>
 
                 <el-button
@@ -669,7 +672,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                     :type="selectedButton === '后退键' ? 'warning' : isDark?'': 'primary'"
                     :plain="selectedButton!=='后退键'"
                 >
-                  后退键
+                  {{ $t('mouseKey_back') }}
                 </el-button>
               </div>
             </CardItem>

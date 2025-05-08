@@ -405,55 +405,55 @@ export const hidConsumerCode = {
 
 
 export const MouseKeyItem = [
-    {keyName: '关闭', value: 0x00},
-    {keyName: '左键', value: 0x01},
-    {keyName: '右键', value: 0x02},
-    {keyName: '中键', value: 0x04},
-    {keyName: '后退', value: 0x08},
-    {keyName: '前进', value: 0x10}
+    {keyName: '关闭', value: 0x00,keyNameEn:'Disable'},
+    {keyName: '左键', value: 0x01,keyNameEn:'LEFT'},
+    {keyName: '右键', value: 0x02,keyNameEn:'RIGHT'},
+    {keyName: '中键', value: 0x04,keyNameEn:'MIDDLE'},
+    {keyName: '后退', value: 0x08,keyNameEn:'BACK'},
+    {keyName: '前进', value: 0x10,keyNameEn:'FORWARD'}
 ]
 
 
 export const ProfileKeyItem = [
-    {keyName: '切换板载配置1', value: 0x01},
-    {keyName: '切换板载配置2', value: 0x02},
-    {keyName: '切换板载配置3', value: 0x03},
-    {keyName: '切换板载配置4', value: 0x04}
+    {keyName: '切换板载配置1', value: 0x01,keyNameEn:'Toggle onboard profile 1'},
+    {keyName: '切换板载配置2', value: 0x02,keyNameEn:'Toggle onboard profile 2'},
+    {keyName: '切换板载配置3', value: 0x03,keyNameEn:'Toggle onboard profile 3'},
+    {keyName: '切换板载配置4', value: 0x04,keyNameEn:'Toggle onboard profile 4'}
 ]
 
 export const DPIKeyItem = [
-    {keyName: 'DPI循环', value: 0x01},
-    {keyName: 'DPI+', value: 0x02},
-    {keyName: 'DPI-', value: 0x03}
+    {keyName: 'DPI循环', value: 0x01,keyNameEn:'DPI loop'},
+    {keyName: 'DPI+', value: 0x02,keyNameEn:'DPI+'},
+    {keyName: 'DPI-', value: 0x03,keyNameEn:'DPI-'}
 ];
 export const ScrollKeyItem = [
-    {keyName: '左滚', value: 0x01},
-    {keyName: '右滚', value: 0x02},
-    {keyName: '上滚', value: 0x04},
-    {keyName: '下滚', value: 0x08}
+    {keyName: '左滚', value: 0x01,keyNameEn:'Scroll left'},
+    {keyName: '右滚', value: 0x02,keyNameEn:'Scroll right'},
+    {keyName: '上滚', value: 0x04,keyNameEn:'Scroll top'},
+    {keyName: '下滚', value: 0x08,keyNameEn:'Scroll bottom'}
 ];
 
 export const ConsumerKeyItem = [
-    {keyName: '亮度+', value: [0x6F, 0x00]},
-    {keyName: '亮度-', value: [0x70, 0x00]},
-    {keyName: '播放器', value: [0x83, 0x01]},
-    {keyName: '停止播放', value: [0xB7, 0x00]},
-    {keyName: '播放/暂停', value: [0xCD, 0x00]},
-    {keyName: '上一首', value: [0xB6, 0x00]},
-    {keyName: '下一首', value: [0xB5, 0x00]},
-    {keyName: '静音', value: [0xE2, 0x00]},
-    {keyName: '音量+', value: [0xE9, 0x00]},
-    {keyName: '音量-', value: [0xEA, 0x00]},
-    {keyName: '邮件', value: [0x8A, 0x01]},
-    {keyName: '主页', value: [0x23, 0x02]},
-    {keyName: '搜索', value: [0x21, 0x02]},
-    {keyName: '刷新', value: [0x27, 0x02]},
-    {keyName: '收藏夹', value: [0x2A, 0x02]},
-    {keyName: '网页停止', value: [0x26, 0x02]},
-    {keyName: '网页前进', value: [0x25, 0x02]},
-    {keyName: '网页后退', value: [0x24, 0x02]},
-    {keyName: '计算器', value: [0x92, 0x01]},
-    {keyName: '我的电脑', value: [0x94, 0x01]}
+    {keyName: '亮度+', value: [0x6F, 0x00],keyNameEn:'Brightness +'},
+    {keyName: '亮度-', value: [0x70, 0x00],keyNameEn:'Brightness -'},
+    {keyName: '播放器', value: [0x83, 0x01],keyNameEn:'Player'},
+    {keyName: '停止播放', value: [0xB7, 0x00],keyNameEn:'Stop playing'},
+    {keyName: '播放/暂停', value: [0xCD, 0x00],keyNameEn:'Play/Pause'},
+    {keyName: '上一首', value: [0xB6, 0x00], keyNameEn: 'Previous Track'},
+    {keyName: '下一首', value: [0xB5, 0x00], keyNameEn: 'Next Track'},
+    {keyName: '静音', value: [0xE2, 0x00], keyNameEn: 'Mute'},
+    {keyName: '音量+', value: [0xE9, 0x00], keyNameEn: 'Volume Up'},
+    {keyName: '音量-', value: [0xEA, 0x00], keyNameEn: 'Volume Down'},
+    {keyName: '邮件', value: [0x8A, 0x01], keyNameEn: 'Email'},
+    {keyName: '主页', value: [0x23, 0x02], keyNameEn: 'Home'},
+    {keyName: '搜索', value: [0x21, 0x02], keyNameEn: 'Search'},
+    {keyName: '刷新', value: [0x27, 0x02], keyNameEn: 'Refresh'},
+    {keyName: '收藏夹', value: [0x2A, 0x02], keyNameEn: 'Favorites'},
+    {keyName: '网页停止', value: [0x26, 0x02], keyNameEn: 'Web Stop'},
+    {keyName: '网页前进', value: [0x25, 0x02], keyNameEn: 'Web Forward'},
+    {keyName: '网页后退', value: [0x24, 0x02], keyNameEn: 'Web Back'},
+    {keyName: '计算器', value: [0x92, 0x01], keyNameEn: 'Calculator'},
+    {keyName: '我的电脑', value: [0x94, 0x01], keyNameEn: 'My Computer'}
 ];
 
 export const KeyBoardKeyItem = [
@@ -628,7 +628,7 @@ export const AllKeyBoardKeyEventKey = [
         }
     },
     {
-        'Space': {
+        ' ': {
             keyName: 'Space',
             value: 0x2C
         }

@@ -1,13 +1,13 @@
 <template>
   <div class="macro-recorder dark:bg-zinc-900 dark:text-white">
     <el-radio-group v-model="loopType">
-      <el-text class="dark:bg-zinc-900 dark:text-white">循环方式：</el-text>
-      <el-radio label="1" size="large" border>按住循环</el-radio>
-      <el-radio label="2" size="large" border>循环至此键按下</el-radio>
-      <el-radio label="3" size="large" border>循环至任何键按下</el-radio>
-      <el-radio label="4" size="large" border>循环
+      <el-text class="dark:bg-zinc-900 dark:text-white">{{ $t('macro_record_looptype') }}</el-text>
+      <el-radio label="1" size="large" border>{{ $t('macro_record_type_press') }}</el-radio>
+      <el-radio label="2" size="large" border>{{ $t('macro_record_type_press_down') }}</el-radio>
+      <el-radio label="3" size="large" border>{{ $t('macro_record_type_press_down_every') }}</el-radio>
+      <el-radio label="4" size="large" border>{{ $t('macro_record_loop') }}
         <el-input-number v-model="loopTimes" min="1">
-          <template #suffix>次</template>
+          <template #suffix>{{ $t('unit_times') }}</template>
         </el-input-number>
       </el-radio>
     </el-radio-group>
@@ -18,7 +18,7 @@
           @click="toggleRecording"
           :icon="isRecording ? VideoPause : VideoPlay"
       >
-        {{ isRecording ? '停止录制' : '开始录制' }}
+        {{ isRecording ? $t('bt_stop_record') : $t('bt_start_record') }}
       </el-button>
       <!--      <el-button-->
       <!--          type="success"-->
@@ -32,7 +32,7 @@
           @click="clearActions"
           :disabled="actions.length === 0 || isRecording"
       >
-        清空记录
+        {{ $t('bt_clear_record') }}
       </el-button>
 
       <el-button
@@ -40,7 +40,7 @@
           @click="closeActions"
           :disabled="isRecording"
       >
-        关闭录制
+        {{ $t('bt_close_record') }}
       </el-button>
 
       <!--      <el-text>延迟时间:</el-text>-->
@@ -68,8 +68,8 @@
             <el-popover :visible="activeEditTimeIndex === index" placement="top" :width="180">
               <el-input-number v-model="editInputTimeRef" :min="0"></el-input-number>
               <div style="text-align: right" class="mt-2">
-                <el-button size="small" text @click="handleDeleteTime(index)">删除</el-button>
-                <el-button size="small" type="primary" @click="handleEditTime(index)">修改</el-button>
+                <el-button size="small" text @click="handleDeleteTime(index)">{{ $t('bt_del') }}</el-button>
+                <el-button size="small" type="primary" @click="handleEditTime(index)">{{ $t('bt_edit') }}</el-button>
               </div>
               <template #reference>
                 <el-button
@@ -119,7 +119,7 @@
                 </template>
               </el-dropdown>
               <el-input v-if="action.type===KeyType.KEYBOARD" class="1"
-                        :ref="el => { if (el) editInputRefs[index] = el }" placeholder="请输入键盘按键"
+                        :ref="el => { if (el) editInputRefs[index] = el }" :placeholder="$t('input_key_hint')"
                         v-model="editInputKey"
                         @keydown="handleKeydown" @mouseenter="handleMouseEnter(index)"
                         @mouseleave="handleMouseLeave(index)"
@@ -159,8 +159,10 @@ import {Bottom, Edit, Mouse, Right, Stopwatch, Top, VideoPause, VideoPlay} from 
 import {KeyActionType, KeyType, MacroAction, saveActionsToLocalStorage} from "@/components/macro.ts";
 import {AllKeyBoardKeyEventKey, MouseKeyItem} from "@/components/hidcode.ts";
 import {useDark} from "@vueuse/core";
+import {useI18n} from "vue-i18n";
 
 const isDark = useDark({});
+const localeI18n = useI18n();
 
 const calculateTime = (index: number): number => {
   if (index === 0 || actions.value.length < 2) return 0;
@@ -325,8 +327,8 @@ const handleKeyDown = (e) => {
   // 记录按键（排除功能键）
   if (e.key.length) {
     let keyName = e.key
-    if (e.key === ' ') {
-      keyName = '空格键';
+     if (e.key === ' ') {
+      keyName = localeI18n.t('key_space');
     }
 
     const action: MacroAction = {
@@ -350,7 +352,7 @@ const handleKeyUp = (e) => {
   if (e.key.length) {
     let keyName = e.key
     if (e.key === ' ') {
-      keyName = '空格键';
+      keyName = localeI18n.t('key_space');
     }
 
     const action: MacroAction = {
@@ -377,15 +379,15 @@ const handleMouseDown = (e) => {
     key = "中键"
   } else if (e.button === 3) {
     key = "后退"
-  } else if (e.button === 3) {
+  } else if (e.button === 4) {
     key = "前进"
   }
 
   if (key.length === 0) return;
 
   const action: MacroAction = {
-    keyName: key,
-    keyCode: MouseKeyItem.find(item=>item.keyName===key).value,
+    keyName: localeI18n.locale.value === 'zh-cn' ? MouseKeyItem.find(item => item.keyName === key)?.keyName : MouseKeyItem.find(item => item.keyName === key)?.keyNameEn,
+    keyCode: MouseKeyItem.find(item => item.keyName === key).value,
     action: KeyActionType.DOWN,
     type: KeyType.MOUSE,
     timeStamp: Date.now()
@@ -406,15 +408,15 @@ const handleMouseUp = (e) => {
     key = "中键"
   } else if (e.button === 3) {
     key = "后退"
-  } else if (e.button === 3) {
+  } else if (e.button === 4) {
     key = "前进"
   }
 
   if (key.length === 0) return;
 
   const action: MacroAction = {
-    keyName: key,
-    keyCode: MouseKeyItem.find(item=>item.keyName===key).value,
+    keyName: localeI18n.locale.value === 'zh-cn' ? MouseKeyItem.find(item => item.keyName === key)?.keyName : MouseKeyItem.find(item => item.keyName === key)?.keyNameEn,
+    keyCode: MouseKeyItem.find(item => item.keyName === key).value,
     action: KeyActionType.UP,
     type: KeyType.MOUSE,
     timeStamp: Date.now()
