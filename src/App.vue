@@ -4,6 +4,12 @@ import ConnectDevice from './components/ConnectDevice.vue';
 import DeviceMain from './components/DeviceMain.vue';
 import LogConsole from './components/LogConsole.vue';
 import {setHIDDevice} from "@/components/webhid.ts";
+import Ic_language from "@/assets/ic_language.vue";
+import {Switch, SwitchFilled} from "@element-plus/icons-vue";
+import {useDark, useToggle} from "@vueuse/core";
+import {switchLanguage} from "@/components/lang/i18n.ts";
+import ic_theme_dark from "@/assets/ic_theme_dark.vue";
+import ic_theme_light from "@/assets/ic_theme_light.vue";
 
 const connected = ref(false);
 const hard = ref(false);
@@ -52,6 +58,13 @@ window.addEventListener("unhandledrejection", (event) => {
   console.error(`${event.type}: ${event.reason}`);
 });
 
+
+const isDark = useDark({});
+const toggleTheme = useToggle(isDark)
+const toggleLanguage = (lang: string) => {
+  switchLanguage(lang)
+}
+
 </script>
 
 <template>
@@ -60,6 +73,23 @@ window.addEventListener("unhandledrejection", (event) => {
                    @device-created="(payload) => {connected = true; hard = false;currentDevice = payload;setHIDDevice(currentDevice)}"
                    @device-not-created="connected = true; hard = false;"/>
     <DeviceMain v-else :hard="hard" :currentDevice="currentDevice" @back="connected = false"/>
+  </div>
+
+  <div class="fixed top-5 right-20 flex justify-center items-center">
+    <el-switch style="--el-switch-on-color: #2B2D30FF; --el-switch-border-color: #FFF" size="default" v-model="isDark" inline-prompt
+               :active-icon="ic_theme_dark" :inactive-icon="ic_theme_light" class="mr-5"/>
+
+    <el-dropdown>
+        <span class="">
+          <el-icon class="el-icon--right dark:text-white" size="28"><ic_language/></el-icon>
+        </span>
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item @click="toggleLanguage('en')">English</el-dropdown-item>
+          <el-dropdown-item @click="toggleLanguage('zh-cn')">中文</el-dropdown-item>
+        </el-dropdown-menu>
+      </template>
+    </el-dropdown>
   </div>
 </template>
 

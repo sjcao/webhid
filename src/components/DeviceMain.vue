@@ -30,10 +30,6 @@ const localeI18n = useI18n();
 const language = localeI18n.locale
 const locale = computed(() => (language.value === 'zh-cn' ? zhCn : en))
 
-const toggle = () => {
-  switchLanguage()
-}
-
 const allProfileList = [localeI18n.t('menu_profile1')
   , localeI18n.t('menu_profile2')
   , localeI18n.t('menu_profile3')
@@ -74,9 +70,6 @@ const goBack = () => {
 
 const isDark = useDark({});
 
-const toggleTheme = useToggle(isDark)
-
-
 const handleSelectProfile = (index: number) => {
   activeProfile.value = index
   //切换
@@ -116,11 +109,6 @@ onMounted(() => {
               }} </span>
             </template>
           </el-page-header>
-          <el-button :icon="Switch" @click="toggle">{{ $t('switchLanguage') }}</el-button>
-          <el-button :icon="SwitchFilled" @click="toggleTheme()">{{
-              isDark ? $t('lightTheme') : $t('darkTheme')
-            }}
-          </el-button>
         </div>
       </el-header>
 

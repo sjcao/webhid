@@ -6,21 +6,11 @@ import {Motion} from "motion-v";
 import {BentoGrid, BentoGridCard, BentoGridItem} from "@/components/ui/bento-grid";
 import {useDark} from "@vueuse/core";
 import {useI18n} from "vue-i18n";
-import {Switch, SwitchFilled} from "@element-plus/icons-vue";
-import {useToggle} from "@vueuse/core";
-import { switchLanguage } from "@/components/lang/i18n.ts";
-
 
 const emit = defineEmits(['deviceCreated', 'deviceNotCreated']);
 
 const isDark = useDark({});
-const toggleTheme = useToggle(isDark)
-
 const localeI18n = useI18n();
-
-const toggleLanguage = () => {
-  switchLanguage()
-}
 
 // 设备列表
 const devices = ref<HIDDevice[]>([])
@@ -135,7 +125,7 @@ const isPythonReady = computed(() => {
 </script>
 <template>
   <AuroraBackground
-      class="fixed overflow-auto flex-1 top-0 left-0 w-full h-full flex flex-col items-center justify-center gap-4 px-4"
+      class="fixed top-0 left-0 w-full h-full flex flex-col items-center justify-center gap-4 px-4"
       :radial-gradient="true" :class="isDark">
     <Motion
         as="div"
@@ -154,11 +144,6 @@ const isPythonReady = computed(() => {
     >
 
       <el-container class="connect-device-container">
-        <div class="fixed top-10 right-10">
-        <el-button :icon="Switch" @click="toggleLanguage">{{$t('switchLanguage')}}</el-button>
-        <el-button :icon="SwitchFilled" @click="toggleTheme()">{{ isDark ? $t('lightTheme') : $t('darkTheme') }}</el-button>
-        </div>
-
         <el-header class="mt-10">
           <div class="text-center text-xl font-bold md:text-4xl dark:text-white"> {{$t('top_title')}}</div>
         </el-header>

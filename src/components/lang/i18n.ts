@@ -20,9 +20,9 @@ const i18n = createI18n({
 
 // 从 localStorage 中获取用户上次选择的语言，如果不存在则使用默认语言 'zh-cn'
 // 动态切换语言并保存到 localStorage
-export function switchLanguage() {
-    i18n.global.locale.value = i18n.global.locale.value === 'zh-cn' ? 'en' : 'zh-cn'
-    localStorage.setItem('user-locale', i18n.global.locale.value); // 保存到 localStorage
+export function switchLanguage(lang: "zh-cn" | "en") {
+    i18n.global.locale.value = lang;
+    localStorage.setItem('user-locale', lang); // 保存到 localStorage
 }
 
 
