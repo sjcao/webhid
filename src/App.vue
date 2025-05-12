@@ -60,6 +60,7 @@ window.addEventListener("unhandledrejection", (event) => {
 
 
 const isDark = useDark({});
+const isDarkOn = ref(isDark.value);
 const toggleTheme = useToggle(isDark)
 const toggleLanguage = (lang: string) => {
   switchLanguage(lang)
@@ -76,8 +77,8 @@ const toggleLanguage = (lang: string) => {
   </div>
 
   <div class="fixed top-5 right-20 flex justify-center items-center">
-    <el-switch style="--el-switch-on-color: #2B2D30FF; --el-switch-border-color: #FFF" size="default" v-model="isDark" inline-prompt
-               :active-icon="ic_theme_dark" :inactive-icon="ic_theme_light" class="mr-5"/>
+    <el-switch style="--el-switch-on-color: #2B2D30FF; --el-switch-border-color: #FFF" size="default" v-model="isDarkOn" inline-prompt
+               :active-icon="ic_theme_dark" :inactive-icon="ic_theme_light" class="mr-5" @change="toggleTheme()"/>
 
     <el-dropdown>
         <span class="">
