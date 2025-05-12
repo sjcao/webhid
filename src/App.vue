@@ -86,8 +86,8 @@ const toggleLanguage = (lang: string) => {
         </span>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item @click="toggleLanguage('en')">English</el-dropdown-item>
-          <el-dropdown-item @click="toggleLanguage('zh-cn')">中文</el-dropdown-item>
+          <el-dropdown-item @click="toggleLanguage('en')"><span class="text-lg">English</span></el-dropdown-item>
+          <el-dropdown-item @click="toggleLanguage('zh-cn')"><span class="text-lg">中文</span></el-dropdown-item>
         </el-dropdown-menu>
       </template>
     </el-dropdown>
