@@ -405,7 +405,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                     </template>
                     <el-menu-item v-for="(keyItem,index) in MouseKeyItem" :index="'0'+index"
                                   @click="handleOnMenuClick(keyItem,'鼠标按键',index)">
-                      <span>{{ localeI18n.locale.value === 'zhcn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
+                      <span>{{ localeI18n.locale.value === 'zh-cn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
                     </el-menu-item>
                   </el-sub-menu>
 
@@ -415,7 +415,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ProfileKeyItem" :index="'1'+index"
                                   @click="handleOnMenuClick(keyItem,'板载配置',index)">
-                      <span>{{ localeI18n.locale.value === 'zhcn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
+                      <span>{{ localeI18n.locale.value === 'zh-cn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
                     </el-menu-item>
                   </el-sub-menu>
 
@@ -425,7 +425,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                     </template>
                     <el-menu-item v-for="(keyItem,index) in DPIKeyItem" :index="'2'+index"
                                   @click="handleOnMenuClick(keyItem,'DPI切换',index)">
-                      <span>{{ localeI18n.locale.value === 'zhcn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
+                      <span>{{ localeI18n.locale.value === 'zh-cn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
                     </el-menu-item>
                   </el-sub-menu>
 
@@ -435,7 +435,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ScrollKeyItem" :index="'3'+index"
                                   @click="handleOnMenuClick(keyItem,'鼠标滚轮',index)">
-                      <span>{{ localeI18n.locale.value === 'zhcn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
+                      <span>{{ localeI18n.locale.value === 'zh-cn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
                     </el-menu-item>
                   </el-sub-menu>
 
@@ -445,7 +445,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ConsumerKeyItem" :index="'4'+index"
                                   @click="handleOnMenuClick(keyItem,'多媒体',index)">
-                      <span>{{ localeI18n.locale.value === 'zhcn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
+                      <span>{{ localeI18n.locale.value === 'zh-cn' ? keyItem.keyName : keyItem.keyNameEn }}</span>
                     </el-menu-item>
                   </el-sub-menu>
 
