@@ -1,24 +1,29 @@
 <script setup lang="ts">
-import {computed, onMounted, ref} from 'vue';
+import {onMounted, ref} from 'vue';
 
 import {CardBody, CardContainer, CardItem} from "@/components/ui/card-3d";
-import router from "@/router.ts";
 import MacroRecorder from "@/components/MacroRecorder.vue";
 import {
+  KeyActionType,
+  KeyType,
   loadActionsListFromLocalStorage,
+  LooperType,
   saveActionsListToLocalStorage,
+  SaveMacroAction,
+  calculateTime
 } from "@/components/macro.ts";
 import {ButtonID, KeyFunctionType, MouseCommandBuilder, ParamType, ResponseParser} from "@/components/command.ts";
 import {
-  MouseKeyItem,
-  ProfileKeyItem,
-  DPIKeyItem,
-  ScrollKeyItem,
+  AllKeyBoardKeyEventKey,
   ConsumerKeyItem,
-  KeyBoardKeyItem,
-  FKeyBoardKeyItem,
   ControlKeyBoardKeyItem,
-  NumPadKeyBoardKeyItem, AllKeyBoardKeyEventKey
+  DPIKeyItem,
+  FKeyBoardKeyItem,
+  KeyBoardKeyItem,
+  MouseKeyItem,
+  NumPadKeyBoardKeyItem,
+  ProfileKeyItem,
+  ScrollKeyItem
 } from "@/components/hidcode.ts";
 import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
 import {ElMessage} from "element-plus";
@@ -167,7 +172,7 @@ const handleMacroBack = () => {
   macroList.value = loadActionsListFromLocalStorage()
 };
 
-const macroList = ref([])
+const macroList = ref<SaveMacroAction[]>([])
 const currentMacroIndex = ref(-1)
 const handleDeletMacro = (index: number) => {
   macroList.value.splice(index, 1);
@@ -175,9 +180,46 @@ const handleDeletMacro = (index: number) => {
 };
 
 const handleSetMacro = (index: number) => {
-  const macro = macroList.value.at(index)
+  const macro: SaveMacroAction = macroList.value.at(index)
   currentMacroIndex.value = index
-  //todo 安装宏设置
+
+  if (selectedButton.value === '') return
+  let selectKey: ButtonID = getButtonID(selectedButton.value)
+
+
+  let looperType = macro.looperType
+  if (looperType === LooperType.MACRO_RECORD_LOOP) {
+    looperType = macro.looperTimes
+  }
+
+
+  for (let i = 0; i < macro.actions.length; i++) {
+    const macroAction = macro.actions[i]
+    let type = 0
+    let action = macroAction.action
+    let keyType = macroAction.type
+    let keyValue = macroAction.keyCode
+    if (action === KeyActionType.UP) {
+      type = 0
+      keyValue = [0x00]
+    } else {
+      if (keyType === KeyType.MOUSE) {
+        type = 1
+      } else {
+        type = 2
+      }
+    }
+    const times = calculateTime(i, macro.actions)
+    const cmd = MouseCommandBuilder.setButtonMacro(selectKey, index, looperType, type, times, keyValue);
+
+    sendDataToDevice(cmd)
+
+  }
+
+  ElMessage({
+    message: localeI18n.t('message_setting_success'),
+    type: 'success',
+  })
 };
 
 
@@ -306,7 +348,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
   if (selectedButton.value === '') return
   let selectKey: ButtonID = getButtonID(selectedButton.value)
 
-  let keytype: KeyFunctionType
+  let keytype: KeyFunctionType = KeyFunctionType.MOUSE
   //发送修改到
   switch (type) {
     case '鼠标按键':
@@ -377,17 +419,19 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
       <transition name="el-zoom-in-top">
         <el-col :span="11" v-if="isShowButtonMenu" class="max-h-screen">
           <div class="flex justify-between mb-1">
-            <h5 class="mb-2">{{$t('keySetting_keyMenu_title')}}
+            <h5 class="mb-2">{{ $t('keySetting_keyMenu_title') }}
             </h5>
-            <el-button :type="isDark?'':'primary'" plain class="" @click="isShowButtonMenu=false;selectedButton=''">→</el-button>
+            <el-button :type="isDark?'':'primary'" plain class="" @click="isShowButtonMenu=false;selectedButton=''">→
+            </el-button>
           </div>
           <!--        <div class="mb-2">-->
           <!--          <el-text>当前分配:{{}}</el-text>-->
           <!--        </div>-->
-          <el-tabs :type="isDark?'card':'border-card'"  class="dark:bg-zinc-900 dark:text-white" :model-value="activeTags">
-            <el-tab-pane  name="系统按键" class="dark:bg-zinc-900">
+          <el-tabs :type="isDark?'card':'border-card'" class="dark:bg-zinc-900 dark:text-white"
+                   :model-value="activeTags">
+            <el-tab-pane name="系统按键" class="dark:bg-zinc-900">
               <template #label>
-                <span class="dark:text-white">{{$t('keySetting_keyMenu_system_button')}}</span>
+                <span class="dark:text-white">{{ $t('keySetting_keyMenu_system_button') }}</span>
               </template>
               <el-menu
                   class="el-menu-vertical-demo menu-height overflow-y-auto dark:bg-zinc-900"
@@ -401,7 +445,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                 <el-menu-item-group>
                   <el-sub-menu index="0">
                     <template #title>
-                      <span class="font-bold dark:text-white">{{$t('keySetting_keyMenu_system_mouse')}}</span>
+                      <span class="font-bold dark:text-white">{{ $t('keySetting_keyMenu_system_mouse') }}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in MouseKeyItem" :index="'0'+index"
                                   @click="handleOnMenuClick(keyItem,'鼠标按键',index)">
@@ -411,7 +455,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="1">
                     <template #title>
-                      <span class="font-bold dark:text-white">{{$t('keySetting_keyMenu_system_profile')}}</span>
+                      <span class="font-bold dark:text-white">{{ $t('keySetting_keyMenu_system_profile') }}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ProfileKeyItem" :index="'1'+index"
                                   @click="handleOnMenuClick(keyItem,'板载配置',index)">
@@ -421,7 +465,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="2">
                     <template #title>
-                      <span class="font-bold dark:text-white">{{$t('keySetting_keyMenu_system_dpi')}}</span>
+                      <span class="font-bold dark:text-white">{{ $t('keySetting_keyMenu_system_dpi') }}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in DPIKeyItem" :index="'2'+index"
                                   @click="handleOnMenuClick(keyItem,'DPI切换',index)">
@@ -431,7 +475,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="3">
                     <template #title>
-                      <span class="font-bold dark:text-white">{{$t('keySetting_keyMenu_system_scroll')}}</span>
+                      <span class="font-bold dark:text-white">{{ $t('keySetting_keyMenu_system_scroll') }}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ScrollKeyItem" :index="'3'+index"
                                   @click="handleOnMenuClick(keyItem,'鼠标滚轮',index)">
@@ -441,7 +485,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="4">
                     <template #title>
-                      <span class="font-bold dark:text-white">{{$t('keySetting_keyMenu_system_media')}}</span>
+                      <span class="font-bold dark:text-white">{{ $t('keySetting_keyMenu_system_media') }}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ConsumerKeyItem" :index="'4'+index"
                                   @click="handleOnMenuClick(keyItem,'多媒体',index)">
@@ -454,7 +498,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
             </el-tab-pane>
             <el-tab-pane name="键盘按键">
               <template #label>
-                <span class="dark:text-white">{{$t('keySetting_keyMenu_keyboard_button')}}</span>
+                <span class="dark:text-white">{{ $t('keySetting_keyMenu_keyboard_button') }}</span>
               </template>
               <el-menu
                   class="el-menu-vertical-demo menu-height overflow-y-auto"
@@ -468,7 +512,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                 <el-menu-item-group>
                   <el-sub-menu index="0">
                     <template #title>
-                      <span class="font-bold">{{$t('keySetting_keyMenu_keyboard_a_n')}}</span>
+                      <span class="font-bold">{{ $t('keySetting_keyMenu_keyboard_a_n') }}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in KeyBoardKeyItem" :index="'0'+index"
                                   @click="handleOnMenuClick(keyItem,'字母和数字键',index)"><span>{{
@@ -479,7 +523,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="1">
                     <template #title>
-                      <span class="font-bold">{{$t('keySetting_keyMenu_keyboard_f')}}</span>
+                      <span class="font-bold">{{ $t('keySetting_keyMenu_keyboard_f') }}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in FKeyBoardKeyItem" :index="'1'+index"
                                   @click="handleOnMenuClick(keyItem,'F区功能键',index)"><span>{{
@@ -490,7 +534,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="2">
                     <template #title>
-                      <span class="font-bold">{{$t('keySetting_keyMenu_keyboard_numpad')}}</span>
+                      <span class="font-bold">{{ $t('keySetting_keyMenu_keyboard_numpad') }}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in NumPadKeyBoardKeyItem" :index="'2'+index"
                                   @click="handleOnMenuClick(keyItem,'数字小键盘键',index)"><span>{{
@@ -501,7 +545,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
 
                   <el-sub-menu index="3">
                     <template #title>
-                      <span class="font-bold">{{$t('keySetting_keyMenu_keyboard_control')}}</span>
+                      <span class="font-bold">{{ $t('keySetting_keyMenu_keyboard_control') }}</span>
                     </template>
                     <el-menu-item v-for="(keyItem,index) in ControlKeyBoardKeyItem" :index="'3'+index"
                                   @click="handleOnMenuClick(keyItem,'控制键与字符键',index)"><span>{{
@@ -515,7 +559,7 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
             </el-tab-pane>
             <el-tab-pane name="特殊按键" class="max-h-fit overflow-y-auto">
               <template #label>
-                <span class="dark:text-white">{{$t('keySetting_keyMenu_special_button')}}</span>
+                <span class="dark:text-white">{{ $t('keySetting_keyMenu_special_button') }}</span>
               </template>
               <el-card class="box-card dark:bg-zinc-900 dark:text-white">
                 <template #header>
@@ -530,21 +574,24 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                   <div>
                     <div>
                       <el-text class="dark:text-white">{{ $t('keySetting_tabs_special_fireKey_click_delay') }}</el-text>
-                      <el-input-number class="dark:text-white" size="default" v-model="hybetweenTime" :min="0"></el-input-number>
+                      <el-input-number class="dark:text-white" size="default" v-model="hybetweenTime"
+                                       :min="0"></el-input-number>
                       <el-text class="dark:text-white">ms</el-text>
                     </div>
                     <div class="mt-2">
                       <el-text class="dark:text-white">{{ $t('keySetting_tabs_special_fireKey_click_times') }}</el-text>
-                      <el-input-number  class="dark:text-white" size="default" v-model="hyTimes" :min="0"></el-input-number>
-                      <el-text class="dark:text-white" >{{ $t('unit_times') }}</el-text>
+                      <el-input-number class="dark:text-white" size="default" v-model="hyTimes"
+                                       :min="0"></el-input-number>
+                      <el-text class="dark:text-white">{{ $t('unit_times') }}</el-text>
                     </div>
                   </div>
                   <div>
-                    <el-text type="warning">{{$t('keySetting_tabs_special_fireKey_h2')}}</el-text>
+                    <el-text type="warning">{{ $t('keySetting_tabs_special_fireKey_h2') }}</el-text>
                   </div>
                   <div>
                     <el-button type="primary" plain
-                               @click="handleOnMenuClick({value:[hybetweenTime,hyTimes]},'火力键',0)">{{$t('bt_save_select')}}
+                               @click="handleOnMenuClick({value:[hybetweenTime,hyTimes]},'火力键',0)">
+                      {{ $t('bt_save_select') }}
                     </el-button>
                   </div>
                 </div>
@@ -574,32 +621,40 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
                   </div>
                   <div>
                     <el-button type="primary" plain @click="handleOnMenuClick({value:getOrderValue()},'组合键',0)">
-                      {{$t('bt_save_select')}}
+                      {{ $t('bt_save_select') }}
                     </el-button>
-                    <el-button type="text" plain @click="combineSelectKey=''">{{$t('bt_clear')}}</el-button>
+                    <el-button type="text" plain @click="combineSelectKey=''">{{ $t('bt_clear') }}</el-button>
                   </div>
                 </div>
               </el-card>
             </el-tab-pane>
             <el-tab-pane name="宏设置" class="menu-height overflow-y-auto dark:bg-zinc-900">
               <template #label>
-                <span class="dark:text-white">{{$t('keySetting_keyMenu_macro_button')}}</span>
+                <span class="dark:text-white">{{ $t('keySetting_keyMenu_macro_button') }}</span>
               </template>
               <el-card class="box-card dark:bg-zinc-900">
                 <template #header>
                   <div class="card-header flex justify-between">
-                    <span class="dark:text-white" >{{ $t('macro_list') }}:</span>
+                    <span class="dark:text-white">{{ $t('macro_list') }}:</span>
                     <!--                  <span>当前设置编号{{ currentMacroIndex + 1 }}</span>-->
-                    <el-button type="success" size="default" @click="isShowMacro=true">{{ $t('bt_create_macro') }}</el-button>
+                    <el-button type="success" size="default" @click="isShowMacro=true">{{
+                        $t('bt_create_macro')
+                      }}
+                    </el-button>
                   </div>
                 </template>
                 <el-empty :image-size="100" v-if="macroList.length===0"/>
-                <div class="flex justify-between dark:text-white mt-2" v-if="macroList.length > 0 " v-for="(item,index) in macroList">
+                <div class="flex justify-between dark:text-white mt-2" v-if="macroList.length > 0 "
+                     v-for="(item,index) in macroList">
                   {{ $t('item_macro') + (index + 1) }}
                   <div>
-                    <el-checkbox v-if="currentMacroIndex === index" :checked="true" :label="$t('status_opened')" size="large"/>
-                    <el-button type="primary" @click="handleSetMacro(index)" class="ml-2">{{ $t('bt_open') }}</el-button>
-                    <el-button type="danger" @click="handleDeletMacro(index)">{{$t('bt_del')}}</el-button>
+                    <el-checkbox v-if="currentMacroIndex === index" :checked="true" :label="$t('status_opened')"
+                                 size="large"/>
+                    <el-button type="primary" @click="handleSetMacro(index)" class="ml-2">{{
+                        $t('bt_open')
+                      }}
+                    </el-button>
+                    <el-button type="danger" @click="handleDeletMacro(index)">{{ $t('bt_del') }}</el-button>
                   </div>
                 </div>
               </el-card>
@@ -701,7 +756,8 @@ const handleOnMenuClick = (keyItem: any, type: string, index: number) => {
     </template>
   </el-dialog>
 
-  <el-drawer ref="elDrawerMacro" v-model="isShowMacro" :show-close="false" class="demo-drawer dark:bg-zinc-900" :size="'96%'"
+  <el-drawer ref="elDrawerMacro" v-model="isShowMacro" :show-close="false" class="demo-drawer dark:bg-zinc-900"
+             :size="'96%'"
              :lock-scroll="true" :destroy-on-close="true"
              :close-on-click-modal="false" :close-on-press-escape="false" :with-header="false">
     <div class="demo-drawer__content">

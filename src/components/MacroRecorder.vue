@@ -156,7 +156,14 @@
 import {onBeforeUnmount, onMounted, ref} from 'vue'
 
 import {Bottom, Edit, Mouse, Right, Stopwatch, Top, VideoPause, VideoPlay} from '@element-plus/icons-vue'
-import {KeyActionType, KeyType, MacroAction, saveActionsToLocalStorage} from "@/components/macro.ts";
+import {
+  KeyActionType,
+  KeyType,
+  LooperType,
+  MacroAction,
+  saveActionsToLocalStorage,
+  SaveMacroAction
+} from "@/components/macro.ts";
 import {AllKeyBoardKeyEventKey, MouseKeyItem} from "@/components/hidcode.ts";
 import {useDark} from "@vueuse/core";
 import {useI18n} from "vue-i18n";
@@ -283,7 +290,6 @@ const handleEditItem = (index: number) => {
       // 修改按键值逻辑
       if (editInputKey.value) {
         actions.value[index].keyName = editInputKey.value.toUpperCase();
-        // todo
         actions.value[index].keyCode = AllKeyBoardKeyEventKey.find(item => item[editInputKey.value])[editInputKey.value].value
       }
     }
@@ -327,7 +333,7 @@ const handleKeyDown = (e) => {
   // 记录按键（排除功能键）
   if (e.key.length) {
     let keyName = e.key
-     if (e.key === ' ') {
+    if (e.key === ' ') {
       keyName = localeI18n.t('key_space');
     }
 
@@ -387,7 +393,7 @@ const handleMouseDown = (e) => {
 
   const action: MacroAction = {
     keyName: localeI18n.locale.value === 'zh-cn' ? MouseKeyItem.find(item => item.keyName === key)?.keyName : MouseKeyItem.find(item => item.keyName === key)?.keyNameEn,
-    keyCode: MouseKeyItem.find(item => item.keyName === key).value,
+    keyCode: MouseKeyItem.find(item => item.keyName === key)?.number,
     action: KeyActionType.DOWN,
     type: KeyType.MOUSE,
     timeStamp: Date.now()
@@ -416,7 +422,7 @@ const handleMouseUp = (e) => {
 
   const action: MacroAction = {
     keyName: localeI18n.locale.value === 'zh-cn' ? MouseKeyItem.find(item => item.keyName === key)?.keyName : MouseKeyItem.find(item => item.keyName === key)?.keyNameEn,
-    keyCode: MouseKeyItem.find(item => item.keyName === key).value,
+    keyCode: MouseKeyItem.find(item => item.keyName === key)?.number,
     action: KeyActionType.UP,
     type: KeyType.MOUSE,
     timeStamp: Date.now()
@@ -448,9 +454,35 @@ const clearActions = () => {
 const closeActions = () => {
   //保存本地
   if (actions.value.length) {
-    saveActionsToLocalStorage(actions.value)
+
+    const savedActions: SaveMacroAction = {
+      looperType: getLooperType(),
+      looperTimes: loopTimes.value,
+      actions: actions.value
+    }
+
+    saveActionsToLocalStorage(savedActions)
   }
   emit('onClose')
+}
+
+const getLooperType = (): LooperType => {
+  let looperType = LooperType.MACRO_RECORD_TYPE_PRESS
+  switch (loopType.value) {
+    case '1':
+      looperType = LooperType.MACRO_RECORD_TYPE_PRESS
+      break
+    case '2':
+      looperType = LooperType.MACRO_RECORD_TYPE_PRESS_DOWN
+      break
+    case '3':
+      looperType = LooperType.MACRO_RECORD_TYPE_PRESS_DOWN_EVERY
+      break
+    case '4':
+      looperType = LooperType.MACRO_RECORD_LOOP
+      break
+  }
+  return looperType
 }
 
 // 生命周期钩子
@@ -463,6 +495,8 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeyDown)
   window.removeEventListener('keyup', handleKeyUp)
 })
+
+
 </script>
 
 <style scoped>

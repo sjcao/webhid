@@ -37,16 +37,26 @@ export enum KeyFunctionType {
     MACRO = 12
 }
 
-// const MouseKeyValue = ['关闭', '左键', '右键', '中键', '后退', '前进']
-const MouseKeyValue = {
-    
+export enum MacroRepeatType {
+    F0 = 0xF0,
+    F1 = 0xF1,
+    F2 = 0xF2,
 }
+
+export enum MacroButtonType {
+    KEY_UP = 0,
+    MOUSE_DOWN = 1,
+    KEYBOARD_DOWN = 2,
+}
+
+// const MouseKeyValue = ['关闭', '左键', '右键', '中键', '后退', '前进']
+const MouseKeyValue = {}
 const ProfileKeyValue = ['切换板载配置1', '切换板载配置2', '切换板载配置3', '切换板载配置4']
 const DPIKeyValue = ['DPI循环', 'DPI+', 'DPI-']
 const ScrollKeyValue = ['左滚', '右滚', '上滚', '下滚']
-const ConsumerKeyValue= ['亮度+', '亮度-', '播放器', '停止播放', '播放/暂停', '上一首', '下一首', '静音', '音量+', '音量-', '邮件', '主页', '搜索', '刷新', '收藏夹', '网页停止', '网页前进', '网页后退', '计算器', '我的电脑']
+const ConsumerKeyValue = ['亮度+', '亮度-', '播放器', '停止播放', '播放/暂停', '上一首', '下一首', '静音', '音量+', '音量-', '邮件', '主页', '搜索', '刷新', '收藏夹', '网页停止', '网页前进', '网页后退', '计算器', '我的电脑']
 const KeyBoardKeyValue = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '!1', '@2', '#3', '$4', '%5', '^6', '&7', '*8', '(9', ')0', 'K', 'L', 'Z']
-const FKeyBoardKeyValue= ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12']
+const FKeyBoardKeyValue = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12']
 const NumPadKeyBoardKeyValue = ['/', '*', '-', '+', 'enter', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.']
 const ControlKeyBoardKeyValue = ['~`', '_-', '+=', '{[', ']}', ':;', '”’', '<,', '>.', '?/'
     , 'Esc', 'Tab', 'Back Space', 'Enter', 'Space', 'Left Win', 'Right Win'
@@ -120,6 +130,22 @@ export class MouseCommandBuilder {
         ...values: number[]
     ): number[] {
         const data = [buttonId, funcType, index, ...values];
+        return this.buildCommand(CommandType.WRITE, ParamType.BUTTON, data);
+    }
+
+    // 设置按键宏
+    static setButtonMacro(
+        buttonId: ButtonID,
+        macroId: number,
+        repeatType: number,
+        macroButtonType: MacroButtonType,
+        time: number,
+        values: number[]
+    ): number[] {
+        const TH = (time >> 8) & 0xFF;
+        const TL = time & 0xFF;
+
+        const data = [buttonId, 0x0B, macroId, repeatType, macroButtonType, ...values, TH, TL];
         return this.buildCommand(CommandType.WRITE, ParamType.BUTTON, data);
     }
 

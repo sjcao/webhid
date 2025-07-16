@@ -405,40 +405,40 @@ export const hidConsumerCode = {
 
 
 export const MouseKeyItem = [
-    {keyName: '关闭', value: 0x00,keyNameEn:'Disable'},
-    {keyName: '左键', value: 0x01,keyNameEn:'LEFT'},
-    {keyName: '右键', value: 0x02,keyNameEn:'RIGHT'},
-    {keyName: '中键', value: 0x04,keyNameEn:'MIDDLE'},
-    {keyName: '后退', value: 0x08,keyNameEn:'BACK'},
-    {keyName: '前进', value: 0x10,keyNameEn:'FORWARD'}
+    {keyName: '关闭', value: [], keyNameEn: 'Disable',number:-1},
+    {keyName: '左键', value: [], keyNameEn: 'LEFT', number: 0},
+    {keyName: '右键', value: [], keyNameEn: 'RIGHT', number: 1},
+    {keyName: '中键', value: [], keyNameEn: 'MIDDLE', number: 2},
+    {keyName: '后退', value: [], keyNameEn: 'BACK', number: 4},
+    {keyName: '前进', value: [], keyNameEn: 'FORWARD', number: 3}
 ]
 
 
 export const ProfileKeyItem = [
-    {keyName: '切换板载配置1', value: 0x01,keyNameEn:'Toggle onboard profile 1'},
-    {keyName: '切换板载配置2', value: 0x02,keyNameEn:'Toggle onboard profile 2'},
-    {keyName: '切换板载配置3', value: 0x03,keyNameEn:'Toggle onboard profile 3'},
-    {keyName: '切换板载配置4', value: 0x04,keyNameEn:'Toggle onboard profile 4'}
+    {keyName: '切换板载配置1', value: [], keyNameEn: 'Toggle onboard profile 1'},
+    {keyName: '切换板载配置2', value: [], keyNameEn: 'Toggle onboard profile 2'},
+    {keyName: '切换板载配置3', value: [], keyNameEn: 'Toggle onboard profile 3'},
+    {keyName: '切换板载配置4', value: [], keyNameEn: 'Toggle onboard profile 4'}
 ]
 
 export const DPIKeyItem = [
-    {keyName: 'DPI循环', value: 0x01,keyNameEn:'DPI loop'},
-    {keyName: 'DPI+', value: 0x02,keyNameEn:'DPI+'},
-    {keyName: 'DPI-', value: 0x03,keyNameEn:'DPI-'}
+    {keyName: 'DPI循环', value: [], keyNameEn: 'DPI loop'},
+    {keyName: 'DPI+', value: [], keyNameEn: 'DPI+'},
+    {keyName: 'DPI-', value: [], keyNameEn: 'DPI-'}
 ];
 export const ScrollKeyItem = [
-    {keyName: '左滚', value: 0x01,keyNameEn:'Scroll left'},
-    {keyName: '右滚', value: 0x02,keyNameEn:'Scroll right'},
-    {keyName: '上滚', value: 0x04,keyNameEn:'Scroll top'},
-    {keyName: '下滚', value: 0x08,keyNameEn:'Scroll bottom'}
+    {keyName: '左滚', value: [], keyNameEn: 'Scroll left'},
+    {keyName: '右滚', value: [], keyNameEn: 'Scroll right'},
+    {keyName: '上滚', value: [], keyNameEn: 'Scroll top'},
+    {keyName: '下滚', value: [], keyNameEn: 'Scroll bottom'}
 ];
 
 export const ConsumerKeyItem = [
-    {keyName: '亮度+', value: [0x6F, 0x00],keyNameEn:'Brightness +'},
-    {keyName: '亮度-', value: [0x70, 0x00],keyNameEn:'Brightness -'},
-    {keyName: '播放器', value: [0x83, 0x01],keyNameEn:'Player'},
-    {keyName: '停止播放', value: [0xB7, 0x00],keyNameEn:'Stop playing'},
-    {keyName: '播放/暂停', value: [0xCD, 0x00],keyNameEn:'Play/Pause'},
+    {keyName: '亮度+', value: [0x6F, 0x00], keyNameEn: 'Brightness +'},
+    {keyName: '亮度-', value: [0x70, 0x00], keyNameEn: 'Brightness -'},
+    {keyName: '播放器', value: [0x83, 0x01], keyNameEn: 'Player'},
+    {keyName: '停止播放', value: [0xB7, 0x00], keyNameEn: 'Stop playing'},
+    {keyName: '播放/暂停', value: [0xCD, 0x00], keyNameEn: 'Play/Pause'},
     {keyName: '上一首', value: [0xB6, 0x00], keyNameEn: 'Previous Track'},
     {keyName: '下一首', value: [0xB5, 0x00], keyNameEn: 'Next Track'},
     {keyName: '静音', value: [0xE2, 0x00], keyNameEn: 'Mute'},
@@ -576,433 +576,433 @@ export const AllKeyBoardKeyEventKey = [
     {
         'Backspace': {
             keyName: 'Back Space',
-            value: 0x2A
+            value: [0x2A]
         }
     },
     {
         'Tab': {
             keyName: 'Tab',
-            value: 0x2B
+            value: [0x2B]
         }
     },
     {
         'Enter': {
             keyName: 'Enter',
-            value: 0x28
+            value: [0x28]
         }
     },
     {
         'Shift': {
             keyName: 'Shift',
-            value: 0xE1
+            value: [0xE1]
         }
     },
     {
         'Control': {
             keyName: 'Control',
-            value: 0xE0
+            value: [0xE0]
         }
     },
     {
         'Alt': {
             keyName: 'Alt',
-            value: 0xE2
+            value: [0xE2]
         }
     },
     {
         'Pause': {
             keyName: 'Pause',
-            value: 0x48
+            value: [0x48]
         }
     },
     {
         'CapsLock': {
             keyName: 'Caps Lock',
-            value: 0x39
+            value: [0x39]
         }
     },
     {
         'Escape': {
             keyName: 'Esc',
-            value: 0x29
+            value: [0x29]
         }
     },
     {
         ' ': {
             keyName: 'Space',
-            value: 0x2C
+            value: [0x2C]
         }
     },
     {
         'PageUp': {
             keyName: 'Page Up',
-            value: 0x4B
+            value: [0x4B]
         }
     },
     {
         'PageDown': {
             keyName: 'Page Down',
-            value: 0x4E
+            value: [0x4E]
         }
     },
     {
         'End': {
             keyName: 'End',
-            value: 0x4D
+            value: [0x4D]
         }
     },
     {
         'Home': {
             keyName: 'Home',
-            value: 0x4A
+            value: [0x4A]
         }
     },
     {
         'ArrowLeft': {
             keyName: 'Left',
-            value: 0x50
+            value: [0x50]
         }
     },
     {
         'ArrowUp': {
             keyName: 'Up',
-            value: 0x52
+            value: [0x52]
         }
     },
     {
         'ArrowRight': {
             keyName: 'Right',
-            value: 0x4F
+            value: [0x4F]
         }
     },
     {
         'ArrowDown': {
             keyName: 'Down',
-            value: 0x51
+            value: [0x51]
         }
     },
     {
         'Insert': {
             keyName: 'Insert',
-            value: 0x49
+            value: [0x49]
         }
     },
     {
         'Delete': {
             keyName: 'Delete',
-            value: 0x4C
+            value: [0x4C]
         }
     },
     {
         '0': {
             keyName: '0',
-            value: 0x62
+            value: [0x62]
         }
     },
     {
         '1': {
             keyName: '1',
-            value: 0x59
+            value: [0x59]
         }
     },
     {
         '2': {
             keyName: '2',
-            value: 0x5A
+            value: [0x5A]
         }
     },
     {
         '3': {
             keyName: '3',
-            value: 0x5B
+            value: [0x5B]
         }
     },
     {
         '4': {
             keyName: '4',
-            value: 0x5C
+            value: [0x5C]
         }
     },
     {
         '5': {
             keyName: '5',
-            value: 0x5D
+            value: [0x5D]
         }
     },
     {
         '6': {
             keyName: '6',
-            value: 0x5E
+            value: [0x5E]
         }
     },
     {
         '7': {
             keyName: '7',
-            value: 0x5F
+            value: [0x5F]
         }
     },
     {
         '8': {
             keyName: '8',
-            value: 0x60
+            value: [0x60]
         }
     },
     {
         '9': {
             keyName: '9',
-            value: 0x61
+            value: [0x61]
         }
     },
     {
         'a': {
             keyName: 'A',
-            value: 0x04
+            value: [0x04]
         }
     },
     {
         'b': {
             keyName: 'B',
-            value: 0x05
+            value: [0x05]
         }
     },
     {
         'c': {
             keyName: 'C',
-            value: 0x06
+            value: [0x06]
         }
     },
     {
         'd': {
             keyName: 'D',
-            value: 0x07
+            value: [0x07]
         }
     },
     {
         'e': {
             keyName: 'E',
-            value: 0x08
+            value: [0x08]
         }
     },
     {
         'f': {
             keyName: 'F',
-            value: 0x09
+            value: [0x09]
         }
     },
     {
         'g': {
             keyName: 'G',
-            value: 0x0A
+            value: [0x0A]
         }
     },
     {
         'h': {
             keyName: 'H',
-            value: 0x0B
+            value: [0x0B]
         }
     },
     {
         'i': {
             keyName: 'I',
-            value: 0x0C
+            value: [0x0C]
         }
     },
     {
         'j': {
             keyName: 'J',
-            value: 0x0D
+            value: [0x0D]
         }
     },
     {
         'k': {
             keyName: 'K',
-            value: 0x0E
+            value: [0x0E]
         }
     },
     {
         'l': {
             keyName: 'L',
-            value: 0x0F
+            value: [0x0F]
         }
     },
     {
         'm': {
             keyName: 'M',
-            value: 0x10
+            value: [0x10]
         }
     },
     {
         'n': {
             keyName: 'N',
-            value: 0x11
+            value: [0x11]
         }
     },
     {
         'o': {
             keyName: 'O',
-            value: 0x12
+            value: [0x12]
         }
     },
     {
         'p': {
             keyName: 'P',
-            value: 0x13
+            value: [0x13]
         }
     },
     {
         'q': {
             keyName: 'Q',
-            value: 0x14
+            value: [0x14]
         }
     },
     {
         'r': {
             keyName: 'R',
-            value: 0x15
+            value: [0x15]
         }
     },
     {
         's': {
             keyName: 'S',
-            value: 0x16
+            value: [0x16]
         }
     },
     {
         't': {
             keyName: 'T',
-            value: 0x17
+            value: [0x17]
         }
     },
     {
         'u': {
             keyName: 'U',
-            value: 0x18
+            value: [0x18]
         }
     },
     {
         'v': {
             keyName: 'V',
-            value: 0x19
+            value: [0x19]
         }
     },
     {
         'w': {
             keyName: 'W',
-            value: 0x1A
+            value: [0x1A]
         }
     },
     {
         'x': {
             keyName: 'X',
-            value: 0x1B
+            value: [0x1B]
         }
     },
     {
         'y': {
             keyName: 'Y',
-            value: 0x1C
+            value: [0x1C]
         }
     },
     {
         'z': {
             keyName: 'Z',
-            value: 0x1D
+            value: [0x1D]
         }
     },
     {
         'Meta': {
             keyName: 'Left Win',
-            value: 0xE3
+            value: [0xE3]
         }
     },
     {
         'ContextMenu': {
             keyName: 'Right Win',
-            value: 0xE7
+            value: [0xE7]
         }
     },
     {
         'F1': {
             keyName: 'F1',
-            value: 0x3A
+            value: [0x3A]
         }
     },
     {
         'F2': {
             keyName: 'F2',
-            value: 0x3B
+            value: [0x3B]
         }
     },
     {
         'F3': {
             keyName: 'F3',
-            value: 0x3C
+            value: [0x3C]
         }
     },
     {
         'F4': {
             keyName: 'F4',
-            value: 0x3D
+            value: [0x3D]
         }
     },
     {
         'F5': {
             keyName: 'F5',
-            value: 0x3E
+            value: [0x3E]
         }
     },
     {
         'F6': {
             keyName: 'F6',
-            value: 0x3F
+            value: [0x3F]
         }
     },
     {
         'F7': {
             keyName: 'F7',
-            value: 0x40
+            value: [0x40]
         }
     },
     {
         'F8': {
             keyName: 'F8',
-            value: 0x41
+            value: [0x41]
         }
     },
     {
         'F9': {
             keyName: 'F9',
-            value: 0x42
+            value: [0x42]
         }
     },
     {
         'F10': {
             keyName: 'F10',
-            value: 0x43
+            value: [0x43]
         }
     },
     {
         'F11': {
             keyName: 'F11',
-            value: 0x44
+            value: [0x44]
         }
     },
     {
         'F12': {
             keyName: 'F12',
-            value: 0x45
+            value: [0x45]
         }
     },
     {
         'NumLock': {
             keyName: 'Num Lock',
-            value: 0x53
+            value: [0x53]
         }
     },
     {
         'ScrollLock': {
             keyName: 'Scroll Lock',
-            value: 0x47
+            value: [0x47]
         }
     },
     {
@@ -1041,67 +1041,67 @@ export const AllKeyBoardKeyEventKey = [
     {
         'Semicolon': {
             keyName: ':;',
-            value: 0x33
+            value: [0x33]
         }
     },
     {
         'Equal': {
             keyName: '+=',
-            value: 0x2E
+            value: [0x2E]
         }
     },
     {
         'Comma': {
             keyName: '<,',
-            value: 0x36
+            value: [0x36]
         }
     },
     {
         'Minus': {
             keyName: '_-',
-            value: 0x2D
+            value: [0x2D]
         }
     },
     {
         'Period': {
             keyName: '>.',
-            value: 0x37
+            value: [0x37]
         }
     },
     {
         'Slash': {
             keyName: '?/',
-            value: 0x38
+            value: [0x38]
         }
     },
     {
         'Backquote': {
             keyName: '~`',
-            value: 0x35
+            value: [0x35]
         }
     },
     {
         'BracketLeft': {
             keyName: '{[',
-            value: 0x2F
+            value: [0x2F]
         }
     },
     {
         'Backslash': {
             keyName: '|\\',
-            value: 0x31
+            value: [0x31]
         }
     },
     {
         'BracketRight': {
             keyName: ']}',
-            value: 0x30
+            value: [0x30]
         }
     },
     {
         'Quote': {
             keyName: '”’',
-            value: 0x34
+            value: [0x34]
         }
     }
 ]
