@@ -4,13 +4,13 @@ import {onMounted, ref} from 'vue';
 import {CardBody, CardContainer, CardItem} from "@/components/ui/card-3d";
 import MacroRecorder from "@/components/MacroRecorder.vue";
 import {
+  calculateTime,
   KeyActionType,
   KeyType,
   loadActionsListFromLocalStorage,
   LooperType,
   saveActionsListToLocalStorage,
-  SaveMacroAction,
-  calculateTime
+  SaveMacroAction
 } from "@/components/macro.ts";
 import {ButtonID, KeyFunctionType, MouseCommandBuilder, ParamType, ResponseParser} from "@/components/command.ts";
 import {
@@ -182,7 +182,7 @@ const handleDeletMacro = (index: number) => {
 };
 
 const handleSetMacro = (index: number) => {
-  const macro: SaveMacroAction = macroList.value.at(index)
+  const macro: SaveMacroAction = macroList.value[index]
   currentMacroIndex.value = index
 
   if (selectedButton.value === '') return
@@ -324,7 +324,7 @@ onMounted(() => {
 })
 
 const getButtonID = (key): ButtonID => {
-  let selectKey: ButtonID
+  let selectKey: ButtonID = ButtonID.FORWARD
   switch (key) {
     case '左键':
       selectKey = ButtonID.LEFT;

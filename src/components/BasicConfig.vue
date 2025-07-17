@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import {computed, CSSProperties, onMounted, reactive, ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 
-import {BridgeData, BridgeStatus, makeBridge, sendData} from './bridge';
 import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
 import {MouseCommandBuilder, ParamType, ResponseParser} from "@/components/command.ts";
-import {toHexString} from "@/components/hexString.ts";
 import {BalanceSlider} from "@/components/ui/balance-slider";
 import {HyperText} from "@/components/ui/hyper-text";
 
@@ -13,86 +11,6 @@ const props = defineProps<{
   activeProfile: number;
   currentDevice?: HIDDevice;
 }>();
-
-const bridgeData = defineModel<BridgeData>('bridgeData', {default: {}});
-const bridgeStatus = defineModel<BridgeStatus>('bridgeStatus', {default: {}});
-
-const bridge = makeBridge(bridgeData, bridgeStatus, props);
-
-const scrollMode = bridge<string>('scrollMode', 'tactile',
-    'device.get_scroll_mode(%p).name.lower()', () => ({}),
-    'device.set_scroll_mode(pt.ScrollMode[x.upper()], %p)', (value) => ({x: value}),
-);
-const scrollModeToggle = computed({
-  get: () => scrollMode.value === 'freespin',
-  set: (value) => scrollMode.value = value ? 'freespin' : 'tactile'
-});
-
-const scrollAcceleration = bridge<Boolean>('scrollAcceleration', false,
-    'device.get_scroll_acceleration(%p)', () => ({}),
-    'device.set_scroll_acceleration(x, %p)', (value) => ({x: value}),
-);
-
-const scrollSmartReel = bridge<Boolean>('scrollSmartReel', false,
-    'device.get_scroll_smart_reel(%p)', () => ({}),
-    'device.set_scroll_smart_reel(x, %p)', (value) => ({x: value}),
-);
-
-interface Mark {
-  style: CSSProperties
-  label: string
-}
-
-type Marks = Record<number, Mark | string>
-
-const pollingRate = reactive<Marks>({
-  125: '125',
-  250: '250',
-  1000: '1000',
-  500: '500',
-});
-// const pollingRateInput = computed({
-//   get: () => pollingRate.value?.toString(),
-//   set: (value) => {
-//     pollingRate.value = parseInt(value ?? '1')
-//   },
-// });
-// const pollingRateRange = computed({
-//   get: () => ({1: 4, 2: 3, 4: 2, 8: 1}[pollingRate.value ?? 0] ?? 0),
-//   set: (value) => {
-//     pollingRate.value = {4: 1, 3: 2, 2: 4, 1: 8, 0: 16}[value] ?? 1
-//   },
-// });
-
-const dpiXy = bridge<[number, number]>('dpiXy', [800, 800],
-    'device.get_dpi_xy(%p)', () => ({}),
-    'device.set_dpi_xy((x, y), %p)', (value) => ({x: value[0], y: value[1]}),
-);
-
-const dpiStages = bridge<[[number, number][], number]>('dpiStages', [[[800, 800]], 1],
-    'device.get_dpi_stages(%p)', () => ({}),
-    'device.set_dpi_stages(ds, acs, %p)', (value) => ({ds: JSON.parse(JSON.stringify(value[0])), acs: value[1]}),
-);
-
-const dpiStageCount = computed({
-  get: () => dpiStages.value?.[0].length ?? 0,
-  set: (value) => {
-    if (!dpiStages.value) {
-      dpiStages.value = [Array.from({length: value}, () => [800, 800]), 1]
-    }
-    dpiStages.value[0] = dpiStages.value[0].slice(0, value);
-    dpiStages.value[0] = dpiStages.value[0].concat(Array.from({length: value - dpiStages.value[0].length}, () => [800, 800]));
-  }
-});
-
-function dpiCopyXY() {
-  for (let it of dpiStages.value[0]) {
-    it[1] = it[0];
-  }
-}
-
-// console.log("DPI 400 命令:", dpi400Command.map((b: number) => b.toString(16).padStart(2, '0')));
-
 
 // DPI配置
 const dpiOptions = [400, 800, 1600, 3200]
