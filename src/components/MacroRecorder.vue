@@ -290,7 +290,10 @@ const handleEditItem = (index: number) => {
       // 修改按键值逻辑
       if (editInputKey.value) {
         actions.value[index].keyName = editInputKey.value.toUpperCase();
-        actions.value[index].keyCode = AllKeyBoardKeyEventKey.find(item => item[editInputKey.value])[editInputKey.value].value
+        const keyInfo = AllKeyBoardKeyEventKey.find(item => item.systemName === editInputKey.value)
+        if (keyInfo) {
+          actions.value[index].keyCode = keyInfo.value
+        }
       }
     }
   }
@@ -337,9 +340,15 @@ const handleKeyDown = (e) => {
       keyName = localeI18n.t('key_space');
     }
 
+    let keycode = [0x00]
+    const keyInfo = AllKeyBoardKeyEventKey.find(item => item.systemName === e.key)
+    if (keyInfo) {
+      keycode = keyInfo.value
+    }
+
     const action: MacroAction = {
       keyName: keyName,
-      keyCode: AllKeyBoardKeyEventKey.find(item => item[e.key])[e.key].value,
+      keyCode: keycode,
       action: KeyActionType.DOWN,
       type: KeyType.KEYBOARD,
       timeStamp: Date.now()
@@ -360,10 +369,15 @@ const handleKeyUp = (e) => {
     if (e.key === ' ') {
       keyName = localeI18n.t('key_space');
     }
+    let keycode = [0x00]
+    const keyInfo = AllKeyBoardKeyEventKey.find(item => item.systemName === e.key)
+    if (keyInfo) {
+      keycode = keyInfo.value
+    }
 
     const action: MacroAction = {
       keyName: keyName,
-      keyCode: AllKeyBoardKeyEventKey.find(item => item[e.key])[e.key].value,
+      keyCode: keycode,
       action: KeyActionType.UP,
       type: KeyType.KEYBOARD,
       timeStamp: Date.now()

@@ -88,7 +88,7 @@ const getOrder = (value: string): string | null => {
 };
 
 const getOrderValue = (): number[] => {
-  let value = []
+  let value:number[] = []
   for (let selectedOrderKey in selectedOrder.value) {
     const index = combinaKey.indexOf(selectedOrderKey)
     switch (index) {
@@ -108,8 +108,10 @@ const getOrderValue = (): number[] => {
         break
     }
   }
-
-  value.push(AllKeyBoardKeyEventKey.find(item => item[combineSelectKey.value])[combineSelectKey.value].value)
+  const combination = AllKeyBoardKeyEventKey.find(item => item.systemName === combineSelectKey.value)
+  if (combination) {
+    value.push(...combination.value)
+  }
   return value
 };
 

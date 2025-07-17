@@ -53,11 +53,11 @@ export const loadActionsListFromLocalStorage = (): SaveMacroAction[] => {
 };
 
 
-const calculateTime = (index: number, actions: MacroAction[]): number => {
-    if (index === 0 || actions.length < 2) return 0;
+export const calculateTime = (index: number, actions: MacroAction[]): number => {
+    if (index === actions.length - 1 || actions.length < 2) return 0;
     const current = actions[index];
-    const previous = actions[index - 1];
-    let delay = current.timeStamp - previous.timeStamp;
+    const previous = actions[index + 1];
+    let delay = previous.timeStamp - current.timeStamp;
     if (delay > 65535) delay = 65535
     return delay;
 };
