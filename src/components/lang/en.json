@@ -12,6 +12,8 @@
   "bt_open": "Select",
   "bt_request_connect_device": "Request browser access to the device",
   "bt_restore": "Restore the default settings",
+  "bt_restore_all": "Restore All Default Settings",
+  "bt_restore_key": "Restore keys Default Settings",
   "bt_save_select": "Select and save",
   "bt_start_record": "Start recording",
   "bt_stop_record": "Stop recording",

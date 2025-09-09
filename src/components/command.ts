@@ -8,6 +8,7 @@ export enum ParamType {
     DPI = 0x90,
     BUTTON = 0x91,
     PROFILE = 0x92,
+    RESET = 0x93,
     VERSION = 0xF0,
     WORK_MODE = 0xF1,
     NONE = 0x00
@@ -170,6 +171,16 @@ export class MouseCommandBuilder {
     // 工作模式
     static readWorkMode(): number[] {
         return this.buildCommand(CommandType.READ, ParamType.WORK_MODE);
+    }
+
+    //恢复默认设置
+    static resetAllSettings(): number[] {
+        return this.buildCommand(CommandType.WRITE, ParamType.RESET, [0]);
+    }
+
+    //恢复默认设置
+    static resetKeySettings(): number[] {
+        return this.buildCommand(CommandType.WRITE, ParamType.RESET, [1]);
     }
 }
 

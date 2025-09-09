@@ -12,6 +12,8 @@
   "bt_open": "启用",
   "bt_request_connect_device": "请求浏览器访问设备",
   "bt_restore": "恢复默认设置",
+  "bt_restore_all": "恢复所有默认设置",
+  "bt_restore_key": "恢复所有按键设置",
   "bt_save_select": "选择并保存",
   "bt_start_record": "开始录制",
   "bt_stop_record": "停止录制",

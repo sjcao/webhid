@@ -52,6 +52,19 @@ onMounted(() => {
 
 const isDark = useDark({});
 
+const resetAllVisible = ref(false);
+const resetKeyVisible = ref(false);
+
+const restoreAllDefaultSettings = () => {
+  const com = MouseCommandBuilder.resetAllSettings()
+  sendDataToDevice(com)
+}
+const restoreKeyDefaultSettings = () => {
+  // ySelectedIndex.value = defaultIndex
+  const com = MouseCommandBuilder.resetKeySettings()
+  sendDataToDevice(com)
+}
+
 </script>
 <template>
   <div class="flex w-full h-full dark:bg-transparent dark:text-white">
@@ -86,6 +99,57 @@ const isDark = useDark({});
       </el-descriptions-item>
     </el-descriptions>
   </div>
+
+  <div class="mt-5">
+    <el-button
+        type="info"
+        @click="resetAllVisible = true"
+    >{{ $t('bt_restore_all') }}
+    </el-button>
+
+    <el-button
+        type="info"
+        @click="resetKeyVisible = true"
+    >{{ $t('bt_restore_key') }}
+    </el-button>
+  </div>
+
+  <el-dialog
+      v-model="resetAllVisible"
+      title="提示"
+      width="30%"
+      align-center
+      class="dark:bg-zinc-900 dark:text-warning"
+  >
+    <span class="dark:text-warning">是否恢复默认设置</span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="resetAllVisible = false">取消</el-button>
+        <el-button type="primary" @click="restoreAllDefaultSettings(); resetAllVisible = false">
+          确认
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
+
+  <el-dialog
+      v-model="resetKeyVisible"
+      title="提示"
+      width="30%"
+      align-center
+      class="dark:bg-zinc-900 dark:text-warning"
+  >
+    <span class="dark:text-warning">是否恢复默认设置</span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="resetKeyVisible = false">取消</el-button>
+        <el-button type="primary" @click="restoreKeyDefaultSettings(); resetKeyVisible = false">
+          确认
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
+
 </template>
 <style lang="scss" scoped>
 :deep(.my-label) {
