@@ -2,10 +2,7 @@
 import {onMounted, ref, computed} from 'vue';
 import MouseInfo from './MouseInfo.vue';
 import BasicConfig from './BasicConfig.vue';
-import ProfileConfig from './ProfileConfig.vue';
 import ButtonConfig from './ButtonConfig.vue';
-import MacroConfig from './MacroConfig.vue';
-import SensorConfig from './SensorConfig.vue';
 import LedConfig from './LedConfig.vue';
 import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
 import {AuroraBackground} from "@/components/ui/aurora-background";
@@ -202,22 +199,6 @@ onMounted(() => {
                 <Suspense>
                   <div>
 
-
-                    <MacroConfig v-if="activeTab === 'macro'"
-                                 :key="refreshKey" :active-profile="activeProfile" :hard="hard"
-                                 :currentDevice="currentDevice"/>
-                    <SensorConfig v-if="activeTab === 'sensor'"
-                                  :key="refreshKey" :active-profile="activeProfile" :hard="hard"
-                                  :currentDevice="currentDevice"/>
-
-                    <!--                    <div v-if="activeTab === 'info' && !hard">No hardware connected</div>-->
-                    <!--                  <PythonRunner v-if="activeTab === 'info'"/>-->
-                    <!--                  v-show is used to load available profiles when initially loaded-->
-                    <ProfileConfig v-show="activeTab === 'profile'"
-                                   :key="refreshKey" :hard="hard" @update="updateHasProfileList"
-                                   :is-config-all-idle="isConfigAllIdle"
-                                   v-model:profile-config-data="profileConfigData"
-                                   v-model:enable-all-config-sections="enableAllConfigSections"/>
                   </div>
                   <template #fallback>
                     <div>Loading...</div>
