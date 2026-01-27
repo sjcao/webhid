@@ -3,7 +3,7 @@ import {computed, onMounted, ref} from 'vue';
 
 import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
 import {MouseCommandBuilder, ParamType, ResponseParser} from "@/components/command.ts";
-import {BalanceSlider} from "@/components/ui/balance-slider";
+
 import {HyperText} from "@/components/ui/hyper-text";
 
 const props = defineProps<{
@@ -16,9 +16,6 @@ const props = defineProps<{
 const dpiOptions = [400, 800, 1600, 3200]
 const defaultIndex = dpiOptions.findIndex(dpi => dpi === 1600)
 // 响应式状态
-const radioIndex = ref(2)
-const sidePrecent = ref(75)
-const separateXandY = ref(false)
 const xAxisIndex = ref(defaultIndex)
 const yAxisIndex = ref(defaultIndex)
 
@@ -26,49 +23,23 @@ const yAxisIndex = ref(defaultIndex)
 const currentDpiX = computed(() => dpiOptions[xAxisIndex.value])
 
 const restoreDefaultSettings = () => {
-  // ySelectedIndex.value = defaultIndex
   xAxisIndex.value = defaultIndex
   yAxisIndex.value = defaultIndex
-  radioIndex.value = defaultIndex
-  sidePrecent.value = 75
-
-  separateXandY.value = false
-}
-
-const handleRadioChage = () => {
-  if (radioIndex.value === 0) {
-    sidePrecent.value = 25
-  } else if (radioIndex.value === 1) {
-    sidePrecent.value = 50
-  } else if (radioIndex.value === 2) {
-    sidePrecent.value = 75
-  } else if (radioIndex.value === 3) {
-    sidePrecent.value = 100
-  }
-
-  xAxisIndex.value = radioIndex.value
+  
   const dpi = dpiOptions[xAxisIndex.value]
   const setDpi = MouseCommandBuilder.setDPI(dpi)
   sendDataToDevice(setDpi)
 }
-const handleDpiChange = (value) => {
-  sidePrecent.value = parseInt(value.value)
-  if (sidePrecent.value === 0) {
-    xAxisIndex.value = 0
-    radioIndex.value = 0
-  } else if (sidePrecent.value === 25) {
-    xAxisIndex.value = 0
-    radioIndex.value = 0
-  } else if (sidePrecent.value === 50) {
-    xAxisIndex.value = 1
-    radioIndex.value = 1
-  } else if (sidePrecent.value === 75) {
-    xAxisIndex.value = 2
-    radioIndex.value = 2
-  } else if (sidePrecent.value === 100) {
-    xAxisIndex.value = 3
-    radioIndex.value = 3
-  }
+
+const handleSliderChange = (val: number) => {
+  xAxisIndex.value = val
+  const dpi = dpiOptions[xAxisIndex.value]
+  const setDpi = MouseCommandBuilder.setDPI(dpi)
+  sendDataToDevice(setDpi)
+}
+
+const setDpiByIndex = (index: number) => {
+  xAxisIndex.value = index
   const dpi = dpiOptions[xAxisIndex.value]
   const setDpi = MouseCommandBuilder.setDPI(dpi)
   sendDataToDevice(setDpi)
@@ -95,142 +66,114 @@ onMounted(() => {
 
 </script>
 <template>
-  <div class="form-control">
-    <h2>{{ $t('dpiSetting_title') }}</h2>
-
-    <div class="dpi-container">
-      <!-- DPI滑动条 -->
-
-      <!-- XY轴独立设置 -->
-      <div class="xy-settings">
-        <el-checkbox v-model="separateXandY" v-if="false">X/Y单独设置</el-checkbox>
-        <div class="axis-sliders">
-          <div class="axis-item">
-            <span class="axis-label" v-if="false">X轴</span>
-
-            <div class="slider-container">
-              <div class="slider-header">
-                <div class="dpi-value">
-                  <HyperText
-                      :text=currentDpiX.toString()
-                      class="text-4xl font-bold"
-                      :duration="800"
-                      :animate-on-load="true"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <BalanceSlider
-                :left-content="$t('slow')"
-                :right-content="$t('fast')"
-                right-color="#ffffff"
-                left-color="#409EFF"
-                indicator-color="#409EFF"
-                :initial-value="sidePrecent"
-                v-model="sidePrecent"
-                @changeValue="handleDpiChange"
-            />
-
-            <div class="mt-10">
-              <el-radio-group v-model="radioIndex" class="flex justify-center " @change="handleRadioChage">
-                <el-radio :label=0 size="large" border class="w-24 dark:text-white">400</el-radio>
-                <el-radio :label=1 size="large" border class="w-24 dark:text-white">800</el-radio>
-                <el-radio :label=2 size="large" border class="w-24 dark:text-white">1600</el-radio>
-                <el-radio :label=3 size="large" border class="w-24  dark:text-white">3200</el-radio>
-              </el-radio-group>
-            </div>
-
-          </div>
+  <div class="flex flex-col gap-8 w-full max-w-3xl mx-auto">
+    
+    <div class="glass-card rounded-xl p-8 border border-white/5">
+        <div class="flex items-center justify-between mb-8">
+           <h2 class="text-xl font-bold flex items-center gap-2 m-0">
+              <span class="w-1 h-6 bg-primary rounded-full"></span>
+              {{ $t('dpiSetting_title') }}
+           </h2>
+           
+           <button 
+              @click="restoreDefaultSettings"
+              class="text-sm px-3 py-1 rounded bg-secondary/50 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+           >
+              {{ $t('bt_restore') }}
+           </button>
         </div>
-      </div>
-      <div class="div-button-default">
 
-        <el-button
-            type="info"
-            @click="restoreDefaultSettings"
-        >{{ $t('bt_restore') }}
-        </el-button>
+        <div class="flex flex-col gap-12">
+           <!-- DPI Display -->
+           <div class="flex justify-center">
+              <div class="relative group cursor-default">
+                 <div class="absolute -inset-4 bg-primary/20 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition duration-500"></div>
+                 <div class="relative px-12 py-8 bg-background border border-border rounded-2xl flex flex-col items-center justify-center shadow-2xl min-w-[240px]">
+                    <div class="flex items-baseline gap-2">
+                       <HyperText
+                           :text="currentDpiX.toString()"
+                           class="text-6xl font-black text-primary tracking-tighter leading-none"
+                           :duration="800"
+                           :animate-on-load="true"
+                       />
+                       <span class="text-xl font-bold text-muted-foreground ml-1">DPI</span>
+                    </div>
+                    <div class="mt-2 text-sm text-muted-foreground font-medium uppercase tracking-widest opacity-60">Current Value</div>
+                 </div>
+              </div>
+           </div>
 
-      </div>
+           <!-- Slider -->
+           <div class="px-8">
+              <div class="flex justify-between text-xs font-medium text-muted-foreground mb-4 uppercase tracking-wider">
+                 <span>{{ $t('slow') }}</span>
+                 <span>{{ $t('fast') }}</span>
+              </div>
+              <el-slider 
+                 v-model="xAxisIndex" 
+                 :min="0" 
+                 :max="3" 
+                 :step="1" 
+                 :show-tooltip="false"
+                 :marks="{0: '', 1: '', 2: '', 3: ''}"
+                 @change="handleSliderChange"
+                 class="dpi-slider"
+              />
+           </div>
+
+           <!-- Presets -->
+           <div class="flex justify-center">
+              <div class="grid grid-cols-4 gap-4 w-full">
+                 <button 
+                    v-for="(dpi, index) in dpiOptions" 
+                    :key="index"
+                    @click="setDpiByIndex(index)"
+                    class="flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200"
+                    :class="index === xAxisIndex ? 'bg-primary text-primary-foreground border-primary shadow-lg scale-105' : 'bg-secondary/30 text-muted-foreground border-transparent hover:bg-secondary hover:text-foreground'"
+                 >
+                    <span class="text-lg font-bold font-mono">{{ dpi }}</span>
+                 </button>
+              </div>
+           </div>
+        </div>
     </div>
-
-    <!--      <h2 class="form-header">Scroll</h2>-->
-    <!--      <div class="grid grid-cols-2 place-items-baseline">-->
-    <!--        <span>Wheel mode</span>-->
-    <!--        <label class="label cursor-pointer space-x-4">-->
-    <!--          <span class="label-text">Tactile</span>-->
-    <!--          <input type="checkbox" class="toggle toggle-sm" v-model="scrollModeToggle"/>-->
-    <!--          <span class="label-text">Freespin</span>-->
-    <!--        </label>-->
-    <!--        <span>Acceleration</span>-->
-    <!--        <label class="label cursor-pointer space-x-4">-->
-    <!--          <input type="checkbox" class="toggle toggle-sm" v-model="scrollAcceleration"/>-->
-    <!--        </label>-->
-    <!--        <span>Smart Reel</span>-->
-    <!--        <label class="label cursor-pointer space-x-4">-->
-    <!--          <input type="checkbox" class="toggle toggle-sm" v-model="scrollSmartReel"/>-->
-    <!--        </label>-->
-    <!--      </div>-->
-    <!--      <h2 class="form-header">Polling rate</h2>-->
-    <!--      <div class="flex flex-row gap-4">-->
-
-    <!--        <div class="flex-1">-->
-    <!--          <el-slider class="slider-el-slider"-->
-    <!--                     :min="125"-->
-    <!--                     :max="1000"-->
-    <!--                     :step="125"-->
-    <!--                     show-input-->
-    <!--                     input-size="large"-->
-    <!--                     size="large"-->
-    <!--                     :marks="pollingRate"-->
-    <!--          />-->
-
-    <!--        </div>-->
-    <!--      </div>-->
 
   </div>
 </template>
 <style lang="scss" scoped>
-.form-control {
-  display: flex;
-  width: 100%;
-  justify-content: center;
+:deep(.dpi-slider) {
+  --el-slider-main-bg-color: hsl(var(--primary));
+  --el-slider-runway-bg-color: hsl(var(--secondary));
+  --el-slider-stop-bg-color: hsl(var(--foreground));
+  height: 8px;
 }
 
-.form-header {
-  margin-top: 50px;
+:deep(.dpi-slider .el-slider__bar) {
+  background-color: hsl(var(--primary));
+  height: 8px;
+  border-radius: 4px;
 }
 
-.input-label {
-  @apply flex w-full justify-between text-xs;
-  span {
-    @apply w-6 inline-flex justify-center;
-  }
+:deep(.dpi-slider .el-slider__button) {
+  width: 24px;
+  height: 24px;
+  border: 4px solid hsl(var(--background));
+  background-color: hsl(var(--primary));
+  box-shadow: 0 4px 12px rgba(var(--primary), 0.4);
 }
 
-.slider-header {
-  display: flex;
-  justify-content: center;
+:deep(.dpi-slider .el-slider__runway) {
+  height: 8px;
+  border-radius: 4px;
 }
 
-.slider-container {
-  display: flex;
-  justify-content: center;
-  padding: 10px;
+:deep(.dpi-slider .el-slider__stop) {
+  width: 8px;
+  height: 8px;
+  top: 0;
+  background-color: hsl(var(--background));
+  border: 2px solid hsl(var(--muted));
+  opacity: 0.5;
 }
 
-.slider-el-slider {
-  display: flex;
-  justify-content: center;
-  padding: 10px;
-  padding-left: 10%;
-  padding-right: 10%;
-}
-
-.div-button-default {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
 </style>

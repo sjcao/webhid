@@ -1,4 +1,4 @@
-import {createI18n} from 'vue-i18n';
+import { createI18n } from 'vue-i18n';
 import en from '@/components/lang/en.json'; // 导入英文语言包
 import zhCn from '@/components/lang/zh-cn.json'; // 导入中文语言包
 

@@ -5,6 +5,7 @@ import {sendDataToDevice, useHIDListener} from "@/components/webhid.ts";
 import {onMounted, ref} from "vue";
 import {useDark} from "@vueuse/core";
 import {useI18n} from "vue-i18n";
+import { Monitor, InfoFilled, Connection, Document, RefreshRight, Warning } from '@element-plus/icons-vue';
 
 const props = defineProps<{
   currentDevice?: HIDDevice;
@@ -16,8 +17,8 @@ const type = ref(localeI18n.t('work_type_mouse'))
 const ver = ref('v1.0')
 const profile = ref(0)
 const handleData = (data: Uint8Array) => {
-  const [type, result] = ResponseParser.parse(Array.from(data))
-  if (type === ParamType.WORK_MODE) {
+  const [msgType, result] = ResponseParser.parse(Array.from(data))
+  if (msgType === ParamType.WORK_MODE) {
     const mode = result.mode
     if (mode === 0) {
       workMode.value = localeI18n.t('work_mode_usb')
@@ -30,11 +31,17 @@ const handleData = (data: Uint8Array) => {
     } else if (mode === 2) {
       workMode.value = localeI18n.t('work_mode_ble')
     }
-  }else if (type === ParamType.VERSION){
+  }else if (msgType === ParamType.VERSION){
     ver.value = result.version
+    // Fix: ParamType.VERSION result might not have 'type' property according to lint, but assuming code was working, maybe it's valid runtime.
+    // However, the lint said Property 'value' does not exist on type 'ParamType.VERSION'.
+    // Actually the lint said: Property 'value' does not exist on type 'ParamType.VERSION'. Did you mean 'valueOf'?
+    // Wait, the lint message was about line 35: type.value = result.type...
+    // The previous code was: type.value = result.type==='Mouse' ? ...
+    // I will trust the original logic but rename 'type' to 'msgType' to avoid shadowing.
     type.value = result.type==='Mouse' ? localeI18n.t('work_type_mouse') : localeI18n.t('work_type_receiver')
   }
-  else if (type === ParamType.PROFILE) {
+  else if (msgType === ParamType.PROFILE) {
     profile.value = result.profile
   }
 }
@@ -50,7 +57,7 @@ onMounted(() => {
   sendDataToDevice(MouseCommandBuilder.readProfile())
 })
 
-const isDark = useDark({});
+
 
 const resetAllVisible = ref(false);
 const resetKeyVisible = ref(false);
@@ -67,98 +74,134 @@ const restoreKeyDefaultSettings = () => {
 
 </script>
 <template>
-  <div class="flex w-full h-full dark:bg-transparent dark:text-white">
-    <el-descriptions :column="1" border>
-      <template #title>
-        <span class="dark:text-white">{{ $t('mouseInfo') }}</span>
-      </template>
-      <el-descriptions-item
-          :label="$t('model')"
-          label-align="right"
-          align="center"
-          label-class-name="my-label"
-          class-name="my-content"
-          width="150px"
-      >ATU-MOUSE
-      </el-descriptions-item
-      >
-      <el-descriptions-item :label="$t('version')" label-align="right" align="center"
-                            label-class-name="my-label"
-                            class-name="my-content"
-      >{{ver}}
-      </el-descriptions-item>
-      <el-descriptions-item :label="$t('work_Mode')" label-align="right" align="center"
-                            label-class-name="my-label"
-                            class-name="my-content"
-      >{{workMode}}
-      </el-descriptions-item>
-      <el-descriptions-item :label="$t('menu_profile')" label-align="right" align="center"
-                            label-class-name="my-label"
-                            class-name="my-content"
-      >{{profile}}
-      </el-descriptions-item>
-    </el-descriptions>
-  </div>
+  <div class="flex flex-col gap-8 w-full max-w-2xl mx-auto">
+    
+    <!-- Info Card -->
+    <div class="glass-card rounded-xl p-6 border border-white/5">
+       <h3 class="text-lg font-semibold mb-6 flex items-center gap-2">
+          <span class="w-1 h-6 bg-primary rounded-full"></span>
+          {{ $t('mouseInfo') }}
+       </h3>
+       
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-black/5 dark:bg-black/20 p-6 rounded-xl border border-white/5 flex items-center gap-4 hover:bg-black/10 transition-colors group">
+             <div class="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <el-icon size="24"><Monitor /></el-icon>
+             </div>
+             <div class="flex flex-col">
+                <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">{{ $t('model') }}</span>
+                <span class="text-xl font-bold">ATU-MOUSE</span>
+             </div>
+          </div>
+          
+          <div class="bg-black/5 dark:bg-black/20 p-6 rounded-xl border border-white/5 flex items-center gap-4 hover:bg-black/10 transition-colors group">
+             <div class="p-3 rounded-lg bg-blue-500/10 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                <el-icon size="24"><InfoFilled /></el-icon>
+             </div>
+             <div class="flex flex-col">
+                <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">{{ $t('version') }}</span>
+                <span class="text-xl font-mono text-foreground">{{ver}}</span>
+             </div>
+          </div>
+          
+          <div class="bg-black/5 dark:bg-black/20 p-6 rounded-xl border border-white/5 flex items-center gap-4 hover:bg-black/10 transition-colors group">
+             <div class="p-3 rounded-lg bg-green-500/10 text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors">
+                <el-icon size="24"><Connection /></el-icon>
+             </div>
+             <div class="flex flex-col">
+                <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">{{ $t('work_Mode') }}</span>
+                <span class="text-lg font-medium">{{workMode}}</span>
+             </div>
+          </div>
+          
+          <div class="bg-black/5 dark:bg-black/20 p-6 rounded-xl border border-white/5 flex items-center gap-4 hover:bg-black/10 transition-colors group">
+             <div class="p-3 rounded-lg bg-purple-500/10 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                <el-icon size="24"><Document /></el-icon>
+             </div>
+             <div class="flex flex-col">
+                <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">{{ $t('menu_profile') }}</span>
+                <span class="text-lg font-medium">{{profile}}</span>
+             </div>
+          </div>
+       </div>
+    </div>
 
-  <div class="mt-5">
-    <el-button
-        type="info"
-        @click="resetAllVisible = true"
-    >{{ $t('bt_restore_all') }}
-    </el-button>
+    <!-- Actions -->
+    <div class="glass-card rounded-xl p-6 border border-white/5">
+       <h3 class="text-lg font-semibold mb-6 flex items-center gap-2">
+          <span class="w-1 h-6 bg-red-500 rounded-full"></span>
+          {{ $t('factory_reset') }}
+       </h3>
+       
+       <div class="flex gap-4">
+          <button
+              class="flex-1 py-4 px-4 rounded-xl bg-secondary/50 text-secondary-foreground font-medium hover:bg-red-500 hover:text-white transition-all border border-border flex items-center justify-center gap-2 group"
+              @click="resetAllVisible = true"
+          >
+             <el-icon class="group-hover:rotate-180 transition-transform duration-500"><Warning /></el-icon>
+             {{ $t('bt_restore_all') }}
+          </button>
 
-    <el-button
-        type="info"
-        @click="resetKeyVisible = true"
-    >{{ $t('bt_restore_key') }}
-    </el-button>
+          <button
+              class="flex-1 py-4 px-4 rounded-xl bg-secondary/50 text-secondary-foreground font-medium hover:bg-orange-500 hover:text-white transition-all border border-border flex items-center justify-center gap-2 group"
+              @click="resetKeyVisible = true"
+          >
+             <el-icon class="group-hover:rotate-180 transition-transform duration-500"><RefreshRight /></el-icon>
+             {{ $t('bt_restore_key') }}
+          </button>
+       </div>
+    </div>
+
   </div>
 
   <el-dialog
       v-model="resetAllVisible"
-      title="提示"
-      width="30%"
+      :title="$t('title_warning')"
+      width="400px"
       align-center
-      class="dark:bg-zinc-900 dark:text-warning"
+      class="glass-panel text-foreground rounded-xl"
+      :show-close="false"
   >
-    <span class="dark:text-warning">是否恢复默认设置</span>
+    <div class="py-4 text-base">
+       {{ $t('bt_restore_all') }}? {{ $t('action_undone') }}
+    </div>
     <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="resetAllVisible = false">取消</el-button>
-        <el-button type="primary" @click="restoreAllDefaultSettings(); resetAllVisible = false">
-          确认
-        </el-button>
+      <span class="dialog-footer flex gap-3 justify-end">
+        <button class="px-4 py-2 rounded-lg hover:bg-white/5 transition-colors" @click="resetAllVisible = false">{{ $t('bt_cancel') }}</button>
+        <button class="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors" @click="restoreAllDefaultSettings(); resetAllVisible = false">
+          {{ $t('bt_confirm') }}
+        </button>
       </span>
     </template>
   </el-dialog>
 
   <el-dialog
       v-model="resetKeyVisible"
-      title="提示"
-      width="30%"
+      :title="$t('title_warning')"
+      width="400px"
       align-center
-      class="dark:bg-zinc-900 dark:text-warning"
+      class="glass-panel text-foreground rounded-xl"
+      :show-close="false"
   >
-    <span class="dark:text-warning">是否恢复默认设置</span>
+    <div class="py-4 text-base">
+       {{ $t('bt_restore_key') }}? {{ $t('action_undone') }}
+    </div>
     <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="resetKeyVisible = false">取消</el-button>
-        <el-button type="primary" @click="restoreKeyDefaultSettings(); resetKeyVisible = false">
-          确认
-        </el-button>
+      <span class="dialog-footer flex gap-3 justify-end">
+        <button class="px-4 py-2 rounded-lg hover:bg-white/5 transition-colors" @click="resetKeyVisible = false">{{ $t('bt_cancel') }}</button>
+        <button class="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors" @click="restoreKeyDefaultSettings(); resetKeyVisible = false">
+          {{ $t('bt_confirm') }}
+        </button>
       </span>
     </template>
   </el-dialog>
 
 </template>
 <style lang="scss" scoped>
-:deep(.my-label) {
-  background: v-bind("isDark ? '#18181B' : ''") !important;
-  color: v-bind("isDark ? '#FFF' : ''") !important;
-}
-
-:deep(.my-content) {
-  background: v-bind("isDark ? '#18181B' : ''");
-  color: v-bind("isDark ? '#FFF' : ''") !important;
+:deep(.el-dialog) {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  --el-dialog-title-font-size: 1.25rem;
+  --el-text-color-primary: hsl(var(--foreground));
 }
 </style>

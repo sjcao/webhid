@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import {ref, computed, onMounted} from 'vue';
+import {ref, onMounted} from 'vue';
 import {ElMessage} from "element-plus";
-import {AuroraBackground} from "@/components/ui/aurora-background";
+
 import {Motion} from "motion-v";
-import {BentoGrid, BentoGridCard, BentoGridItem} from "@/components/ui/bento-grid";
-import {useDark} from "@vueuse/core";
+import {BentoGrid, BentoGridItem} from "@/components/ui/bento-grid"; // BentoGridCard unused
 import {useI18n} from "vue-i18n";
 
 const emit = defineEmits(['deviceCreated', 'deviceNotCreated']);
 
-const isDark = useDark({});
 const localeI18n = useI18n();
 
 // 设备列表
@@ -27,10 +25,6 @@ async function requestDevice() {
   }
 
   const devices = await navigator.hid.requestDevice({
-    // filters: [
-    //   {vendorId: 0x4242, productId: 0x0009},
-    //   {vendorId: 0x373B, productId: 0x1135}
-    // ]
     filters: []
   });
   if (!(devices.length > 0)) {
@@ -42,8 +36,6 @@ async function requestDevice() {
   }
 
   await refreshDeviceList()
-
-  // emit('deviceCreated');
 }
 
 async function noHardwareMode() {
@@ -118,167 +110,131 @@ const disconnectDevice = async (device: HIDDevice) => {
   }
 }
 
-const isPythonReady = computed(() => {
-  return Boolean(true);
-});
-
 </script>
 <template>
-  <AuroraBackground
-      class="fixed top-0 left-0 w-full h-full flex flex-col items-center justify-center gap-4 px-4"
-      :radial-gradient="true" :class="isDark">
+  <div class="fixed inset-0 w-full h-full overflow-hidden bg-background text-foreground flex flex-col items-center justify-center">
+    <!-- Animated Background -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+      <div class="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[120px] rounded-full animate-blob"></div>
+      <div class="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/20 blur-[120px] rounded-full animate-blob animation-delay-2000"></div>
+      <div class="absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-blue-400/10 blur-[100px] rounded-full animate-blob animation-delay-4000"></div>
+    </div>
+
+    <!-- Content -->
     <Motion
         as="div"
-        :initial="{ opacity: 0, y: 40, filter: 'blur(10px)' }"
-        :in-view="{
-        opacity: 1,
-        y: 0,
-        filter: 'blur(0px)',
-      }"
-        :transition="{
-        delay: 0.3,
-        duration: 0.8,
-        ease: 'easeInOut',
-      }"
-        class="relative flex flex-col items-center justify-center gap-4 px-4"
+        :initial="{ opacity: 0, y: 20, filter: 'blur(10px)' }"
+        :in-view="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+        :transition="{ delay: 0.2, duration: 0.8, ease: 'easeOut' }"
+        class="relative z-10 w-full max-w-5xl px-6 flex flex-col items-center gap-8"
     >
+      
+      <!-- Header Section -->
+      <div class="text-center space-y-4">
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tighter">
+          {{$t('top_title')}}
+        </h1>
+        <p class="text-lg md:text-xl text-muted-foreground font-light tracking-wide max-w-2xl mx-auto">
+          {{$t('tip_connect')}} <span class="hidden md:inline">|</span> {{$t('tip_chrome')}}
+        </p>
+      </div>
 
-      <el-container class="connect-device-container">
-        <el-header class="mt-10">
-          <div class="text-center text-xl font-bold md:text-4xl dark:text-white"> {{$t('top_title')}}</div>
-        </el-header>
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-4 justify-center">
+        <button
+            class="group relative px-8 py-3 rounded-full bg-primary text-primary-foreground font-medium text-lg shadow-lg hover:shadow-primary/50 hover:scale-105 transition-all duration-300"
+            @click="requestDevice"
+        >
+          <span class="flex items-center gap-2">
+             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+             {{$t('bt_request_connect_device')}}
+          </span>
+        </button>
 
-        <div class="py-4 text-base font-extralight md:text-xl dark:text-neutral-200">
-          {{$t('tip_chrome')}}
-        </div>
-        <div class="py-4 text-base font-extralight md:text-xl dark:text-neutral-200">
-          {{$t('tip_connect')}}
-        </div>
+        <button
+            class="px-8 py-3 rounded-full bg-secondary text-secondary-foreground font-medium text-lg hover:bg-secondary/80 hover:scale-105 transition-all duration-300 backdrop-blur-sm border border-border"
+            @click="noHardwareMode"
+        >
+          {{$t('bt_no_device')}}
+        </button>
+      </div>
 
-        <div>
-
-          <el-button
-              class="w-fit rounded-xl bg-black px-4 py-2 text-white dark:bg-white dark:text-black"
-              size="large" type="primary" @click="requestDevice">
-            {{$t('bt_request_connect_device')}}
-          </el-button>
-
-          <el-button
-              class="w-fit rounded-xl bg-white px-4 py-2 text-black dark:bg-white dark:text-black"
-              size="large" @click="noHardwareMode">{{$t('bt_no_device')}}
-          </el-button>
-        </div>
-
-        <div>
-          <BentoGrid class="mx-auto max-w-4xl"
-                     :class="devices.length===1?'md:grid-cols-1': devices.length ===2?'md:grid-cols-2':'md:grid-cols-3'">
+      <!-- Device Grid -->
+      <div v-if="devices.length > 0" class="w-full mt-8">
+         <BentoGrid class="mx-auto w-full">
             <BentoGridItem
                 v-for="(item, index) in devices"
                 :key="index"
-                class="content-center flex items-center"
+                class="glass-card"
             >
               <template #header>
-                <div class="flex content-center items-center size-full space-x-4">
-                  <!--                <div class="flex size-full flex-1 rounded-md bg-zinc-800"></div>-->
-                  <el-image :src="imgMouse" fit="contain" class="flex size-36 flex-1 rounded-md"></el-image>
+                <div class="flex justify-center items-center w-full h-32 bg-secondary/30 rounded-lg mb-4">
+                  <el-image :src="imgMouse" fit="contain" class="h-24 w-auto drop-shadow-md transition-transform duration-500 group-hover/bento:scale-110"></el-image>
                 </div>
               </template>
 
               <template #title>
-                <strong>{{ item.productName }}</strong>
+                <span class="text-lg font-semibold tracking-tight">{{ item.productName }}</span>
               </template>
-
-              <template #icon>
-              </template>
-
+              
               <template #description>
-                <div class="flex items-center justify-center">
-                  <el-tag :type="item.opened ? 'success' : 'danger'">
-                    {{ item.opened ? $t('status_connect') : $t('status_disconnect') }}
-                  </el-tag>
+                <div class="flex flex-col gap-3">
+                   <div class="flex items-center justify-between">
+                      <span class="text-sm text-muted-foreground">{{ $t('status_label') }}</span>
+                      <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', item.opened ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20']">
+                        {{ item.opened ? $t('status_connect') : $t('status_disconnect') }}
+                      </span>
+                   </div>
+
+                   <div class="flex gap-2 w-full mt-2">
+                      <button
+                          v-if="!item.opened"
+                          class="flex-1 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                          @click="connectDevice(item)"
+                      >
+                        {{$t('bt_connect')}}
+                      </button>
+
+                      <button
+                          v-if="item.opened"
+                          class="flex-1 py-2 text-sm font-medium rounded-md bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20 transition-colors"
+                          @click="disconnectDevice(item)"
+                      >
+                        {{$t('bt_disconnect')}}
+                      </button>
+
+                      <button
+                          v-if="item.opened"
+                          class="flex-1 py-2 text-sm font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border transition-colors"
+                          @click="enterSetting(item)"
+                      >
+                        {{$t('bt_enter')}}
+                      </button>
+                   </div>
                 </div>
-
-                <div class="mb-3 m-1 flex items-center justify-center">
-                  <el-button
-                      v-if="!item.opened"
-                      size="large"
-                      type="success"
-                      @click="connectDevice(item)"
-                  >{{$t('bt_connect')}}
-                  </el-button>
-
-                  <el-button
-                      v-if="item.opened"
-                      size="large"
-                      type="danger"
-                      @click="disconnectDevice(item)"
-                  >{{$t('bt_disconnect')}}
-                  </el-button>
-
-                  <el-button
-                      v-if="item.opened"
-                      size="large"
-                      type="success"
-                      @click="enterSetting(item)"
-                  >{{$t('bt_enter')}}
-                  </el-button>
-                </div>
-
               </template>
             </BentoGridItem>
-          </BentoGrid>
-        </div>
-      </el-container>
+         </BentoGrid>
+      </div>
+
     </Motion>
-  </AuroraBackground>
+  </div>
 </template>
 
 <style scoped>
-.connect-device-container {
-  display: flex;
-  align-items: center;
-  height: 100vh; /* 使容器高度占满整个视口 */
-  width: 100vw;
-  gap: 30px;
-  z-index: 9999;
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
 }
-
-.el-table-devices {
-  display: flex;
-  justify-content: center;
-  width: 50vw;
+.animate-blob {
+  animation: blob 7s infinite;
 }
-
-.image-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  gap: 20px;
+.animation-delay-2000 {
+  animation-delay: 2s;
 }
-
-.el-carousel-container {
-  width: 75%;
-}
-
-.el-carousel__item:nth-child(2n) {
-  background-color: white;
-  border-width: 2px;
-  border-radius: 10px;
-  border-color: dodgerblue;
-  gap: 20px;
-}
-
-.el-carousel__item:nth-child(2n + 1) {
-  background-color: white;
-  border-width: 2px;
-  border-radius: 10px;
-  border-color: dodgerblue;
-}
-
-.wavy-background {
-  display: flex;
+.animation-delay-4000 {
+  animation-delay: 4s;
 }
 </style>

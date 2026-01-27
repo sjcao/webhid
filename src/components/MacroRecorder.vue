@@ -520,6 +520,8 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .control-buttons {
@@ -535,7 +537,9 @@ onBeforeUnmount(() => {
   align-items: start;
   border-radius: 4px;
   padding: 10px;
-  min-height: 550px;
+  flex: 1;
+  overflow-y: auto;
+  align-content: flex-start;
 }
 
 .action-item {
