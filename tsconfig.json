@@ -5,9 +5,10 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["./src/*"]
     },
-    "types": ["vite/client", "@vue/runtime-core"]
+    "types": ["vite/client", "@types/w3c-web-hid"]
   }
 }

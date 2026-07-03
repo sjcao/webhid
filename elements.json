@@ -1,0 +1,287 @@
+[
+  {
+    "selector": "#app",
+    "text": "首页\n鼠标异常休眠，点我！\n新增设备\n请连接设备\n驱动无法识别蓝牙模式连接，请使用2.4G接收器或连接线\n关闭推荐\n利维坦冠军同款\n限时直降！\n了解更多\n进入演示模式",
+    "html": "<div id=\"app\" data-v-app=\"\"><div data-v-814a593f=\"\" data-v-b0401f57=\"\" class=\"relative card select-none\" style=\"\"><!----><!-- just for IDE --><!--v-if"
+  },
+  {
+    "selector": "div.relative.card.select-none",
+    "text": "首页\n鼠标异常休眠，点我！\n新增设备\n请连接设备\n驱动无法识别蓝牙模式连接，请使用2.4G接收器或连接线\n关闭推荐\n利维坦冠军同款\n限时直降！\n了解更多\n进入演示模式",
+    "html": "<div data-v-814a593f=\"\" data-v-b0401f57=\"\" class=\"relative card select-none\" style=\"\"><!----><!-- just for IDE --><!--v-if--><section data-v-814a593f="
+  },
+  {
+    "selector": "#layout-header",
+    "text": "首页\n鼠标异常休眠，点我！",
+    "html": "<div data-v-814a593f=\"\" id=\"layout-header\" class=\"el-header box-border header w-full flex justify-between items-center\"><div data-v-814a593f=\"\" class="
+  },
+  {
+    "selector": "div.no-drag.logo-bg.cursor-pointer",
+    "text": "首页",
+    "html": "<div data-v-814a593f=\"\" class=\"no-drag logo-bg cursor-pointer\"><svg data-v-814a593f=\"\" width=\"115\" height=\"32\" viewBox=\"0 0 115 32\" fill=\"none\" xmlns="
+  },
+  {
+    "selector": "div.back_to_home_text",
+    "text": "首页",
+    "html": "<div data-v-814a593f=\"\" class=\"back_to_home_text\" style=\"margin-right: 0px; width: 0px; opacity: 0; overflow: hidden;\"><svg data-v-814a593f=\"\" width=\""
+  },
+  {
+    "selector": "span",
+    "text": "首页",
+    "html": "<span data-v-814a593f=\"\">首页</span>"
+  },
+  {
+    "selector": "div.flex.items-center.justify-end.no-drag",
+    "text": "鼠标异常休眠，点我！",
+    "html": "<div data-v-814a593f=\"\" class=\"flex items-center justify-end no-drag\"><div data-v-814a593f=\"\" class=\"icon-group select-none\"><button data-v-814a593f=\""
+  },
+  {
+    "selector": "div.icon-group.select-none",
+    "text": "鼠标异常休眠，点我！",
+    "html": "<div data-v-814a593f=\"\" class=\"icon-group select-none\"><button data-v-814a593f=\"\" aria-disabled=\"false\" type=\"button\" class=\"el-button el-button--prim"
+  },
+  {
+    "selector": "button.el-button.el-button--primary",
+    "text": "鼠标异常休眠，点我！",
+    "html": "<button data-v-814a593f=\"\" aria-disabled=\"false\" type=\"button\" class=\"el-button el-button--primary\"><!--v-if--><span class=\"\">鼠标异常休眠，点我！</span></butto"
+  },
+  {
+    "selector": "span",
+    "text": "鼠标异常休眠，点我！",
+    "html": "<span class=\"\">鼠标异常休眠，点我！</span>"
+  },
+  {
+    "selector": "div.hub-route-transition-host",
+    "text": "新增设备\n请连接设备\n驱动无法识别蓝牙模式连接，请使用2.4G接收器或连接线\n关闭推荐\n利维坦冠军同款\n限时直降！\n了解更多\n进入演示模式",
+    "html": "<div data-v-3ee0cf92=\"\" class=\"hub-route-transition-host\"><div data-v-932c5ecf=\"\" class=\"home-device\"><div data-v-478482db=\"\" data-v-932c5ecf=\"\" class"
+  },
+  {
+    "selector": "div.home-device",
+    "text": "新增设备\n请连接设备\n驱动无法识别蓝牙模式连接，请使用2.4G接收器或连接线\n关闭推荐\n利维坦冠军同款\n限时直降！\n了解更多\n进入演示模式",
+    "html": "<div data-v-932c5ecf=\"\" class=\"home-device\"><div data-v-478482db=\"\" data-v-932c5ecf=\"\" class=\"w-full h-full container-card relative select-none\"><div "
+  },
+  {
+    "selector": "div.w-full.h-full.container-card.relative.select-none",
+    "text": "新增设备\n请连接设备\n驱动无法识别蓝牙模式连接，请使用2.4G接收器或连接线\n关闭推荐\n利维坦冠军同款\n限时直降！\n了解更多\n进入演示模式",
+    "html": "<div data-v-478482db=\"\" data-v-932c5ecf=\"\" class=\"w-full h-full container-card relative select-none\"><div data-v-680f57db=\"\" data-v-478482db=\"\" class="
+  },
+  {
+    "selector": "div.w-full.h-full.flex.flex-col.items-center.select-none.pointer-events-none",
+    "text": "新增设备\n请连接设备\n驱动无法识别蓝牙模式连接，请使用2.4G接收器或连接线",
+    "html": "<div data-v-680f57db=\"\" data-v-478482db=\"\" class=\"w-full h-full flex flex-col items-center select-none pointer-events-none\"><div data-v-680f57db=\"\" cl"
+  },
+  {
+    "selector": "div.footer.flex.flex-col.items-center.text-[--color-text-primary-85].animate__animated.animate__slideInUp",
+    "text": "新增设备\n请连接设备\n驱动无法识别蓝牙模式连接，请使用2.4G接收器或连接线",
+    "html": "<div data-v-680f57db=\"\" class=\"footer flex flex-col items-center text-[--color-text-primary-85] animate__animated animate__slideInUp\"><div data-v-680f"
+  },
+  {
+    "selector": "div.flex",
+    "text": "新增设备",
+    "html": "<div data-v-680f57db=\"\" class=\"flex\"><!----><button data-v-211bd7c8=\"\" data-v-680f57db=\"\" aria-disabled=\"false\" type=\"button\" class=\"el-button el-butt"
+  },
+  {
+    "selector": "button.el-button.el-button--primary.mb-[15px].pointer-events-auto",
+    "text": "新增设备",
+    "html": "<button data-v-211bd7c8=\"\" data-v-680f57db=\"\" aria-disabled=\"false\" type=\"button\" class=\"el-button el-button--primary mb-[15px] pointer-events-auto\" d"
+  },
+  {
+    "selector": "span",
+    "text": "新增设备",
+    "html": "<span class=\"\">新增设备</span>"
+  },
+  {
+    "selector": "div.text-[24px].font-semibold",
+    "text": "请连接设备",
+    "html": "<div data-v-680f57db=\"\" class=\"text-[24px] font-semibold\">请连接设备</div>"
+  },
+  {
+    "selector": "div.text-[16px].font-semibold.mt-[15px]",
+    "text": "驱动无法识别蓝牙模式连接，请使用2.4G接收器或连接线",
+    "html": "<div data-v-680f57db=\"\" class=\"text-[16px] font-semibold mt-[15px]\">驱动无法识别蓝牙模式连接，请使用2.4G接收器或连接线</div>"
+  },
+  {
+    "selector": "div.device-item-big.one-line.device-list",
+    "text": "关闭推荐\n利维坦冠军同款\n限时直降！\n了解更多",
+    "html": "<div data-v-478482db=\"\" class=\"device-item-big one-line device-list\" style=\"height: 95%; padding-bottom: 100px;\"><!----><div data-v-478482db=\"\" class="
+  },
+  {
+    "selector": "div.device-item.animate__animated.animate__zoomIn.mouse",
+    "text": "关闭推荐\n利维坦冠军同款\n限时直降！\n了解更多",
+    "html": "<div data-v-478482db=\"\" class=\"device-item animate__animated animate__zoomIn mouse\"><div data-v-884283de=\"\" data-v-478482db=\"\" class=\"ad-card-wrap rel"
+  },
+  {
+    "selector": "div.ad-card-wrap.relative",
+    "text": "关闭推荐\n利维坦冠军同款\n限时直降！\n了解更多",
+    "html": "<div data-v-884283de=\"\" data-v-478482db=\"\" class=\"ad-card-wrap relative\"><div data-v-884283de=\"\" class=\"absolute right-0 top-0 z-10\"><div data-v-88428"
+  },
+  {
+    "selector": "div.absolute.right-0.top-0.z-10",
+    "text": "关闭推荐",
+    "html": "<div data-v-884283de=\"\" class=\"absolute right-0 top-0 z-10\"><div data-v-884283de=\"\" class=\"close-btn\">关闭推荐</div></div>"
+  },
+  {
+    "selector": "div.close-btn",
+    "text": "关闭推荐",
+    "html": "<div data-v-884283de=\"\" class=\"close-btn\">关闭推荐</div>"
+  },
+  {
+    "selector": "div.flex.bg-[--color-background-2].items-end.bottom-title.px-6.py-7.justify-between",
+    "text": "利维坦冠军同款\n限时直降！\n了解更多",
+    "html": "<div data-v-884283de=\"\" class=\"flex bg-[--color-background-2] items-end bottom-title px-6 py-7 justify-between\"><div data-v-884283de=\"\" class=\"header "
+  },
+  {
+    "selector": "div.header.flex-1.overflow-hidden",
+    "text": "利维坦冠军同款\n限时直降！",
+    "html": "<div data-v-884283de=\"\" class=\"header flex-1 overflow-hidden\"><div data-v-884283de=\"\" class=\"ad-title\" style=\"font-size: 24px;\">利维坦冠军同款</div><div data"
+  },
+  {
+    "selector": "div.ad-title",
+    "text": "利维坦冠军同款",
+    "html": "<div data-v-884283de=\"\" class=\"ad-title\" style=\"font-size: 24px;\">利维坦冠军同款</div>"
+  },
+  {
+    "selector": "div.ad-description.line-clamp-1",
+    "text": "限时直降！",
+    "html": "<div data-v-884283de=\"\" class=\"ad-description line-clamp-1\">限时直降！</div>"
+  },
+  {
+    "selector": "div.flex-shrink-0.ml-3",
+    "text": "了解更多",
+    "html": "<div data-v-884283de=\"\" class=\"flex-shrink-0 ml-3\"><button data-v-211bd7c8=\"\" data-v-884283de=\"\" aria-disabled=\"false\" type=\"button\" class=\"el-button "
+  },
+  {
+    "selector": "button.el-button.el-button--primary.rounded-full.font-medium",
+    "text": "了解更多",
+    "html": "<button data-v-211bd7c8=\"\" data-v-884283de=\"\" aria-disabled=\"false\" type=\"button\" class=\"el-button el-button--primary rounded-full font-medium\" data-t"
+  },
+  {
+    "selector": "span",
+    "text": "了解更多",
+    "html": "<span class=\"\">了解更多</span>"
+  },
+  {
+    "selector": "div.footer-text.flex.flex-col.items-center.direction-column.text-[--color-text-primary-85].px-[55px].w-full",
+    "text": "进入演示模式",
+    "html": "<div data-v-478482db=\"\" class=\"footer-text flex flex-col items-center direction-column text-[--color-text-primary-85] px-[55px] w-full\"><div data-v-47"
+  },
+  {
+    "selector": "div.flex.items-center.gap-[12px]",
+    "text": "进入演示模式",
+    "html": "<div data-v-478482db=\"\" class=\"flex items-center gap-[12px]\"><!----><button data-v-211bd7c8=\"\" data-v-478482db=\"\" aria-disabled=\"false\" type=\"button\" "
+  },
+  {
+    "selector": "button.el-button.el-button--default.mb-[15px].pointer-events-auto.demo-toggle-btn",
+    "text": "进入演示模式",
+    "html": "<button data-v-211bd7c8=\"\" data-v-478482db=\"\" aria-disabled=\"false\" type=\"button\" class=\"el-button el-button--default mb-[15px] pointer-events-auto de"
+  },
+  {
+    "selector": "span",
+    "text": "进入演示模式",
+    "html": "<span class=\"\">进入演示模式</span>"
+  },
+  {
+    "selector": "div.el-popper.is-pure.is-light.el-tooltip.el-dropdown__popper.language-dropdown-popper",
+    "text": "简体中文✓English한국어Russian日本語DeutschFrançais繁體中文",
+    "html": "<div class=\"el-popper is-pure is-light el-tooltip el-dropdown__popper language-dropdown-popper\" tabindex=\"-1\" aria-hidden=\"true\" data-popper-reference"
+  },
+  {
+    "selector": "div.el-scrollbar",
+    "text": "简体中文✓English한국어Russian日本語DeutschFrançais繁體中文",
+    "html": "<div class=\"el-scrollbar\"><div class=\"el-scrollbar__wrap el-scrollbar__wrap--hidden-default\"><div class=\"el-scrollbar__view el-dropdown__list\" style=\""
+  },
+  {
+    "selector": "div.el-scrollbar__wrap.el-scrollbar__wrap--hidden-default",
+    "text": "简体中文✓English한국어Russian日本語DeutschFrançais繁體中文",
+    "html": "<div class=\"el-scrollbar__wrap el-scrollbar__wrap--hidden-default\"><div class=\"el-scrollbar__view el-dropdown__list\" style=\"\"><ul data-v-3b51da04=\"\" c"
+  },
+  {
+    "selector": "div.el-scrollbar__view.el-dropdown__list",
+    "text": "简体中文✓English한국어Russian日本語DeutschFrançais繁體中文",
+    "html": "<div class=\"el-scrollbar__view el-dropdown__list\" style=\"\"><ul data-v-3b51da04=\"\" class=\"el-dropdown-menu\" tabindex=\"-1\" role=\"menu\" aria-labelledby=\""
+  },
+  {
+    "selector": "div.flex.items-center.justify-between.w-full",
+    "text": "简体中文✓",
+    "html": "<div data-v-3b51da04=\"\" class=\"flex items-center justify-between w-full\"><span data-v-3b51da04=\"\">简体中文</span><span data-v-3b51da04=\"\" class=\"check-mar"
+  },
+  {
+    "selector": "span",
+    "text": "简体中文",
+    "html": "<span data-v-3b51da04=\"\">简体中文</span>"
+  },
+  {
+    "selector": "span.check-mark",
+    "text": "✓",
+    "html": "<span data-v-3b51da04=\"\" class=\"check-mark\">✓</span>"
+  },
+  {
+    "selector": "div.flex.items-center.justify-between.w-full",
+    "text": "English",
+    "html": "<div data-v-3b51da04=\"\" class=\"flex items-center justify-between w-full\"><span data-v-3b51da04=\"\">English</span><!----></div>"
+  },
+  {
+    "selector": "span",
+    "text": "English",
+    "html": "<span data-v-3b51da04=\"\">English</span>"
+  },
+  {
+    "selector": "div.flex.items-center.justify-between.w-full",
+    "text": "한국어",
+    "html": "<div data-v-3b51da04=\"\" class=\"flex items-center justify-between w-full\"><span data-v-3b51da04=\"\">한국어</span><!----></div>"
+  },
+  {
+    "selector": "span",
+    "text": "한국어",
+    "html": "<span data-v-3b51da04=\"\">한국어</span>"
+  },
+  {
+    "selector": "div.flex.items-center.justify-between.w-full",
+    "text": "Russian",
+    "html": "<div data-v-3b51da04=\"\" class=\"flex items-center justify-between w-full\"><span data-v-3b51da04=\"\">Russian</span><!----></div>"
+  },
+  {
+    "selector": "span",
+    "text": "Russian",
+    "html": "<span data-v-3b51da04=\"\">Russian</span>"
+  },
+  {
+    "selector": "div.flex.items-center.justify-between.w-full",
+    "text": "日本語",
+    "html": "<div data-v-3b51da04=\"\" class=\"flex items-center justify-between w-full\"><span data-v-3b51da04=\"\">日本語</span><!----></div>"
+  },
+  {
+    "selector": "span",
+    "text": "日本語",
+    "html": "<span data-v-3b51da04=\"\">日本語</span>"
+  },
+  {
+    "selector": "div.flex.items-center.justify-between.w-full",
+    "text": "Deutsch",
+    "html": "<div data-v-3b51da04=\"\" class=\"flex items-center justify-between w-full\"><span data-v-3b51da04=\"\">Deutsch</span><!----></div>"
+  },
+  {
+    "selector": "span",
+    "text": "Deutsch",
+    "html": "<span data-v-3b51da04=\"\">Deutsch</span>"
+  },
+  {
+    "selector": "div.flex.items-center.justify-between.w-full",
+    "text": "Français",
+    "html": "<div data-v-3b51da04=\"\" class=\"flex items-center justify-between w-full\"><span data-v-3b51da04=\"\">Français</span><!----></div>"
+  },
+  {
+    "selector": "span",
+    "text": "Français",
+    "html": "<span data-v-3b51da04=\"\">Français</span>"
+  },
+  {
+    "selector": "div.flex.items-center.justify-between.w-full",
+    "text": "繁體中文",
+    "html": "<div data-v-3b51da04=\"\" class=\"flex items-center justify-between w-full\"><span data-v-3b51da04=\"\">繁體中文</span><!----></div>"
+  },
+  {
+    "selector": "span",
+    "text": "繁體中文",
+    "html": "<span data-v-3b51da04=\"\">繁體中文</span>"
+  }
+]
