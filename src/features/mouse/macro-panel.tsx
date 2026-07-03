@@ -1,280 +1,706 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { ButtonId, MacroRepeatType, browserKeyToHid, mouseButtons } from '@/protocol/mouse';
-import { keyboardEventToMacroAction, MacroAction, MacroDirection, useMacroStore } from '@/stores/macro-store';
-import { useMouseStore } from '@/stores/mouse-store';
-import { TranslationKey, useI18n } from '@/i18n/use-i18n';
+import { Play, Square, Copy, RotateCcw, Save, Trash2, Plus, Menu, Keyboard, Mouse } from 'lucide-react';
+import { useMacroStore, MacroAction, MacroActionKind, MacroDirection } from '@/stores/macro-store';
+import { browserKeyToHid, MacroRepeatType } from '@/protocol/mouse';
+import { useI18n } from '@/i18n/use-i18n';
 import { Button } from '@/shared/ui/button';
 
-const macroSchema = z.object({
-  name: z.string().min(1).max(40),
-  repeatType: z.number(),
-  loopTimes: z.number().min(1).max(255),
-});
-
-type MacroForm = z.infer<typeof macroSchema>;
-
 export function MacroPanel() {
-  const { t, locale } = useI18n();
+  const { locale } = useI18n();
+
+  // Zustand Store
   const macros = useMacroStore((state) => state.macros);
   const saveMacro = useMacroStore((state) => state.saveMacro);
   const deleteMacro = useMacroStore((state) => state.deleteMacro);
-  const bindMacroToButton = useMouseStore((state) => state.bindMacroToButton);
-  const bindComboToButton = useMouseStore((state) => state.bindComboToButton);
-  const [recording, setRecording] = useState(false);
-  const [comboRecording, setComboRecording] = useState(false);
-  const [actions, setActions] = useState<MacroAction[]>([]);
-  const [comboKeys, setComboKeys] = useState<Array<{ name: string; value: number }>>([]);
-  const [targetButton, setTargetButton] = useState<ButtonId>(ButtonId.Forward);
-  const startedAt = useRef(0);
-  const pressed = useRef(new Set<string>());
-  const form = useForm<MacroForm>({
-    resolver: zodResolver(macroSchema),
-    defaultValues: { name: 'Macro 1', repeatType: MacroRepeatType.LoopTimes, loopTimes: 1 },
-  });
+  const updateMacro = useMacroStore((state) => state.updateMacro);
+  const duplicateMacro = useMacroStore((state) => state.duplicateMacro);
 
+  // 编辑器管理状态
+  const [selectedMacroId, setSelectedMacroId] = useState<string | null>(null);
+  
+  // 选中的宏对象
+  const currentMacro = useMemo(() => {
+    return macros.find((m) => m.id === selectedMacroId) || null;
+  }, [selectedMacroId, macros]);
+
+  // 临时编辑状态 (用于未保存的修改缓存)
+  const [tempActions, setTempActions] = useState<MacroAction[]>([]);
+  const [tempName, setTempName] = useState('');
+  const [repeatType, setRepeatType] = useState<MacroRepeatType>(MacroRepeatType.LoopTimes);
+  const [loopTimes, setLoopTimes] = useState(1);
+
+  // 录制相关状态
+  const [recording, setRecording] = useState(false);
+  const startedAt = useRef(0);
+  const pressedKeys = useRef(new Set<string>());
+
+  // 捕获与编辑动作相关的局部状态
+  const [editingActionIndex, setEditingActionIndex] = useState<number | null>(null);
+  const [isInsertingKey, setIsInsertingKey] = useState(false);
+  const [insertMouseMenuOpen, setInsertMouseMenuOpen] = useState(false);
+
+  // HTML5 Drag & Drop 拖拽状态
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  // 1. 初始化时默认选中第一个宏
+  useEffect(() => {
+    if (macros.length > 0 && !selectedMacroId) {
+      setSelectedMacroId(macros[0].id);
+    } else if (macros.length === 0) {
+      setSelectedMacroId(null);
+    }
+  }, [macros, selectedMacroId]);
+
+  // 2. 当切换选中的宏时，将 store 数据同步到临时编辑状态中
+  useEffect(() => {
+    if (currentMacro) {
+      setTempActions(currentMacro.actions.map((act) => ({ ...act })));
+      setTempName(currentMacro.name);
+      setRepeatType(currentMacro.repeatType);
+      setLoopTimes(currentMacro.loopTimes);
+    } else {
+      setTempActions([]);
+      setTempName('');
+      setRepeatType(MacroRepeatType.LoopTimes);
+      setLoopTimes(1);
+    }
+    // 切换宏时关闭所有临时状态
+    setEditingActionIndex(null);
+    setIsInsertingKey(false);
+    setInsertMouseMenuOpen(false);
+  }, [currentMacro]);
+
+  // 3. 全局键盘录制逻辑
   useEffect(() => {
     if (!recording) return undefined;
+    
     startedAt.current = Date.now();
-    pressed.current.clear();
-    const onDown = (event: KeyboardEvent) => {
+    pressedKeys.current.clear();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
       event.preventDefault();
-      if (pressed.current.has(event.code)) return;
-      pressed.current.add(event.code);
-      const action = keyboardEventToMacroAction(event, MacroDirection.Down, startedAt.current);
-      if (action) setActions((items) => [...items, action]);
+      if (pressedKeys.current.has(event.code)) return;
+      pressedKeys.current.add(event.code);
+
+      const hidCode = browserKeyToHid[event.key] ?? browserKeyToHid[event.key.toLowerCase()] ?? browserKeyToHid[event.code];
+      if (!hidCode) return;
+
+      const newAction: MacroAction = {
+        keyName: event.key === ' ' ? 'Space' : event.key,
+        kind: MacroActionKind.Keyboard,
+        direction: MacroDirection.Down,
+        keyCode: hidCode,
+        timestamp: Date.now() - startedAt.current,
+      };
+      setTempActions((prev) => [...prev, newAction]);
     };
-    const onUp = (event: KeyboardEvent) => {
+
+    const handleKeyUp = (event: KeyboardEvent) => {
       event.preventDefault();
-      pressed.current.delete(event.code);
-      const action = keyboardEventToMacroAction(event, MacroDirection.Up, startedAt.current);
-      if (action) setActions((items) => [...items, action]);
+      pressedKeys.current.delete(event.code);
+
+      const hidCode = browserKeyToHid[event.key] ?? browserKeyToHid[event.key.toLowerCase()] ?? browserKeyToHid[event.code];
+      if (!hidCode) return;
+
+      const newAction: MacroAction = {
+        keyName: event.key === ' ' ? 'Space' : event.key,
+        kind: MacroActionKind.Keyboard,
+        direction: MacroDirection.Up,
+        keyCode: hidCode,
+        timestamp: Date.now() - startedAt.current,
+      };
+      setTempActions((prev) => [...prev, newAction]);
     };
-    window.addEventListener('keydown', onDown);
-    window.addEventListener('keyup', onUp);
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
     return () => {
-      window.removeEventListener('keydown', onDown);
-      window.removeEventListener('keyup', onUp);
-      pressed.current.clear();
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      pressedKeys.current.clear();
     };
   }, [recording]);
 
+  // 4. 按键单个动作捕获修改逻辑
   useEffect(() => {
-    if (!comboRecording) return undefined;
-    const onDown = (event: KeyboardEvent) => {
+    if (editingActionIndex === null) return undefined;
+
+    const handleSingleCapture = (event: KeyboardEvent) => {
       event.preventDefault();
       const code = browserKeyToHid[event.key] ?? browserKeyToHid[event.key.toLowerCase()] ?? browserKeyToHid[event.code];
       if (!code) return;
-      setComboKeys((items) => {
-        if (items.some((item) => item.value === code[0])) return items;
-        return [...items, { name: keyName(event), value: code[0] }].slice(0, 4);
-      });
+
+      // 更新该行的按键和 HID 代码
+      setTempActions((prev) =>
+        prev.map((act, idx) => {
+          if (idx === editingActionIndex) {
+            return {
+              ...act,
+              keyName: event.key === ' ' ? 'Space' : event.key,
+              keyCode: code,
+            };
+          }
+          return act;
+        })
+      );
+      setEditingActionIndex(null);
     };
-    window.addEventListener('keydown', onDown);
-    return () => window.removeEventListener('keydown', onDown);
-  }, [comboRecording]);
 
-  const actionSummary = useMemo(() => actions.slice(-6), [actions]);
+    window.addEventListener('keydown', handleSingleCapture);
+    return () => window.removeEventListener('keydown', handleSingleCapture);
+  }, [editingActionIndex]);
 
-  function submit(values: MacroForm) {
-    if (!actions.length) return;
-    saveMacro({
-      name: values.name,
-      loopTimes: values.loopTimes,
-      repeatType: values.repeatType as MacroRepeatType,
-      actions,
+  // 5. 底部手动插入键盘按键监听
+  useEffect(() => {
+    if (!isInsertingKey) return undefined;
+
+    const handleInsertCapture = (event: KeyboardEvent) => {
+      event.preventDefault();
+      const code = browserKeyToHid[event.key] ?? browserKeyToHid[event.key.toLowerCase()] ?? browserKeyToHid[event.code];
+      if (!code) return;
+
+      // 自动追加 Down 和 Up 两条指令，中间延迟 100ms
+      const lastTimestamp = tempActions.length > 0 ? tempActions[tempActions.length - 1].timestamp : 0;
+      const downAction: MacroAction = {
+        keyName: event.key === ' ' ? 'Space' : event.key,
+        kind: MacroActionKind.Keyboard,
+        direction: MacroDirection.Down,
+        keyCode: code,
+        timestamp: lastTimestamp + 100,
+      };
+      const upAction: MacroAction = {
+        keyName: event.key === ' ' ? 'Space' : event.key,
+        kind: MacroActionKind.Keyboard,
+        direction: MacroDirection.Up,
+        keyCode: code,
+        timestamp: lastTimestamp + 200,
+      };
+
+      setTempActions((prev) => [...prev, downAction, upAction]);
+      setIsInsertingKey(false);
+    };
+
+    window.addEventListener('keydown', handleInsertCapture);
+    return () => window.removeEventListener('keydown', handleInsertCapture);
+  }, [isInsertingKey, tempActions]);
+
+  // 新建一个宏快捷指令
+  function handleCreateNew() {
+    const newName = `M${macros.length + 1}`;
+    const newMacro = saveMacro({
+      name: newName,
+      repeatType: MacroRepeatType.LoopTimes,
+      loopTimes: 1,
+      actions: [],
     });
-    setActions([]);
-    setRecording(false);
-    form.reset({ name: `Macro ${macros.length + 2}`, repeatType: MacroRepeatType.LoopTimes, loopTimes: 1 });
+    setSelectedMacroId(newMacro.id);
   }
 
-  function bindCombo() {
-    if (!comboKeys.length) return;
-    void bindComboToButton(targetButton, comboKeys.map((item) => item.value));
-    setComboRecording(false);
+  // 保存当前修改
+  function handleSave() {
+    if (!selectedMacroId) return;
+    updateMacro(selectedMacroId, {
+      name: tempName,
+      repeatType,
+      loopTimes,
+      actions: tempActions,
+    });
+  }
+
+  // 复制克隆宏
+  function handleDuplicate() {
+    if (!selectedMacroId) return;
+    duplicateMacro(selectedMacroId);
+  }
+
+  // 删除宏
+  function handleDelete(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    deleteMacro(id);
+    if (selectedMacroId === id) {
+      setSelectedMacroId(null);
+    }
+  }
+
+  // 修改延迟毫秒数 (平移时间轴算法)
+  function handleDelayChange(idx: number, newVal: number) {
+    const prevTimestamp = idx === 0 ? 0 : tempActions[idx - 1].timestamp;
+    const currentDelay = tempActions[idx].timestamp - prevTimestamp;
+    const diff = newVal - currentDelay;
+
+    const nextActions = tempActions.map((act, i) => {
+      if (i >= idx) {
+        return { ...act, timestamp: act.timestamp + diff };
+      }
+      return act;
+    });
+    setTempActions(nextActions);
+  }
+
+  // 切换按下/抬起方向
+  function toggleDirection(idx: number, dir: MacroDirection) {
+    setTempActions((prev) =>
+      prev.map((act, i) => (i === idx ? { ...act, direction: dir } : act))
+    );
+  }
+
+  // 删除单个动作
+  function removeAction(idx: number) {
+    const delayOfRemoved = idx === 0 ? 0 : tempActions[idx].timestamp - tempActions[idx - 1].timestamp;
+    
+    // 删除该项后，将后续的各项绝对时间戳向前平移以消除这一动作的相对延迟
+    const nextActions = tempActions
+      .filter((_, i) => i !== idx)
+      .map((act, i) => {
+        if (i >= idx) {
+          return { ...act, timestamp: act.timestamp - delayOfRemoved };
+        }
+        return act;
+      });
+    setTempActions(nextActions);
+  }
+
+  // 手动追加插入鼠标动作
+  function insertMouseAction(btnName: string, btnValue: number, direction: MacroDirection) {
+    const lastTimestamp = tempActions.length > 0 ? tempActions[tempActions.length - 1].timestamp : 0;
+    const newAction: MacroAction = {
+      keyName: btnName,
+      kind: MacroActionKind.Mouse,
+      direction,
+      keyCode: [btnValue],
+      timestamp: lastTimestamp + 100,
+    };
+    setTempActions((prev) => [...prev, newAction]);
+    setInsertMouseMenuOpen(false);
+  }
+
+  // HTML5 拖拽事件处理 (基于保留相对间隔的重排算法)
+  function onDragStart(index: number) {
+    setDraggedIndex(index);
+  }
+
+  function onDragOver(e: React.DragEvent) {
+    e.preventDefault();
+  }
+
+  function onDrop(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    // 1. 先计算原始顺序下，每个动作相对于前一项的相对延时 (delays)
+    const oldDelays = tempActions.map((act, i) =>
+      i === 0 ? act.timestamp : act.timestamp - tempActions[i - 1].timestamp
+    );
+
+    // 2. 对动作数组及相对延迟数组进行同步调整
+    const list = [...tempActions];
+    const delayList = [...oldDelays];
+
+    const draggedItem = list[draggedIndex];
+    const draggedDelay = delayList[draggedIndex];
+
+    list.splice(draggedIndex, 1);
+    delayList.splice(draggedIndex, 1);
+
+    list.splice(index, 0, draggedItem);
+    delayList.splice(index, 0, draggedDelay);
+
+    // 3. 根据重排后的相对延时，重新累加出绝对时间戳 (timestamp)
+    const nextActions = list.map((act, i) => {
+      const ts = i === 0 ? delayList[i] : list[i - 1].timestamp + delayList[i];
+      return { ...act, timestamp: ts };
+    });
+
+    setTempActions(nextActions);
+    setDraggedIndex(null);
   }
 
   return (
-    <div className="min-h-full bg-white text-[#101114]">
-      <div className="flex items-center justify-between border-b border-[#eef0f2] px-6 py-4">
-        <div>
-          <h1 className="text-lg font-black">{t('nav.shortcuts')}</h1>
-          <p className="mt-1 text-xs text-[#7a808a]">{t('mouse.bindWorkflow')}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-semibold text-[#7a808a]">{t('mouse.targetButton')}</span>
-          <TargetButtonSelect locale={locale} value={targetButton} onChange={setTargetButton} />
+    <div className="flex h-full min-h-0 w-full overflow-hidden bg-[#f6f7f9] text-[#101114]">
+      
+      {/* 左侧侧边栏：已创建的宏列表 */}
+      <div className="flex h-full w-[240px] shrink-0 flex-col border-r border-[#eef0f2] bg-white p-4">
+        <h2 className="text-sm font-black text-[#86909c] mb-3 uppercase tracking-wider">
+          {locale === 'zh-CN' ? '快捷指令库' : 'Shortcuts Library'}
+        </h2>
+        
+        {/* 新建按钮 */}
+        <Button
+          onClick={handleCreateNew}
+          className="w-full bg-[#101114] text-white hover:bg-slate-800 font-bold text-xs h-10 mb-4 flex items-center justify-center gap-2 shadow-sm rounded-md"
+        >
+          <Plus size={15} />
+          {locale === 'zh-CN' ? '新建快捷指令' : 'New Shortcut'}
+        </Button>
+
+        {/* 宏项列表 */}
+        <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
+          {macros.map((macro) => {
+            const active = selectedMacroId === macro.id;
+            return (
+              <div
+                key={macro.id}
+                onClick={() => setSelectedMacroId(macro.id)}
+                className={`group flex h-11 cursor-pointer items-center justify-between rounded-md px-3 border transition duration-200 ${
+                  active
+                    ? 'border-[#ff6b00] bg-[#ff6b00]/5 text-[#ff6b00]'
+                    : 'border-[#eef0f2] bg-white hover:border-slate-300'
+                }`}
+              >
+                <div className="min-w-0 pr-2">
+                  <div className="text-xs font-bold truncate">{macro.name}</div>
+                  <div className="mt-0.5 text-[9px] font-semibold text-[#86909c]">
+                    {macro.actions.length} {locale === 'zh-CN' ? '动作' : 'acts'}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => handleDelete(macro.id, e)}
+                  className="rounded p-1 text-[#86909c] hover:bg-[#f3f4f6] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            );
+          })}
+
+          {macros.length === 0 && (
+            <div className="py-12 text-center text-xs text-[#9aa0a9] font-medium leading-relaxed">
+              {locale === 'zh-CN' ? '暂无配置，请点击上方按钮新建' : 'No shortcuts yet. Click above to create one.'}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="grid gap-4 bg-[#f6f7f9] p-6 xl:grid-cols-[360px_420px_1fr]">
-        <section className="rounded-lg bg-white p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)]">
-          <div className="mb-4 text-sm font-bold">{t('mouse.selectedTarget')}</div>
-          <div className="grid grid-cols-2 gap-2">
-            {mouseButtons.map((button) => {
-              const active = button.id === targetButton;
-              return (
-                <button
-                  key={button.id}
-                  className={`h-12 rounded-md px-3 text-left text-sm font-semibold transition ${
-                    active ? 'bg-black text-white' : 'bg-[#f1f2f4] text-[#1d2129] hover:bg-[#e5e7eb]'
-                  }`}
-                  onClick={() => setTargetButton(button.id)}
-                >
-                  {locale === 'zh-CN' ? button.labelZh : button.label}
-                </button>
-              );
-            })}
-          </div>
-          <div className="mt-4 rounded-lg bg-[#f6f7f9] p-3 text-xs leading-6 text-[#69717d]">
-            {t('mouse.recordStatus')}: <span className="font-semibold text-[#101114]">{recording || comboRecording ? t('mouse.recordingNow') : t('mouse.waitingInput')}</span>
-          </div>
-        </section>
-
-        <section className="rounded-lg bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)]">
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <div className="font-bold">{t('mouse.macroRecord')}</div>
-              <div className="mt-1 text-xs text-[#7a808a]">{t('mouse.macroRecordHint')}</div>
-            </div>
-            <span className={`h-3 w-3 rounded-full ${recording ? 'bg-[#ff4d2e]' : 'bg-[#aeb4bd]'}`} />
-          </div>
-
-          <form className="grid gap-4" onSubmit={form.handleSubmit(submit)}>
-            <label className="grid gap-2 text-sm">
-              <span className="text-[#7a808a]">{t('mouse.macroName')}</span>
-              <input className="h-10 rounded-md border border-[#d7dbe2] bg-white px-3 outline-none focus:border-[#ff6b00]" {...form.register('name')} />
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-2 text-sm">
-                <span className="text-[#7a808a]">{t('mouse.repeatMode')}</span>
-                <select className="h-10 rounded-md border border-[#d7dbe2] bg-white px-3 outline-none" {...form.register('repeatType', { valueAsNumber: true })}>
-                  <option value={MacroRepeatType.LoopTimes}>{t('mouse.repeatLoopTimes')}</option>
-                  <option value={MacroRepeatType.Hold}>{t('mouse.repeatHold')}</option>
-                  <option value={MacroRepeatType.UntilAssignedKey}>{t('mouse.repeatAssigned')}</option>
-                  <option value={MacroRepeatType.UntilAnyKey}>{t('mouse.repeatAny')}</option>
-                </select>
-              </label>
-              <label className="grid gap-2 text-sm">
-                <span className="text-[#7a808a]">{t('mouse.loopTimes')}</span>
-                <input type="number" className="h-10 rounded-md border border-[#d7dbe2] bg-white px-3 outline-none" {...form.register('loopTimes', { valueAsNumber: true })} />
-              </label>
-            </div>
-            <div className="flex gap-2">
-              <Button type="button" variant={recording ? 'danger' : 'primary'} onClick={() => setRecording((value) => !value)}>
-                {recording ? t('mouse.stopRecord') : t('mouse.startRecord')}
-              </Button>
-              <Button type="button" className="bg-[#e5e7eb] text-[#1d2129] hover:bg-[#dfe2e7]" onClick={() => setActions([])}>
-                {t('mouse.clear')}
-              </Button>
-              <Button type="submit" disabled={!actions.length}>{t('mouse.save')}</Button>
-            </div>
-          </form>
-
-          <div className="mt-5 rounded-lg bg-white p-3">
-            <div className="mb-2 text-xs text-[#7a808a]">{t('mouse.actions')}: {actions.length}</div>
-            <div className="min-h-28 space-y-1 text-xs text-[#515861]">
-              {actionSummary.map((action, index) => (
-                <div key={`${action.keyName}-${action.timestamp}-${index}`}>
-                  {action.direction === MacroDirection.Down ? '↓' : '↑'} {action.keyName} · {action.timestamp}ms
-                </div>
-              ))}
-              {!actions.length && <div className="py-8 text-center text-[#9aa0a9]">{t('mouse.emptyActions')}</div>}
-            </div>
-          </div>
-        </section>
-
-        <section className="grid gap-4">
-          <div className="rounded-lg bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)]">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <div className="font-bold">{t('mouse.comboRecord')}</div>
-                <div className="mt-1 text-xs text-[#7a808a]">{t('mouse.comboRecordHint')}</div>
+      {/* 右侧主详情面板：可视化动作流编辑器 */}
+      <div className="flex-1 flex flex-col h-full min-h-0 bg-[#f7f8fa]">
+        
+        {currentMacro ? (
+          <div className="flex-1 flex flex-col h-full min-h-0">
+            {/* 顶部工具控制栏 */}
+            <div className="flex h-14 shrink-0 items-center justify-between border-b border-[#eef0f2] bg-white px-6 shadow-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-[#86909c]">{locale === 'zh-CN' ? '指令名称' : 'Name'}:</span>
+                <input
+                  type="text"
+                  maxLength={20}
+                  className="h-8 w-40 rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2.5 text-xs font-bold outline-none focus:border-[#ff6b00] focus:bg-white"
+                  value={tempName}
+                  onChange={(e) => setTempName(e.target.value)}
+                />
               </div>
-              <Button
-                type="button"
-                variant={comboRecording ? 'danger' : 'primary'}
-                onClick={() => {
-                  setComboRecording((value) => !value);
-                  if (!comboRecording) setComboKeys([]);
-                }}
-              >
-                {comboRecording ? t('mouse.stopRecord') : t('mouse.startRecord')}
-              </Button>
-            </div>
-            <div className="mb-4 flex min-h-12 flex-wrap items-center gap-2 rounded-lg bg-white p-3">
-              {comboKeys.map((item) => (
-                <span key={`${item.name}-${item.value}`} className="rounded-md bg-black px-3 py-2 text-sm font-semibold text-white">{item.name}</span>
-              ))}
-              {!comboKeys.length && <span className="text-sm text-[#9aa0a9]">{t('mouse.pressShortcut')}</span>}
-            </div>
-            <div className="flex gap-2">
-              <Button type="button" onClick={bindCombo} disabled={!comboKeys.length}>{t('mouse.bindShortcut')}</Button>
-              <Button type="button" className="bg-[#e5e7eb] text-[#1d2129] hover:bg-[#dfe2e7]" onClick={() => setComboKeys([])}>{t('mouse.clear')}</Button>
-            </div>
-          </div>
 
-          <div className="rounded-lg bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)]">
-            <div className="mb-4 font-bold">{t('mouse.macroLibrary')}</div>
-            <div className="grid gap-3">
-              {macros.length === 0 && <div className="rounded-lg border border-dashed border-[#d7dbe2] p-6 text-center text-sm text-[#7a808a]">{t('mouse.emptyMacros')}</div>}
-              {macros.map((macro, index) => (
-                <div key={macro.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white p-4">
-                  <div>
-                    <div className="font-semibold">{macro.name}</div>
-                    <div className="mt-1 text-xs text-[#7a808a]">
-                      {macro.actions.length} {t('mouse.actions')} · {repeatLabel(macro.repeatType, macro.loopTimes, t)}
+              {/* 循环参数设置 */}
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-[#86909c]">{locale === 'zh-CN' ? '循环方式' : 'Loop Mode'}:</span>
+                  <select
+                    className="h-8 rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2 text-xs font-bold outline-none"
+                    value={repeatType}
+                    onChange={(e) => setRepeatType(Number(e.target.value) as MacroRepeatType)}
+                  >
+                    <option value={MacroRepeatType.LoopTimes}>{locale === 'zh-CN' ? '循环指定次数' : 'Loop Times'}</option>
+                    <option value={MacroRepeatType.Hold}>{locale === 'zh-CN' ? '按住循环' : 'Hold Loop'}</option>
+                    <option value={MacroRepeatType.UntilAssignedKey}>{locale === 'zh-CN' ? '循环至松开' : 'Until Assigned Key'}</option>
+                    <option value={MacroRepeatType.UntilAnyKey}>{locale === 'zh-CN' ? '循环至按任意键' : 'Until Any Key'}</option>
+                  </select>
+                </div>
+
+                {repeatType === MacroRepeatType.LoopTimes && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-[#86909c]">{locale === 'zh-CN' ? '循环次数' : 'Count'}:</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={255}
+                      className="h-8 w-16 rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2 text-xs font-bold outline-none"
+                      value={loopTimes}
+                      onChange={(e) => setLoopTimes(Math.max(1, Number(e.target.value)))}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* 控制按钮组 */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={recording ? 'danger' : 'primary'}
+                  onClick={() => setRecording((prev) => !prev)}
+                  className="font-bold text-xs h-8 flex items-center gap-1.5"
+                >
+                  {recording ? (
+                    <>
+                      <Square size={13} fill="white" />
+                      {locale === 'zh-CN' ? '停止录制' : 'Stop Record'}
+                    </>
+                  ) : (
+                    <>
+                      <Play size={13} fill="white" />
+                      {locale === 'zh-CN' ? '开始录制' : 'Start Record'}
+                    </>
+                  )}
+                </Button>
+                
+                <Button
+                  onClick={handleDuplicate}
+                  disabled={recording}
+                  className="border border-[#d7dbe2] bg-white text-[#1d2129] hover:bg-[#eff0f2] font-bold text-xs h-8 flex items-center gap-1.5 shadow-sm"
+                >
+                  <Copy size={13} />
+                  {locale === 'zh-CN' ? '复制' : 'Clone'}
+                </Button>
+
+                <Button
+                  onClick={() => setTempActions([])}
+                  disabled={recording}
+                  className="border border-[#d7dbe2] bg-white text-[#1d2129] hover:bg-[#eff0f2] font-bold text-xs h-8 flex items-center gap-1.5 shadow-sm"
+                >
+                  <RotateCcw size={13} />
+                  {locale === 'zh-CN' ? '重置' : 'Reset'}
+                </Button>
+
+                <Button
+                  onClick={handleSave}
+                  disabled={recording || !tempName}
+                  className="bg-[#101114] text-white hover:bg-slate-800 font-bold text-xs h-8 flex items-center gap-1.5 shadow-sm"
+                >
+                  <Save size={13} />
+                  {locale === 'zh-CN' ? '保存' : 'Save'}
+                </Button>
+              </div>
+            </div>
+
+            {/* 动作序列列表 */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-2">
+              
+              {tempActions.map((action, idx) => {
+                const prevTimestamp = idx === 0 ? 0 : tempActions[idx - 1].timestamp;
+                const delay = action.timestamp - prevTimestamp;
+                const isDown = action.direction === MacroDirection.Down;
+                const isCapturing = editingActionIndex === idx;
+
+                return (
+                  <div
+                    key={`${action.keyName}-${action.timestamp}-${idx}`}
+                    draggable={!recording}
+                    onDragStart={() => onDragStart(idx)}
+                    onDragOver={(e) => onDragOver(e)}
+                    onDrop={(e) => onDrop(e, idx)}
+                    className={`flex h-14 items-center justify-between rounded-lg bg-white border border-[#eef0f2] px-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition duration-150 ${
+                      draggedIndex === idx ? 'opacity-40 scale-95 border-dashed border-warn' : 'hover:border-slate-300'
+                    }`}
+                  >
+                    {/* 左侧：手柄和动作名 */}
+                    <div className="flex items-center gap-4">
+                      {!recording && (
+                        <div className="cursor-grab text-[#a9adb3] hover:text-[#5d6673]" title={locale === 'zh-CN' ? '拖拽排序' : 'Drag to sort'}>
+                          <Menu size={16} />
+                        </div>
+                      )}
+                      
+                      {/* 按键名胶囊徽标 */}
+                      <div className="relative group/btn">
+                        <button
+                          type="button"
+                          disabled={recording}
+                          onClick={() => setEditingActionIndex(isCapturing ? null : idx)}
+                          className={`flex h-9 items-center justify-center rounded px-4 text-xs font-black min-w-16 transition ${
+                            isCapturing
+                              ? 'bg-[#ff6b00] text-white border border-[#ff6b00] animate-pulse'
+                              : 'bg-[#f0f1f3] text-[#1d2129] border border-[#eef0f2] hover:bg-slate-200'
+                          }`}
+                        >
+                          {isCapturing
+                            ? (locale === 'zh-CN' ? '按键...' : 'Key...')
+                            : action.keyName}
+                        </button>
+                        
+                        {/* 悬浮提示气泡卡片 */}
+                        {!recording && !isCapturing && (
+                          <div className="absolute left-1/2 bottom-[calc(100%+8px)] -translate-x-1/2 scale-0 group-hover/btn:scale-100 bg-[#101114] text-white text-[10px] font-bold py-1 px-2.5 rounded shadow-lg pointer-events-none transition duration-150 whitespace-nowrap z-50">
+                            {locale === 'zh-CN' ? '按任意键修改绑定' : 'Press key to modify'}
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#101114]" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 动作类型说明 */}
+                      <span className="text-[10px] text-[#86909c] font-black uppercase">
+                        {action.kind === MacroActionKind.Mouse ? (locale === 'zh-CN' ? '鼠标' : 'Mouse') : (locale === 'zh-CN' ? '键盘' : 'Keyboard')}
+                      </span>
+                    </div>
+
+                    {/* 右侧：方向按钮、延迟输入框和删除 */}
+                    <div className="flex items-center gap-4">
+                      {/* 方向单选按钮 */}
+                      <div className="flex rounded bg-[#f0f1f3] p-0.5">
+                        <button
+                          type="button"
+                          disabled={recording}
+                          onClick={() => toggleDirection(idx, MacroDirection.Down)}
+                          className={`rounded px-3 py-1.5 text-[10px] font-black transition flex items-center gap-1 ${
+                            isDown
+                              ? 'bg-[#101114] text-white shadow-sm'
+                              : 'text-[#5d6673] hover:bg-slate-200'
+                          }`}
+                        >
+                          ↓ {locale === 'zh-CN' ? '按下' : 'Down'}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={recording}
+                          onClick={() => toggleDirection(idx, MacroDirection.Up)}
+                          className={`rounded px-3 py-1.5 text-[10px] font-black transition flex items-center gap-1 ${
+                            !isDown
+                              ? 'bg-[#101114] text-white shadow-sm'
+                              : 'text-[#5d6673] hover:bg-slate-200'
+                          }`}
+                        >
+                          ↑ {locale === 'zh-CN' ? '抬起' : 'Up'}
+                        </button>
+                      </div>
+
+                      {/* 延迟时间修改 */}
+                      <div className="flex items-center rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2 h-8 w-24">
+                        <input
+                          type="number"
+                          min={0}
+                          max={65535}
+                          disabled={recording}
+                          className="w-full bg-transparent text-xs font-bold outline-none text-right pr-1"
+                          value={delay}
+                          onChange={(e) => handleDelayChange(idx, Math.max(0, Number(e.target.value)))}
+                        />
+                        <span className="text-[10px] text-[#86909c] font-bold">ms</span>
+                      </div>
+
+                      {/* 删除单个动作 */}
+                      <button
+                        type="button"
+                        disabled={recording}
+                        onClick={() => removeAction(idx)}
+                        className="rounded p-1.5 text-[#86909c] hover:bg-[#f3f4f6] hover:text-red-500 transition"
+                      >
+                        <Trash2 size={15} />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="primary" onClick={() => void bindMacroToButton(targetButton, index, macro)}>{t('mouse.bindMacro')}</Button>
-                    <Button variant="danger" onClick={() => deleteMacro(macro.id)}>{t('mouse.delete')}</Button>
+                );
+              })}
+
+              {tempActions.length === 0 && !recording && (
+                <div className="py-24 text-center rounded-lg border border-dashed border-[#d7dbe2] bg-white">
+                  <div className="text-sm font-bold text-[#5d6673] mb-2">
+                    {locale === 'zh-CN' ? '动作列表空空如也' : 'Action Sequence is Empty'}
+                  </div>
+                  <div className="text-xs text-[#86909c] leading-relaxed">
+                    {locale === 'zh-CN' ? '请点击上方“开始录制”记录按键，或使用下方按钮手动添加动作。' : 'Click "Start Record" to record keyboard, or use buttons below to insert.'}
                   </div>
                 </div>
-              ))}
+              )}
+
+              {recording && tempActions.length === 0 && (
+                <div className="py-24 text-center rounded-lg border border-dashed border-[#ff6b00]/30 bg-[#ff6b00]/5 animate-pulse">
+                  <div className="text-sm font-bold text-[#ff6b00] mb-2">
+                    {locale === 'zh-CN' ? '正在录制动作...' : 'Recording keyboard input...'}
+                  </div>
+                  <div className="text-xs text-[#ff6b00]/70 font-semibold">
+                    {locale === 'zh-CN' ? '请在键盘上按下组合按键，实时捕获序列流。' : 'Please press keys on your keyboard.'}
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* 底部手动插入控制栏 */}
+            <div className="h-16 shrink-0 border-t border-[#eef0f2] bg-white px-6 flex items-center gap-3">
+              
+              {/* 插入键盘按键 */}
+              <button
+                type="button"
+                disabled={recording}
+                onClick={() => setIsInsertingKey((prev) => !prev)}
+                className={`flex h-10 px-5 rounded-md border text-xs font-bold items-center gap-2 shadow-sm transition ${
+                  isInsertingKey
+                    ? 'border-[#ff6b00] bg-[#ff6b00]/5 text-[#ff6b00] animate-pulse'
+                    : 'border-[#d7dbe2] bg-white hover:bg-slate-50 text-[#1d2129]'
+                }`}
+              >
+                <Keyboard size={15} />
+                {isInsertingKey
+                  ? (locale === 'zh-CN' ? '按下目标按键...' : 'Press target key...')
+                  : (locale === 'zh-CN' ? '插入键盘按键' : 'Insert Keyboard Key')}
+              </button>
+
+              {/* 插入鼠标按键 (Dropdown 模拟) */}
+              <div className="relative">
+                <button
+                  type="button"
+                  disabled={recording}
+                  onClick={() => setInsertMouseMenuOpen((prev) => !prev)}
+                  className="flex h-10 px-5 rounded-md border border-[#d7dbe2] bg-white hover:bg-slate-50 text-xs font-bold items-center gap-2 shadow-sm text-[#1d2129]"
+                >
+                  <Mouse size={15} />
+                  {locale === 'zh-CN' ? '插入鼠标按键' : 'Insert Mouse Key'}
+                </button>
+
+                {insertMouseMenuOpen && (
+                  <>
+                    {/* 关闭层 */}
+                    <div className="fixed inset-0 z-40" onClick={() => setInsertMouseMenuOpen(false)} />
+                    
+                    {/* 下拉菜单菜单项 */}
+                    <div className="absolute bottom-[calc(100%+8px)] left-0 z-50 w-44 rounded-md border border-[#eef0f2] bg-white py-1 shadow-lg">
+                      {(
+                        [
+                          { name: '左键按下', value: 1, dir: MacroDirection.Down },
+                          { name: '左键抬起', value: 1, dir: MacroDirection.Up },
+                          { name: '右键按下', value: 2, dir: MacroDirection.Down },
+                          { name: '右键抬起', value: 2, dir: MacroDirection.Up },
+                          { name: '中键按下', value: 3, dir: MacroDirection.Down },
+                          { name: '中键抬起', value: 3, dir: MacroDirection.Up },
+                        ]
+                      ).map((item) => (
+                        <button
+                          key={`${item.name}-${item.dir}`}
+                          type="button"
+                          onClick={() => insertMouseAction(item.name, item.value, item.dir)}
+                          className="flex w-full h-8 items-center px-4 text-left text-xs font-semibold text-[#4b5563] hover:bg-[#f3f4f6] hover:text-[#101114]"
+                        >
+                          {item.dir === MacroDirection.Down ? '↓' : '↑'} {item.name}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
           </div>
-        </section>
+        ) : (
+          /* 空白配置占位页 */
+          <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white m-6 rounded-lg border border-[#eef0f2] shadow-sm">
+            <div className="mb-4 rounded-full bg-[#f6f7f9] p-5 text-[#86909c]">
+              <Plus size={42} />
+            </div>
+            <h3 className="text-sm font-black text-[#1d2129] mb-1">
+              {locale === 'zh-CN' ? '暂无快捷指令配置' : 'No Shortcut Selected'}
+            </h3>
+            <p className="text-xs text-[#86909c] mb-5 text-center leading-normal max-w-sm">
+              {locale === 'zh-CN'
+                ? '您可以新建配置来录制、编辑宏。之后在改键页签中将其绑定到鼠标按键上。'
+                : 'Create a shortcut config to record macros. Then assign it to any mouse button in Key Settings.'}
+            </p>
+            <Button
+              onClick={handleCreateNew}
+              className="bg-[#101114] text-white hover:bg-slate-800 font-bold text-xs h-10 px-6 rounded-md shadow-sm"
+            >
+              {locale === 'zh-CN' ? '新建快捷指令' : 'New Shortcut'}
+            </Button>
+          </div>
+        )}
       </div>
+
     </div>
   );
-}
-
-function TargetButtonSelect({
-  locale,
-  value,
-  onChange,
-}: {
-  locale: 'zh-CN' | 'en';
-  value: ButtonId;
-  onChange: (value: ButtonId) => void;
-}) {
-  return (
-    <select
-      className="h-10 rounded-md border border-[#d7dbe2] bg-[#f1f2f4] px-3 text-sm font-semibold outline-none"
-      value={value}
-      onChange={(event) => onChange(Number(event.target.value) as ButtonId)}
-    >
-      {mouseButtons.map((button) => (
-        <option key={button.id} value={button.id}>{locale === 'zh-CN' ? button.labelZh : button.label}</option>
-      ))}
-    </select>
-  );
-}
-
-function keyName(event: KeyboardEvent) {
-  if (event.key === ' ') return 'Space';
-  if (event.key === 'Control') return 'Ctrl';
-  if (event.key === 'Meta') return 'Win';
-  return event.key.length === 1 ? event.key.toUpperCase() : event.key;
-}
-
-function repeatLabel(repeatType: MacroRepeatType, loopTimes: number, t: (key: TranslationKey) => string) {
-  if (repeatType === MacroRepeatType.Hold) return t('mouse.repeatHold');
-  if (repeatType === MacroRepeatType.UntilAssignedKey) return t('mouse.repeatAssigned');
-  if (repeatType === MacroRepeatType.UntilAnyKey) return t('mouse.repeatAny');
-  return `${loopTimes}x`;
 }

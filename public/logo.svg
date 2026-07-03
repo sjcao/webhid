@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="mg1" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF6B00"/>
+      <stop offset="100%" stop-color="#FF3D00"/>
+    </linearGradient>
+    <linearGradient id="mg2" x1="16" y1="4" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#ffe0cc"/>
+    </linearGradient>
+  </defs>
+  <!-- 外圆背景 -->
+  <rect width="32" height="32" rx="8" fill="url(#mg1)"/>
+  <!-- 鼠标轮廓 -->
+  <path d="M16 5C12.134 5 9 8.134 9 12v8c0 3.866 3.134 7 7 7s7-3.134 7-7v-8c0-3.866-3.134-7-7-7z" fill="url(#mg2)" opacity="0.95"/>
+  <!-- 中线 -->
+  <line x1="16" y1="5" x2="16" y2="17" stroke="url(#mg1)" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- 滚轮 -->
+  <rect x="14.5" y="9" width="3" height="5" rx="1.5" fill="url(#mg1)"/>
+  <!-- 左右键分界线高光 -->
+  <path d="M9 14h14" stroke="#FF6B00" stroke-width="0.5" opacity="0.3"/>
+</svg>

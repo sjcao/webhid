@@ -68,10 +68,7 @@ export function MouseWorkspacePage() {
       <header className="flex h-12 items-center justify-between bg-bg-soft px-5">
         <div className="flex h-full items-center gap-3">
           <button className="flex h-10 items-center gap-2 rounded-full bg-surface-2 px-5 text-sm font-semibold" onClick={leaveWorkspace}>
-            <span className="relative h-6 w-6">
-              <span className="absolute left-2 top-0 h-6 w-1.5 -skew-x-[26deg] bg-warn" />
-              <span className="absolute left-0 top-3 h-1.5 w-6 -skew-x-[26deg] bg-warn" />
-            </span>
+            <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="Logo" className="h-6 w-6" />
             <Home size={16} />
             {t('mouse.home')}
           </button>
@@ -105,7 +102,7 @@ export function MouseWorkspacePage() {
             </span>
           </button>
 
-          <div className="relative z-50 mt-2 rounded-md bg-surface-3 shadow-[inset_0_0_0_1px_var(--color-line)]">
+          <div className="relative z-20 mt-2 rounded-md bg-surface-3 shadow-[inset_0_0_0_1px_var(--color-line)]">
             <button
               className="flex w-full items-center justify-between px-3 py-3 text-left text-sm font-semibold"
               aria-expanded={profileOpen}

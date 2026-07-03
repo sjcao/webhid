@@ -13,5 +13,8 @@ test('opens preview workspace and renders core panels', async ({ page }) => {
   await navigation.getByRole('button', { name: /改键设置|Button Mapping/ }).click();
   await expect(page.getByText(/点击鼠标上的按键卡片|Click a mouse button card/)).toBeVisible();
   await navigation.getByRole('button', { name: /快捷指令设置|Shortcut Settings/ }).click();
-  await expect(page.getByText(/组合键录制|Combo Recording/)).toBeVisible();
+  await expect(page.getByText(/Shortcuts Library/)).toBeVisible();
+  await page.getByRole('button', { name: 'New Shortcut' }).first().click();
+  await expect(page.getByRole('button', { name: 'Start Record' })).toBeVisible();
 });
+

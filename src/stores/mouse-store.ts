@@ -83,10 +83,35 @@ export const useMouseStore = create<MouseState>((set, get) => ({
     }
   },
   refreshInitialState: async () => {
-    await sendOrPreview(MouseCommands.readWorkMode());
-    await sendOrPreview(MouseCommands.readVersion(0));
-    await sendOrPreview(MouseCommands.readProfile());
-    await sendOrPreview(MouseCommands.readDpi());
+    const previewMode = useDeviceStore.getState().previewMode;
+    if (previewMode) {
+      const previewDefaultConfigs: Partial<Record<ButtonId, ButtonMappingPayload>> = {
+        [ButtonId.Left]: { buttonId: ButtonId.Left, functionType: KeyFunctionType.Mouse, index: 1, values: [] },
+        [ButtonId.Right]: { buttonId: ButtonId.Right, functionType: KeyFunctionType.Mouse, index: 2, values: [] },
+        [ButtonId.Middle]: { buttonId: ButtonId.Middle, functionType: KeyFunctionType.Mouse, index: 3, values: [] },
+        [ButtonId.Forward]: { buttonId: ButtonId.Forward, functionType: KeyFunctionType.Mouse, index: 5, values: [] },
+        [ButtonId.Backward]: { buttonId: ButtonId.Backward, functionType: KeyFunctionType.Mouse, index: 4, values: [] },
+        [ButtonId.Dpi]: { buttonId: ButtonId.Dpi, functionType: KeyFunctionType.DpiAction, index: 0, values: [] },
+      };
+      set({ buttonConfigs: previewDefaultConfigs });
+    } else {
+      await sendOrPreview(MouseCommands.readWorkMode());
+      await sendOrPreview(MouseCommands.readVersion(0));
+      await sendOrPreview(MouseCommands.readProfile());
+      await sendOrPreview(MouseCommands.readDpi());
+      
+      // 真实连接时，自动循环读取全部按键当前绑定
+      for (const buttonId of [
+        ButtonId.Left,
+        ButtonId.Right,
+        ButtonId.Middle,
+        ButtonId.Forward,
+        ButtonId.Backward,
+        ButtonId.Dpi,
+      ]) {
+        await sendOrPreview(MouseCommands.readButton(buttonId));
+      }
+    }
   },
   selectProfile: async (profile) => {
     set({ activeProfile: profile });

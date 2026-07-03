@@ -72,6 +72,8 @@ type MacroState = {
   loadMacros: () => void;
   saveMacro: (macro: Omit<SavedMacro, 'id' | 'createdAt'>) => SavedMacro;
   deleteMacro: (id: string) => void;
+  updateMacro: (id: string, updates: Partial<Omit<SavedMacro, 'id' | 'createdAt'>>) => void;
+  duplicateMacro: (id: string) => void;
 };
 
 export const useMacroStore = create<MacroState>((set, get) => ({
@@ -86,6 +88,34 @@ export const useMacroStore = create<MacroState>((set, get) => ({
   },
   deleteMacro: (id) => {
     const macros = get().macros.filter((macro) => macro.id !== id);
+    persistMacros(macros);
+    set({ macros });
+  },
+  updateMacro: (id, updates) => {
+    const macros = get().macros.map((m) => {
+      if (m.id === id) {
+        return {
+          ...m,
+          ...updates,
+          actions: updates.actions ? [...updates.actions] : m.actions,
+        };
+      }
+      return m;
+    });
+    persistMacros(macros);
+    set({ macros });
+  },
+  duplicateMacro: (id) => {
+    const target = get().macros.find((m) => m.id === id);
+    if (!target) return;
+    const duplicated: SavedMacro = {
+      ...target,
+      id: crypto.randomUUID(),
+      name: `${target.name} 副本`,
+      createdAt: new Date().toISOString(),
+      actions: target.actions.map((act) => ({ ...act })),
+    };
+    const macros = [...get().macros, duplicated];
     persistMacros(macros);
     set({ macros });
   },
