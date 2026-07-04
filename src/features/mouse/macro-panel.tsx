@@ -660,7 +660,7 @@ export function MacroPanel() {
                 type="button"
                 disabled={recording}
                 onClick={() => setIsInsertingKey((prev) => !prev)}
-                className={`flex h-10 px-5 rounded-md border text-xs font-bold items-center gap-2 shadow-sm transition ${
+                className={`flex h-10 px-5 rounded-md border text-xs font-bold items-center gap-2 shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-[#86909c] ${
                   isInsertingKey
                     ? 'border-[#ff6b00] bg-[#ff6b00]/5 text-[#ff6b00] animate-pulse'
                     : 'border-[#d7dbe2] bg-white hover:bg-slate-50 text-[#1d2129]'
@@ -678,7 +678,7 @@ export function MacroPanel() {
                   type="button"
                   disabled={recording}
                   onClick={() => setInsertMouseMenuOpen((prev) => !prev)}
-                  className="flex h-10 px-5 rounded-md border border-[#d7dbe2] bg-white hover:bg-slate-50 text-xs font-bold items-center gap-2 shadow-sm text-[#1d2129]"
+                  className="flex h-10 px-5 rounded-md border border-[#d7dbe2] bg-white hover:bg-slate-50 text-xs font-bold items-center gap-2 shadow-sm text-[#1d2129] disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-[#86909c]"
                 >
                   <Mouse size={15} />
                   {locale === 'zh-CN' ? '插入鼠标按键' : 'Insert Mouse Key'}
