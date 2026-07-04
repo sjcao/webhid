@@ -261,17 +261,37 @@ export function MacroPanel() {
     setTempActions(nextActions);
   }
 
-  // 手动追加插入鼠标动作
+  // 手动追加或修改替换鼠标动作
   function insertMouseAction(btnName: string, btnValue: number, direction: MacroDirection) {
-    const lastTimestamp = tempActions.length > 0 ? tempActions[tempActions.length - 1].timestamp : 0;
-    const newAction: MacroAction = {
-      keyName: btnName,
-      kind: MacroActionKind.Mouse,
-      direction,
-      keyCode: [btnValue],
-      timestamp: lastTimestamp + 100,
-    };
-    setTempActions((prev) => [...prev, newAction]);
+    if (editingActionIndex !== null) {
+      // 替换修改当前选中的动作
+      setTempActions((prev) =>
+        prev.map((act, idx) => {
+          if (idx === editingActionIndex) {
+            return {
+              ...act,
+              keyName: btnName,
+              kind: MacroActionKind.Mouse,
+              direction,
+              keyCode: [btnValue],
+            };
+          }
+          return act;
+        })
+      );
+      setEditingActionIndex(null);
+    } else {
+      // 追加到末尾
+      const lastTimestamp = tempActions.length > 0 ? tempActions[tempActions.length - 1].timestamp : 0;
+      const newAction: MacroAction = {
+        keyName: btnName,
+        kind: MacroActionKind.Mouse,
+        direction,
+        keyCode: [btnValue],
+        timestamp: lastTimestamp + 100,
+      };
+      setTempActions((prev) => [...prev, newAction]);
+    }
     setInsertMouseMenuOpen(false);
   }
 
@@ -423,21 +443,21 @@ export function MacroPanel() {
               </div>
 
               {/* 控制按钮组 */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <Button
                   variant={recording ? 'danger' : 'primary'}
                   onClick={() => setRecording((prev) => !prev)}
-                  className="font-bold text-xs h-8 flex items-center gap-1.5"
+                  className="font-bold text-xs h-8 flex items-center gap-1.5 whitespace-nowrap shrink-0"
                 >
                   {recording ? (
                     <>
-                      <Square size={13} fill="white" />
-                      {locale === 'zh-CN' ? '停止录制' : 'Stop Record'}
+                      <Square size={13} fill="white" className="shrink-0" />
+                      <span className="whitespace-nowrap">{locale === 'zh-CN' ? '停止录制' : 'Stop Record'}</span>
                     </>
                   ) : (
                     <>
-                      <Play size={13} fill="white" />
-                      {locale === 'zh-CN' ? '开始录制' : 'Start Record'}
+                      <Play size={13} fill="white" className="shrink-0" />
+                      <span className="whitespace-nowrap">{locale === 'zh-CN' ? '开始录制' : 'Start Record'}</span>
                     </>
                   )}
                 </Button>
@@ -445,28 +465,28 @@ export function MacroPanel() {
                 <Button
                   onClick={handleDuplicate}
                   disabled={recording}
-                  className="border border-[#d7dbe2] bg-white text-[#1d2129] hover:bg-[#eff0f2] font-bold text-xs h-8 flex items-center gap-1.5 shadow-sm"
+                  className="border border-[#d7dbe2] bg-white text-[#1d2129] hover:bg-[#eff0f2] font-bold text-xs h-8 flex items-center gap-1.5 shadow-sm whitespace-nowrap shrink-0"
                 >
-                  <Copy size={13} />
-                  {locale === 'zh-CN' ? '复制' : 'Clone'}
+                  <Copy size={13} className="shrink-0" />
+                  <span className="whitespace-nowrap">{locale === 'zh-CN' ? '复制' : 'Clone'}</span>
                 </Button>
 
                 <Button
                   onClick={() => setTempActions([])}
                   disabled={recording}
-                  className="border border-[#d7dbe2] bg-white text-[#1d2129] hover:bg-[#eff0f2] font-bold text-xs h-8 flex items-center gap-1.5 shadow-sm"
+                  className="border border-[#d7dbe2] bg-white text-[#1d2129] hover:bg-[#eff0f2] font-bold text-xs h-8 flex items-center gap-1.5 shadow-sm whitespace-nowrap shrink-0"
                 >
-                  <RotateCcw size={13} />
-                  {locale === 'zh-CN' ? '重置' : 'Reset'}
+                  <RotateCcw size={13} className="shrink-0" />
+                  <span className="whitespace-nowrap">{locale === 'zh-CN' ? '重置' : 'Reset'}</span>
                 </Button>
 
                 <Button
                   onClick={handleSave}
                   disabled={recording || !tempName}
-                  className="bg-[#101114] text-white hover:bg-slate-800 font-bold text-xs h-8 flex items-center gap-1.5 shadow-sm"
+                  className="bg-[#101114] text-white hover:bg-slate-800 font-bold text-xs h-8 flex items-center gap-1.5 shadow-sm whitespace-nowrap shrink-0"
                 >
-                  <Save size={13} />
-                  {locale === 'zh-CN' ? '保存' : 'Save'}
+                  <Save size={13} className="shrink-0" />
+                  <span className="whitespace-nowrap">{locale === 'zh-CN' ? '保存' : 'Save'}</span>
                 </Button>
               </div>
             </div>
@@ -575,14 +595,10 @@ export function MacroPanel() {
 
                       {/* 延迟时间修改 */}
                       <div className="flex items-center rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2 h-8 w-24">
-                        <input
-                          type="number"
-                          min={0}
-                          max={65535}
-                          disabled={recording}
-                          className="w-full bg-transparent text-xs font-bold outline-none text-right pr-1"
+                        <DelayInput
                           value={delay}
-                          onChange={(e) => handleDelayChange(idx, Math.max(0, Number(e.target.value)))}
+                          disabled={recording}
+                          onChange={(newVal) => handleDelayChange(idx, newVal)}
                         />
                         <span className="text-[10px] text-[#86909c] font-bold">ms</span>
                       </div>
@@ -719,3 +735,57 @@ export function MacroPanel() {
     </div>
   );
 }
+
+function DelayInput({
+  value,
+  disabled,
+  onChange,
+}: {
+  value: number;
+  disabled?: boolean;
+  onChange: (val: number) => void;
+}) {
+  const [localVal, setLocalVal] = useState(String(value));
+
+  useEffect(() => {
+    setLocalVal(String(value));
+  }, [value]);
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.value;
+    setLocalVal(raw);
+    if (raw !== '') {
+      const num = Math.min(65535, Math.max(0, Number(raw)));
+      if (!isNaN(num)) {
+        onChange(num);
+      }
+    } else {
+      onChange(0);
+    }
+  }
+
+  function handleBlur() {
+    if (localVal === '' || isNaN(Number(localVal))) {
+      setLocalVal('0');
+      onChange(0);
+    } else {
+      const num = Math.min(65535, Math.max(0, Number(localVal)));
+      setLocalVal(String(num));
+      onChange(num);
+    }
+  }
+
+  return (
+    <input
+      type="number"
+      min={0}
+      max={65535}
+      disabled={disabled}
+      className="w-full bg-transparent text-xs font-bold outline-none text-right pr-1"
+      value={localVal}
+      onChange={handleChange}
+      onBlur={handleBlur}
+    />
+  );
+}
+
