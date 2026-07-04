@@ -339,6 +339,31 @@ export function MacroPanel() {
   return (
     <div className="flex h-full min-h-0 w-full overflow-hidden bg-[#f6f7f9] text-[#101114]">
       
+      {/* 录制时的全局防误触毛玻璃遮罩蒙版 */}
+      {recording && (
+        <div className="fixed inset-0 z-40 bg-slate-950/15 backdrop-blur-[3px] flex items-center justify-center pointer-events-auto">
+          <div className="rounded-xl border border-white/40 bg-white/70 p-7 shadow-[0_24px_50px_rgba(0,0,0,0.12)] backdrop-blur-lg flex flex-col items-center gap-4 text-center max-w-sm animate-[fadeIn_0.15s_ease-out]">
+            <span className="relative flex h-3.5 w-3.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-600"></span>
+            </span>
+            <div>
+              <h3 className="text-sm font-black text-slate-800 mb-1">
+                {locale === 'zh-CN' ? '正在录制键盘按键动作...' : 'Recording Keyboard Input...'}
+              </h3>
+              <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">
+                {locale === 'zh-CN'
+                  ? '请直接在键盘上敲击您的按键序列，驱动正实时捕获动作流。'
+                  : 'Please press keys on your keyboard, driver is capturing in real-time.'}
+              </p>
+            </div>
+            <div className="text-[10px] font-black text-[#ff6b00] bg-[#ff6b00]/10 px-3 py-1.5 rounded-full border border-[#ff6b00]/25 animate-pulse">
+              {locale === 'zh-CN' ? '提示：点击右上角“停止录制”结束并保存' : 'Hint: Click "Stop Record" on top right to finish'}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 左侧侧边栏：已创建的宏列表 */}
       <div className="flex h-full w-[240px] shrink-0 flex-col border-r border-[#eef0f2] bg-white p-4">
         <h2 className="text-sm font-black text-[#86909c] mb-3 uppercase tracking-wider">
@@ -447,7 +472,9 @@ export function MacroPanel() {
                 <Button
                   variant={recording ? 'danger' : 'primary'}
                   onClick={() => setRecording((prev) => !prev)}
-                  className="font-bold text-xs h-8 flex items-center gap-1.5 whitespace-nowrap shrink-0"
+                  className={`font-bold text-xs h-8 flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all duration-200 ${
+                    recording ? 'z-50 relative shadow-[0_0_15px_rgba(239,68,68,0.45)] ring-2 ring-red-500' : ''
+                  }`}
                 >
                   {recording ? (
                     <>
