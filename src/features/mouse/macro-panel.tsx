@@ -594,14 +594,11 @@ export function MacroPanel() {
                       </div>
 
                       {/* 延迟时间修改 */}
-                      <div className="flex items-center rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2 h-8 w-24">
-                        <DelayInput
-                          value={delay}
-                          disabled={recording}
-                          onChange={(newVal) => handleDelayChange(idx, newVal)}
-                        />
-                        <span className="text-[10px] text-[#86909c] font-bold">ms</span>
-                      </div>
+                      <DelayInput
+                        value={delay}
+                        disabled={recording}
+                        onChange={(newVal) => handleDelayChange(idx, newVal)}
+                      />
 
                       {/* 删除单个动作 */}
                       <button
@@ -775,17 +772,52 @@ function DelayInput({
     }
   }
 
+  function handleDecrease() {
+    const current = localVal === '' ? 0 : Number(localVal);
+    const next = Math.max(0, current - 10);
+    setLocalVal(String(next));
+    onChange(next);
+  }
+
+  function handleIncrease() {
+    const current = localVal === '' ? 0 : Number(localVal);
+    const next = Math.min(65535, current + 10);
+    setLocalVal(String(next));
+    onChange(next);
+  }
+
   return (
-    <input
-      type="number"
-      min={0}
-      max={65535}
-      disabled={disabled}
-      className="w-full bg-transparent text-xs font-bold outline-none text-right pr-1"
-      value={localVal}
-      onChange={handleChange}
-      onBlur={handleBlur}
-    />
+    <div className="flex items-center rounded border border-[#d7dbe2] bg-[#f7f8fa] h-8 w-[116px] overflow-hidden shrink-0">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={handleDecrease}
+        className="h-full px-2 text-[#5d6673] hover:bg-slate-200 disabled:opacity-50 transition border-r border-[#d7dbe2] select-none font-bold text-xs"
+      >
+        -
+      </button>
+      <div className="flex-1 flex items-center px-1 min-w-0">
+        <input
+          type="number"
+          min={0}
+          max={65535}
+          disabled={disabled}
+          className="w-full bg-transparent text-xs font-bold outline-none text-right pr-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none min-w-0"
+          value={localVal}
+          onChange={handleChange}
+          onBlur={handleBlur}
+        />
+        <span className="text-[10px] text-[#86909c] font-bold select-none shrink-0">ms</span>
+      </div>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={handleIncrease}
+        className="h-full px-2 text-[#5d6673] hover:bg-slate-200 disabled:opacity-50 transition border-l border-[#d7dbe2] select-none font-bold text-xs"
+      >
+        +
+      </button>
+    </div>
   );
 }
 
