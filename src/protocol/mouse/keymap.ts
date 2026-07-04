@@ -13,9 +13,9 @@ export const mouseButtons = [
   { id: ButtonId.Left, label: 'Left', labelZh: '左键' },
   { id: ButtonId.Right, label: 'Right', labelZh: '右键' },
   { id: ButtonId.Middle, label: 'Middle', labelZh: '中键' },
-  { id: ButtonId.Forward, label: 'Forward', labelZh: '前进键' },
-  { id: ButtonId.Backward, label: 'Backward', labelZh: '后退键' },
-  { id: ButtonId.Dpi, label: 'DPI', labelZh: 'DPI键' },
+  { id: ButtonId.Forward, label: 'Forward', labelZh: '前进' },
+  { id: ButtonId.Backward, label: 'Back', labelZh: '后退' },
+  { id: ButtonId.Dpi, label: 'DPI', labelZh: 'DPI' },
 ] as const;
 
 const keyboardCodes: Array<[string, string, number]> = [

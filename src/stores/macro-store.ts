@@ -73,7 +73,7 @@ type MacroState = {
   saveMacro: (macro: Omit<SavedMacro, 'id' | 'createdAt'>) => SavedMacro;
   deleteMacro: (id: string) => void;
   updateMacro: (id: string, updates: Partial<Omit<SavedMacro, 'id' | 'createdAt'>>) => void;
-  duplicateMacro: (id: string) => void;
+  duplicateMacro: (id: string, suffix?: string) => void;
 };
 
 export const useMacroStore = create<MacroState>((set, get) => ({
@@ -105,13 +105,14 @@ export const useMacroStore = create<MacroState>((set, get) => ({
     persistMacros(macros);
     set({ macros });
   },
-  duplicateMacro: (id) => {
+  duplicateMacro: (id, suffix) => {
     const target = get().macros.find((m) => m.id === id);
     if (!target) return;
+    const copySuffix = suffix !== undefined ? suffix : '副本';
     const duplicated: SavedMacro = {
       ...target,
       id: crypto.randomUUID(),
-      name: `${target.name} 副本`,
+      name: `${target.name} ${copySuffix}`.trim(),
       createdAt: new Date().toISOString(),
       actions: target.actions.map((act) => ({ ...act })),
     };

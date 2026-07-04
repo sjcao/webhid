@@ -175,7 +175,7 @@ export function MouseWorkspacePage() {
             })}
           </nav>
 
-          <div className="flex items-center gap-2 px-5 py-4 text-xs text-muted">BUG反馈</div>
+          <div className="flex items-center gap-2 px-5 py-4 text-xs text-muted">{locale === 'zh-CN' ? 'BUG反馈' : 'Feedback'}</div>
         </aside>
 
         <section className="min-w-0 overflow-hidden bg-bg p-1">

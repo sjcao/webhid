@@ -211,7 +211,7 @@ export function MacroPanel() {
   // 复制克隆宏
   function handleDuplicate() {
     if (!selectedMacroId) return;
-    duplicateMacro(selectedMacroId);
+    duplicateMacro(selectedMacroId, locale === 'zh-CN' ? '副本' : 'Clone');
   }
 
   // 删除宏
@@ -513,7 +513,19 @@ export function MacroPanel() {
                         >
                           {isCapturing
                             ? (locale === 'zh-CN' ? '按键...' : 'Key...')
-                            : action.keyName}
+                            : (function() {
+                                const map: Record<string, { zh: string; en: string }> = {
+                                  '左键按下': { zh: '左键按下', en: 'Left Down' },
+                                  '左键抬起': { zh: '左键抬起', en: 'Left Up' },
+                                  '右键按下': { zh: '右键按下', en: 'Right Down' },
+                                  '右键抬起': { zh: '右键抬起', en: 'Right Up' },
+                                  '中键按下': { zh: '中键按下', en: 'Middle Down' },
+                                  '中键抬起': { zh: '中键抬起', en: 'Middle Up' },
+                                };
+                                return map[action.keyName]
+                                  ? (locale === 'zh-CN' ? map[action.keyName].zh : map[action.keyName].en)
+                                  : action.keyName;
+                              })()}
                         </button>
                         
                         {/* 悬浮提示气泡卡片 */}
@@ -653,23 +665,26 @@ export function MacroPanel() {
                     <div className="absolute bottom-[calc(100%+8px)] left-0 z-50 w-44 rounded-md border border-[#eef0f2] bg-white py-1 shadow-lg">
                       {(
                         [
-                          { name: '左键按下', value: 1, dir: MacroDirection.Down },
-                          { name: '左键抬起', value: 1, dir: MacroDirection.Up },
-                          { name: '右键按下', value: 2, dir: MacroDirection.Down },
-                          { name: '右键抬起', value: 2, dir: MacroDirection.Up },
-                          { name: '中键按下', value: 3, dir: MacroDirection.Down },
-                          { name: '中键抬起', value: 3, dir: MacroDirection.Up },
+                          { nameZh: '左键按下', nameEn: 'Left Down', value: 1, dir: MacroDirection.Down },
+                          { nameZh: '左键抬起', nameEn: 'Left Up', value: 1, dir: MacroDirection.Up },
+                          { nameZh: '右键按下', nameEn: 'Right Down', value: 2, dir: MacroDirection.Down },
+                          { nameZh: '右键抬起', nameEn: 'Right Up', value: 2, dir: MacroDirection.Up },
+                          { nameZh: '中键按下', nameEn: 'Middle Down', value: 3, dir: MacroDirection.Down },
+                          { nameZh: '中键抬起', nameEn: 'Middle Up', value: 3, dir: MacroDirection.Up },
                         ]
-                      ).map((item) => (
-                        <button
-                          key={`${item.name}-${item.dir}`}
-                          type="button"
-                          onClick={() => insertMouseAction(item.name, item.value, item.dir)}
-                          className="flex w-full h-8 items-center px-4 text-left text-xs font-semibold text-[#4b5563] hover:bg-[#f3f4f6] hover:text-[#101114]"
-                        >
-                          {item.dir === MacroDirection.Down ? '↓' : '↑'} {item.name}
-                        </button>
-                      ))}
+                      ).map((item) => {
+                        const displayName = locale === 'zh-CN' ? item.nameZh : item.nameEn;
+                        return (
+                          <button
+                            key={`${item.nameZh}-${item.dir}`}
+                            type="button"
+                            onClick={() => insertMouseAction(item.nameZh, item.value, item.dir)}
+                            className="flex w-full h-8 items-center px-4 text-left text-xs font-semibold text-[#4b5563] hover:bg-[#f3f4f6] hover:text-[#101114]"
+                          >
+                            {item.dir === MacroDirection.Down ? '↓' : '↑'} {displayName}
+                          </button>
+                        );
+                      })}
                     </div>
                   </>
                 )}
