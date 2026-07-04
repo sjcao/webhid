@@ -339,29 +339,14 @@ export function MacroPanel() {
   return (
     <div className="flex h-full min-h-0 w-full overflow-hidden bg-[#f6f7f9] text-[#101114]">
       
-      {/* 录制时的全局防误触毛玻璃遮罩蒙版 */}
+      {/* 录制时的防误触局部毛玻璃遮罩（精准遮盖左侧与顶部，暴露右侧工作区动作流） */}
       {recording && (
-        <div className="fixed inset-0 z-40 bg-slate-950/15 backdrop-blur-[3px] flex items-center justify-center pointer-events-auto">
-          <div className="rounded-xl border border-white/40 bg-white/70 p-7 shadow-[0_24px_50px_rgba(0,0,0,0.12)] backdrop-blur-lg flex flex-col items-center gap-4 text-center max-w-sm animate-[fadeIn_0.15s_ease-out]">
-            <span className="relative flex h-3.5 w-3.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-600"></span>
-            </span>
-            <div>
-              <h3 className="text-sm font-black text-slate-800 mb-1">
-                {locale === 'zh-CN' ? '正在录制键盘按键动作...' : 'Recording Keyboard Input...'}
-              </h3>
-              <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">
-                {locale === 'zh-CN'
-                  ? '请直接在键盘上敲击您的按键序列，驱动正实时捕获动作流。'
-                  : 'Please press keys on your keyboard, driver is capturing in real-time.'}
-              </p>
-            </div>
-            <div className="text-[10px] font-black text-[#ff6b00] bg-[#ff6b00]/10 px-3 py-1.5 rounded-full border border-[#ff6b00]/25 animate-pulse">
-              {locale === 'zh-CN' ? '提示：点击右上角“停止录制”结束并保存' : 'Hint: Click "Stop Record" on top right to finish'}
-            </div>
-          </div>
-        </div>
+        <>
+          {/* 左侧遮罩：覆盖外部导航aside (228px) 与 宏指令库列表 (240px) */}
+          <div className="fixed left-0 top-0 bottom-0 z-40 bg-slate-950/10 backdrop-blur-[2px] w-[468px] pointer-events-auto" />
+          {/* 顶部遮罩：覆盖顶部header (h-12) */}
+          <div className="fixed left-0 top-0 right-0 z-40 bg-slate-950/10 backdrop-blur-[2px] h-12 pointer-events-auto" />
+        </>
       )}
 
       {/* 左侧侧边栏：已创建的宏列表 */}
@@ -430,7 +415,8 @@ export function MacroPanel() {
                 <input
                   type="text"
                   maxLength={20}
-                  className="h-8 w-40 rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2.5 text-xs font-bold outline-none focus:border-[#ff6b00] focus:bg-white"
+                  disabled={recording}
+                  className="h-8 w-40 rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2.5 text-xs font-bold outline-none focus:border-[#ff6b00] focus:bg-white disabled:opacity-50"
                   value={tempName}
                   onChange={(e) => setTempName(e.target.value)}
                 />
@@ -441,7 +427,8 @@ export function MacroPanel() {
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-[#86909c]">{locale === 'zh-CN' ? '循环方式' : 'Loop Mode'}:</span>
                   <select
-                    className="h-8 rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2 text-xs font-bold outline-none"
+                    disabled={recording}
+                    className="h-8 rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2 text-xs font-bold outline-none disabled:opacity-50"
                     value={repeatType}
                     onChange={(e) => setRepeatType(Number(e.target.value) as MacroRepeatType)}
                   >
@@ -459,7 +446,8 @@ export function MacroPanel() {
                       type="number"
                       min={1}
                       max={255}
-                      className="h-8 w-16 rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2 text-xs font-bold outline-none"
+                      disabled={recording}
+                      className="h-8 w-16 rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2 text-xs font-bold outline-none disabled:opacity-50"
                       value={loopTimes}
                       onChange={(e) => setLoopTimes(Math.max(1, Number(e.target.value)))}
                     />
