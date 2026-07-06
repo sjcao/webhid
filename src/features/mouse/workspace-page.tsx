@@ -168,8 +168,8 @@ export function MouseWorkspacePage() {
                   }`}
                   onClick={() => setActivePanel(item.id)}
                 >
-                  <Icon size={18} />
-                  {t(item.key)}
+                  <Icon size={18} className="shrink-0" />
+                  <span className="truncate">{t(item.key)}</span>
                 </button>
               );
             })}

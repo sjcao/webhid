@@ -30,3 +30,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local tooling & test artifacts
+.claude
+test-results
+playwright-report

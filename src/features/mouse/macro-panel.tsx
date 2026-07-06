@@ -409,9 +409,9 @@ export function MacroPanel() {
         {currentMacro ? (
           <div className="flex-1 flex flex-col h-full min-h-0">
             {/* 顶部工具控制栏 */}
-            <div className="flex h-14 shrink-0 items-center justify-between border-b border-[#eef0f2] bg-white px-6 shadow-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-[#86909c]">{locale === 'zh-CN' ? '指令名称' : 'Name'}:</span>
+            <div className="flex min-h-14 shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b border-[#eef0f2] bg-white px-6 py-2.5 shadow-sm">
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="whitespace-nowrap text-xs font-bold text-[#86909c]">{locale === 'zh-CN' ? '指令名称' : 'Name'}:</span>
                 <input
                   type="text"
                   maxLength={20}
@@ -423,9 +423,9 @@ export function MacroPanel() {
               </div>
 
               {/* 循环参数设置 */}
-              <div className="flex items-center gap-4">
+              <div className="flex shrink-0 items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-[#86909c]">{locale === 'zh-CN' ? '循环方式' : 'Loop Mode'}:</span>
+                  <span className="whitespace-nowrap text-xs font-bold text-[#86909c]">{locale === 'zh-CN' ? '循环方式' : 'Loop Mode'}:</span>
                   <select
                     disabled={recording}
                     className="h-8 rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2 text-xs font-bold outline-none disabled:opacity-50"
@@ -441,7 +441,7 @@ export function MacroPanel() {
 
                 {repeatType === MacroRepeatType.LoopTimes && (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-[#86909c]">{locale === 'zh-CN' ? '循环次数' : 'Count'}:</span>
+                    <span className="whitespace-nowrap text-xs font-bold text-[#86909c]">{locale === 'zh-CN' ? '循环次数' : 'Count'}:</span>
                     <input
                       type="number"
                       min={1}
@@ -456,7 +456,7 @@ export function MacroPanel() {
               </div>
 
               {/* 控制按钮组 */}
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div className="flex shrink-0 items-center gap-1.5 ml-auto">
                 <Button
                   variant={recording ? 'danger' : 'primary'}
                   onClick={() => setRecording((prev) => !prev)}
