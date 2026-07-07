@@ -383,15 +383,6 @@ export function ButtonsPanel() {
           })}
         </div>
 
-        {/* 恢复默认按钮居中在下方 */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
-          <Button
-            className="rounded-full bg-white px-8 py-2.5 text-xs font-bold text-[#1d2129] shadow-sm border border-[#e5e6eb] hover:bg-[#f1f2f4]"
-            onClick={() => void resetButtons()}
-          >
-            {locale === 'zh-CN' ? '恢复默认' : 'Restore Defaults'}
-          </Button>
-        </div>
       </div>
 
       {/* 右侧：改键侧边栏面板 */}
