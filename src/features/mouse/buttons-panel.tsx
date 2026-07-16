@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, X, Check } from 'lucide-react';
+import { Search, X, Check, PanelRightOpen } from 'lucide-react';
 import {
   ButtonId,
   findKeyOption,
@@ -277,23 +277,35 @@ export function ButtonsPanel() {
   }
 
   return (
-    <div className="flex h-full min-h-0 w-full overflow-hidden bg-[#f6f7f9] text-[#101114]">
+    <div className="flex h-full min-h-0 w-full overflow-hidden bg-driver-bg text-driver-text">
       {/* 左侧：鼠标按键映射画布 */}
-      <div className="relative flex flex-1 flex-col items-center justify-center p-6">
-        <div className="absolute inset-x-0 top-0 flex items-center justify-between border-b border-[#eef0f2]/80 bg-white px-6 py-4">
+      <div className="relative flex min-w-0 flex-1 flex-col">
+        <div className="flex shrink-0 items-center justify-between border-b border-driver-line bg-driver-panel px-6 py-4">
           <div>
             <h1 className="text-lg font-black">{t('nav.buttons')}</h1>
-            <p className="mt-1 text-xs text-[#7a808a]">{t('mouse.mappingHint')}</p>
+            <p className="mt-1 text-xs text-driver-muted">{t('mouse.mappingHint')}</p>
           </div>
-          <Button
-            className="border border-[#d7dbe2] bg-white text-[#1d2129] shadow-sm hover:bg-[#eff0f2]"
-            onClick={() => void resetButtons()}
-          >
-            {t('mouse.restoreDefault')}
-          </Button>
+          <div className="flex items-center gap-2">
+            {!mappingOpen && (
+              <Button
+                className="border border-driver-line bg-driver-raised text-driver-text shadow-sm hover:bg-driver-hover"
+                onClick={() => setMappingOpen(true)}
+              >
+                <PanelRightOpen size={16} />
+                {t('mouse.openFunctionLibrary')}
+              </Button>
+            )}
+            <Button
+              className="border border-driver-line bg-driver-panel text-driver-text shadow-sm hover:bg-driver-hover"
+              onClick={() => void resetButtons()}
+            >
+              {t('mouse.restoreDefault')}
+            </Button>
+          </div>
         </div>
 
-        <div className="relative mt-12 h-[500px] w-[520px] max-w-full">
+        <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-4">
+        <div className="relative aspect-[26/25] w-full max-w-[520px] shrink-0">
           <img
             src={mouseImage}
             alt="mouse"
@@ -301,7 +313,7 @@ export function ButtonsPanel() {
           />
 
           {/* 渲染每一个按键的绑定显示标签 */}
-          {mouseButtons.filter((button) => button.id !== ButtonId.Dpi).map((button) => {
+          {mouseButtons.map((button) => {
             const config = buttonConfigs[button.id];
             const option = config ? findKeyOption(config.functionType, config.index, config.values) : null;
             
@@ -346,16 +358,19 @@ export function ButtonsPanel() {
             return (
               <button
                 key={button.id}
+                type="button"
+                aria-pressed={active}
+                aria-label={`${locale === 'zh-CN' ? button.labelZh : button.label}: ${binding}`}
                 className={`absolute w-[136px] rounded-md px-3 py-2 text-left text-sm font-black shadow-[0_8px_20px_rgba(0,0,0,0.08)] transition duration-200 hover:-translate-y-0.5 ${
                   active
-                    ? 'bg-[#101114] text-white ring-2 ring-[#ff6b00] ring-offset-2'
-                    : 'bg-white text-[#101114] hover:bg-slate-50'
+                    ? 'bg-driver-text text-driver-panel ring-2 ring-warn ring-offset-2 ring-offset-driver-bg'
+                    : 'bg-driver-panel text-driver-text hover:bg-driver-hover'
                 } ${positionClass(button.id)}`}
                 onClick={() => chooseButton(button.id)}
               >
                 <span
                   className={`block text-[11px] font-semibold ${
-                    active ? 'text-[#a9adb3]' : 'text-[#7a808a]'
+                    active ? 'text-driver-panel/65' : 'text-driver-muted'
                   }`}
                 >
                   {locale === 'zh-CN' ? button.labelZh : button.label}
@@ -366,40 +381,48 @@ export function ButtonsPanel() {
           })}
 
           {/* 渲染高亮圆圈指示器 */}
-          {mouseButtons.filter((button) => button.id !== ButtonId.Dpi).map((button) => {
+          {mouseButtons.map((button) => {
             const active = selectedButton === button.id;
+            const label = locale === 'zh-CN' ? button.labelZh : button.label;
             return (
-              <span
+              <button
                 key={`dot-${button.id}`}
-                className={`absolute h-6 w-6 rounded-full transition-all duration-300 ${dotClass(button.id)} ${
+                type="button"
+                aria-label={label}
+                aria-pressed={active}
+                title={label}
+                className={`absolute h-6 w-6 rounded-full p-0 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warn focus-visible:ring-offset-2 focus-visible:ring-offset-driver-bg ${dotClass(button.id)} ${
                   active
-                    ? 'border-solid border-[3px] border-[#ff6b00] bg-[#ff6b00]/30 shadow-[0_0_10px_#ff6b00]'
-                    : 'border-dotted border-[3px] border-[#ff6b00]/70 bg-transparent hover:border-solid hover:scale-105'
+                    ? 'border-solid border-[3px] border-warn bg-warn/30 shadow-[0_0_10px_var(--color-warn)]'
+                    : 'border-dotted border-[3px] border-warn/70 bg-transparent hover:scale-105 hover:border-solid'
                 }`}
                 onClick={() => chooseButton(button.id)}
-                style={{ cursor: 'pointer' }}
               />
             );
           })}
+        </div>
         </div>
 
       </div>
 
       {/* 右侧：改键侧边栏面板 */}
       {mappingOpen && (
-        <div className="flex h-full w-[360px] shrink-0 flex-col border-l border-[#eef0f2] bg-white shadow-[-8px_0_24px_rgba(0,0,0,0.02)] animate-[slideIn_0.2s_ease-out]">
+        <div className="flex h-full w-[336px] shrink-0 flex-col border-l border-driver-line bg-driver-panel shadow-[-8px_0_24px_rgba(0,0,0,0.02)] min-[1200px]:w-[360px]">
           {/* 标题栏 */}
-          <div className="flex h-14 items-center justify-between border-b border-[#eef0f2] px-5">
+          <div className="flex h-14 items-center justify-between border-b border-driver-line px-5">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-[#7a808a]">
+              <span className="text-sm font-semibold text-driver-muted">
                 {locale === 'zh-CN' ? '当前按键' : 'Target Button'}:
               </span>
-              <span className="rounded bg-[#ff6b00]/10 px-2 py-0.5 text-xs font-black text-[#ff6b00]">
+              <span className="rounded bg-warn/10 px-2 py-0.5 text-xs font-black text-warn">
                 {selectedButtonLabel ? (locale === 'zh-CN' ? selectedButtonLabel.labelZh : selectedButtonLabel.label) : ''}
               </span>
             </div>
             <button
-              className="rounded-md p-1.5 text-[#5d6673] hover:bg-[#f0f1f3] hover:text-[#101114]"
+              type="button"
+              className="rounded-md p-1.5 text-driver-muted hover:bg-driver-hover hover:text-driver-text"
+              aria-label={t('mouse.closeFunctionLibrary')}
+              title={t('mouse.closeFunctionLibrary')}
               onClick={() => setMappingOpen(false)}
             >
               <X size={18} />
@@ -408,17 +431,17 @@ export function ButtonsPanel() {
 
           {/* 左键修改特别警告 */}
           {selectedButton === ButtonId.Left && (
-            <div className="bg-red-50 border-b border-red-200 px-5 py-2.5 text-xs text-red-600 font-bold leading-normal flex items-start gap-2">
+            <div className="flex items-start gap-2 border-b border-danger/20 bg-danger/10 px-5 py-2.5 text-xs font-bold leading-normal text-danger">
               <span className="shrink-0 text-sm mt-0.5">⚠️</span>
               <div>
                 {locale === 'zh-CN' ? (
                   <span>
-                    <strong className="text-red-700 block mb-0.5 text-[13px]">注意注意！</strong>
+                    <strong className="mb-0.5 block text-[13px] text-danger">注意注意！</strong>
                     修改左键可能导致鼠标无法继续点击。请确保其他物理按键已被绑定为左键，以免鼠标失效。
                   </span>
                 ) : (
                   <span>
-                    <strong className="text-red-700 block mb-0.5 text-[13px]">Warning!</strong>
+                    <strong className="mb-0.5 block text-[13px] text-danger">Warning!</strong>
                     Modifying Left Click may cause the mouse to lose clicking capability. Ensure another button is mapped to Left Click first.
                   </span>
                 )}
@@ -427,7 +450,7 @@ export function ButtonsPanel() {
           )}
 
           {/* 页签选择栏 */}
-          <div className="grid grid-cols-4 border-b border-[#eef0f2] bg-[#fdfdfd] p-1.5">
+          <div className="grid grid-cols-4 border-b border-driver-line bg-driver-panel p-1.5" role="tablist">
             {(
               [
                 { id: 'system', name: '系统', nameEn: 'System' },
@@ -440,10 +463,13 @@ export function ButtonsPanel() {
               return (
                 <button
                   key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
                   className={`rounded py-2 text-xs font-bold transition ${
                     active
-                      ? 'bg-[#101114] text-white shadow-sm'
-                      : 'text-[#6b7280] hover:bg-[#f3f4f6]'
+                      ? 'bg-driver-text text-driver-panel shadow-sm'
+                      : 'text-driver-muted hover:bg-driver-hover'
                   }`}
                   onClick={() => {
                     setActiveTab(tab.id);
@@ -458,10 +484,11 @@ export function ButtonsPanel() {
 
           {/* 搜索框 (仅系统和键盘需要) */}
           {(activeTab === 'system' || activeTab === 'keyboard') && (
-            <div className="relative border-b border-[#eef0f2] p-3">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#9aa0a9]" size={15} />
+            <div className="relative border-b border-driver-line p-3">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-driver-muted" size={15} />
               <input
-                className="h-9 w-full rounded-md border border-[#d7dbe2] bg-[#f7f8fa] pl-9 pr-3 text-xs outline-none focus:border-[#ff6b00]"
+                aria-label={locale === 'zh-CN' ? '搜索功能按键' : 'Search buttons'}
+                className="h-9 w-full rounded-md border border-driver-line bg-driver-raised pl-9 pr-3 text-xs text-driver-text outline-none placeholder:text-driver-muted focus:border-warn"
                 placeholder={locale === 'zh-CN' ? '搜索功能按键' : 'Search buttons...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -470,14 +497,14 @@ export function ButtonsPanel() {
           )}
 
           {/* 主列表内容区域 */}
-          <div className="flex-1 overflow-y-auto bg-[#f7f8fa] p-4">
+          <div className="flex-1 overflow-y-auto bg-driver-bg p-4">
             
             {/* TAB 1: 系统 */}
             {activeTab === 'system' && (
               <div className="space-y-4">
                 {systemGroups.map((group) => (
-                  <div key={group.title} className="rounded-lg bg-white p-3 shadow-sm border border-[#eef0f2]">
-                    <div className="mb-2 text-xs font-black text-[#86909c]">{group.title}</div>
+                  <div key={group.title} className="rounded-lg border border-driver-line bg-driver-panel p-3 shadow-sm">
+                    <div className="mb-2 text-xs font-black text-driver-muted">{group.title}</div>
                     <div className="grid gap-1">
                       {group.options.map((option) => {
                         const active = isOptionActive(option);
@@ -486,8 +513,8 @@ export function ButtonsPanel() {
                             key={option.id}
                             className={`flex h-9 w-full items-center justify-between rounded px-3 text-left text-xs font-semibold transition ${
                               active
-                                ? 'bg-[#ff6b00]/10 text-[#ff6b00]'
-                                : 'text-[#4b5563] hover:bg-[#f3f4f6]'
+                                ? 'bg-warn/10 text-warn'
+                                : 'text-driver-text hover:bg-driver-hover'
                             }`}
                             onClick={() => void applyMapping(option)}
                           >
@@ -500,7 +527,7 @@ export function ButtonsPanel() {
                   </div>
                 ))}
                 {systemGroups.length === 0 && (
-                  <div className="py-8 text-center text-xs text-[#9aa0a9]">
+                  <div className="py-8 text-center text-xs text-driver-muted">
                     {locale === 'zh-CN' ? '没有找到匹配的功能' : 'No matches found'}
                   </div>
                 )}
@@ -511,8 +538,8 @@ export function ButtonsPanel() {
             {activeTab === 'keyboard' && (
               <div className="space-y-4">
                 {keyboardGroups.map((group) => (
-                  <div key={group.title} className="rounded-lg bg-white p-3 shadow-sm border border-[#eef0f2]">
-                    <div className="mb-2 text-xs font-black text-[#86909c]">{group.title}</div>
+                  <div key={group.title} className="rounded-lg border border-driver-line bg-driver-panel p-3 shadow-sm">
+                    <div className="mb-2 text-xs font-black text-driver-muted">{group.title}</div>
                     <div className="grid grid-cols-2 gap-1.5">
                       {group.options.map((option) => {
                         const active = isOptionActive(option);
@@ -521,8 +548,8 @@ export function ButtonsPanel() {
                             key={option.id}
                             className={`flex h-8 items-center justify-between rounded px-2.5 text-xs font-semibold transition border ${
                               active
-                                ? 'border-[#ff6b00] bg-[#ff6b00]/5 text-[#ff6b00]'
-                                : 'border-[#eef0f2] text-[#4b5563] hover:bg-[#f3f4f6]'
+                                ? 'border-warn bg-warn/5 text-warn'
+                                : 'border-driver-line text-driver-text hover:bg-driver-hover'
                             }`}
                             onClick={() => void applyMapping(option)}
                           >
@@ -535,7 +562,7 @@ export function ButtonsPanel() {
                   </div>
                 ))}
                 {keyboardGroups.length === 0 && (
-                  <div className="py-8 text-center text-xs text-[#9aa0a9]">
+                  <div className="py-8 text-center text-xs text-driver-muted">
                     {locale === 'zh-CN' ? '没有找到匹配的键盘按键' : 'No matches found'}
                   </div>
                 )}
@@ -546,12 +573,12 @@ export function ButtonsPanel() {
             {activeTab === 'special' && (
               <div className="space-y-4">
                 {/* 1. 火力键配置 */}
-                <div className="rounded-lg bg-white p-4 shadow-sm border border-[#eef0f2] space-y-4">
-                  <div className="flex items-center justify-between border-b border-[#eef0f2] pb-2">
-                    <span className="text-sm font-black text-[#1d2129]">
+                <div className="space-y-4 rounded-lg border border-driver-line bg-driver-panel p-4 shadow-sm">
+                  <div className="flex items-center justify-between border-b border-driver-line pb-2">
+                    <span className="text-sm font-black text-driver-text">
                       {locale === 'zh-CN' ? '火力键' : 'Burst Fire'}
                     </span>
-                    <span className="rounded bg-[#ff6b00]/10 px-2 py-0.5 text-[10px] font-black text-[#ff6b00]">
+                    <span className="rounded bg-warn/10 px-2 py-0.5 text-[10px] font-black text-warn">
                       Burst
                     </span>
                   </div>
@@ -559,10 +586,10 @@ export function ButtonsPanel() {
                   <div className="space-y-3">
                     {/* 点击间隔 */}
                     <div className="space-y-1">
-                      <span className="text-xs text-[#86909c] font-semibold">
+                      <span className="text-xs font-semibold text-driver-muted">
                         {locale === 'zh-CN' ? '点击间隔 (ms)' : 'Click Interval (ms)'}
                       </span>
-                      <div className="flex items-center rounded-md border border-[#d7dbe2] bg-[#f7f8fa] px-3">
+                      <div className="flex items-center rounded-md border border-driver-line bg-driver-raised px-3">
                         <input
                           type="number"
                           min={1}
@@ -571,13 +598,13 @@ export function ButtonsPanel() {
                           value={burstInterval}
                           onChange={(e) => setBurstInterval(Math.max(1, Number(e.target.value)))}
                         />
-                        <span className="text-xs text-[#86909c] ml-2">ms</span>
+                        <span className="ml-2 text-xs text-driver-muted">ms</span>
                       </div>
                     </div>
 
                     {/* 触发模式选择 */}
                     <div className="space-y-1.5">
-                      <span className="text-xs text-[#86909c] font-semibold">
+                      <span className="text-xs font-semibold text-driver-muted">
                         {locale === 'zh-CN' ? '点击次数' : 'Click Times'}
                       </span>
                       <div className="grid grid-cols-2 gap-2">
@@ -585,8 +612,8 @@ export function ButtonsPanel() {
                           type="button"
                           className={`flex h-8 items-center justify-center rounded border text-xs font-bold transition ${
                             burstMode === 'times'
-                              ? 'border-[#ff6b00] bg-[#ff6b00]/5 text-[#ff6b00]'
-                              : 'border-[#eef0f2] text-[#4b5563] hover:bg-slate-50'
+                              ? 'border-warn bg-warn/5 text-warn'
+                              : 'border-driver-line text-driver-text hover:bg-driver-hover'
                           }`}
                           onClick={() => setBurstMode('times')}
                         >
@@ -596,8 +623,8 @@ export function ButtonsPanel() {
                           type="button"
                           className={`flex h-8 items-center justify-center rounded border text-xs font-bold transition ${
                             burstMode === 'hold'
-                              ? 'border-[#ff6b00] bg-[#ff6b00]/5 text-[#ff6b00]'
-                              : 'border-[#eef0f2] text-[#4b5563] hover:bg-slate-50'
+                              ? 'border-warn bg-warn/5 text-warn'
+                              : 'border-driver-line text-driver-text hover:bg-driver-hover'
                           }`}
                           onClick={() => setBurstMode('hold')}
                         >
@@ -609,7 +636,7 @@ export function ButtonsPanel() {
                     {/* 具体次数输入 (如果不是持续触发) */}
                     {burstMode === 'times' && (
                       <div className="space-y-1">
-                        <div className="flex items-center rounded-md border border-[#d7dbe2] bg-[#f7f8fa] px-3">
+                        <div className="flex items-center rounded-md border border-driver-line bg-driver-raised px-3">
                           <input
                             type="number"
                             min={1}
@@ -618,7 +645,7 @@ export function ButtonsPanel() {
                             value={burstCount}
                             onChange={(e) => setBurstCount(Math.max(1, Number(e.target.value)))}
                           />
-                          <span className="text-xs text-[#86909c] ml-2">
+                          <span className="ml-2 text-xs text-driver-muted">
                             {locale === 'zh-CN' ? '次' : 'times'}
                           </span>
                         </div>
@@ -636,12 +663,12 @@ export function ButtonsPanel() {
                 </div>
 
                 {/* 2. 组合键配置 */}
-                <div className="rounded-lg bg-white p-4 shadow-sm border border-[#eef0f2] space-y-4">
-                  <div className="flex items-center justify-between border-b border-[#eef0f2] pb-2">
-                    <span className="text-sm font-black text-[#1d2129]">
+                <div className="space-y-4 rounded-lg border border-driver-line bg-driver-panel p-4 shadow-sm">
+                  <div className="flex items-center justify-between border-b border-driver-line pb-2">
+                    <span className="text-sm font-black text-driver-text">
                       {locale === 'zh-CN' ? '组合键' : 'Combo Key'}
                     </span>
-                    <span className="rounded bg-[#ff6b00]/10 px-2 py-0.5 text-[10px] font-black text-[#ff6b00]">
+                    <span className="rounded bg-warn/10 px-2 py-0.5 text-[10px] font-black text-warn">
                       Combo
                     </span>
                   </div>
@@ -649,7 +676,7 @@ export function ButtonsPanel() {
                   <div className="space-y-3">
                     {/* 系统键多选 */}
                     <div className="space-y-1">
-                      <span className="text-xs text-[#86909c] font-semibold">
+                      <span className="text-xs font-semibold text-driver-muted">
                         {locale === 'zh-CN' ? '系统键' : 'Modifier Keys'}
                       </span>
                       <div className="grid grid-cols-4 gap-1">
@@ -661,8 +688,8 @@ export function ButtonsPanel() {
                               type="button"
                               className={`flex h-8 items-center justify-center rounded border text-xs font-bold transition ${
                                 active
-                                  ? 'border-[#ff6b00] bg-[#ff6b00]/5 text-[#ff6b00]'
-                                  : 'border-[#eef0f2] text-[#4b5563] hover:bg-slate-50'
+                                  ? 'border-warn bg-warn/5 text-warn'
+                                  : 'border-driver-line text-driver-text hover:bg-driver-hover'
                               }`}
                               onClick={() => {
                                 setComboModifiers((prev) =>
@@ -681,17 +708,17 @@ export function ButtonsPanel() {
 
                     {/* 任意键捕获 */}
                     <div className="space-y-1">
-                      <span className="text-xs text-[#86909c] font-semibold">
+                      <span className="text-xs font-semibold text-driver-muted">
                         {locale === 'zh-CN' ? '任意键' : 'Normal Key'}
                       </span>
                       <button
                         type="button"
                         className={`flex h-10 w-full items-center justify-center rounded-md border border-dashed text-xs font-bold transition ${
                           isRecordingCombo
-                            ? 'border-[#ff6b00] bg-[#ff6b00]/5 text-[#ff6b00] animate-pulse'
+                            ? 'animate-pulse border-warn bg-warn/5 text-warn'
                             : comboNormalKey
-                            ? 'border-solid border-[#ff6b00] bg-white text-[#ff6b00]'
-                            : 'border-[#d7dbe2] bg-[#f7f8fa] text-[#7a808a] hover:bg-slate-50'
+                            ? 'border-solid border-warn bg-driver-panel text-warn'
+                            : 'border-driver-line bg-driver-raised text-driver-muted hover:bg-driver-hover'
                         }`}
                         onClick={() => setIsRecordingCombo((prev) => !prev)}
                       >
@@ -701,7 +728,7 @@ export function ButtonsPanel() {
                           ? comboNormalKey.name
                           : (locale === 'zh-CN' ? '点击此处捕获按键' : 'Click to record key')}
                       </button>
-                      <span className="block text-[10px] text-[#86909c] mt-1 leading-normal">
+                      <span className="mt-1 block text-[10px] leading-normal text-driver-muted">
                         {locale === 'zh-CN' ? '* 支持选择系统修饰键 + 任意键' : '* Supports Modifier + Any key'}
                       </span>
                     </div>
@@ -717,7 +744,7 @@ export function ButtonsPanel() {
                       </Button>
                       <Button
                         type="button"
-                        className="border border-[#d7dbe2] bg-[#e5e7eb] text-[#1d2129] hover:bg-[#dfe2e7] font-bold text-xs"
+                        className="border border-driver-line bg-driver-raised text-xs font-bold text-driver-text hover:bg-driver-hover"
                         onClick={clearComboKey}
                       >
                         {locale === 'zh-CN' ? '清除' : 'Clear'}
@@ -732,7 +759,7 @@ export function ButtonsPanel() {
             {activeTab === 'macro' && (
               <div className="space-y-3">
                 {macros.length === 0 && (
-                  <div className="rounded-lg border border-dashed border-[#d7dbe2] bg-white p-6 text-center text-xs text-[#7a808a] font-semibold">
+                  <div className="rounded-lg border border-dashed border-driver-line bg-driver-panel p-6 text-center text-xs font-semibold text-driver-muted">
                     {locale === 'zh-CN' ? '没有可用的宏，请在“快捷指令设置”中录制' : 'No macros recorded. Record one in Shortcuts settings'}
                   </div>
                 )}
@@ -745,15 +772,15 @@ export function ButtonsPanel() {
                   return (
                     <div
                       key={macro.id}
-                      className={`flex items-center justify-between rounded-lg bg-white p-3 border transition duration-200 ${
+                      className={`flex items-center justify-between rounded-lg bg-driver-panel p-3 border transition duration-200 ${
                         active
-                          ? 'border-[#ff6b00] shadow-sm bg-[#ff6b00]/5'
-                          : 'border-[#eef0f2] hover:border-slate-300'
+                          ? 'border-warn bg-warn/5 shadow-sm'
+                          : 'border-driver-line hover:bg-driver-hover'
                       }`}
                     >
                       <div className="min-w-0 pr-2">
-                        <div className="text-xs font-bold truncate text-[#1d2129]">{macro.name}</div>
-                        <div className="mt-1 text-[10px] text-[#86909c] font-semibold">
+                        <div className="truncate text-xs font-bold text-driver-text">{macro.name}</div>
+                        <div className="mt-1 text-[10px] font-semibold text-driver-muted">
                           {macro.actions.length} {locale === 'zh-CN' ? '个动作' : 'actions'} · {
                             macro.repeatType === 0xf0 ? (locale === 'zh-CN' ? '按住循环' : 'Hold Loop') : `${macro.loopTimes}x`
                           }
@@ -763,8 +790,8 @@ export function ButtonsPanel() {
                         type="button"
                         className={`rounded px-2.5 py-1.5 text-[10px] font-bold transition shrink-0 ${
                           active
-                            ? 'bg-[#ff6b00] text-white'
-                            : 'bg-[#f0f1f3] text-[#1d2129] hover:bg-[#e5e7eb]'
+                            ? 'bg-warn text-white'
+                            : 'bg-driver-raised text-driver-text hover:bg-driver-hover'
                         }`}
                         onClick={() => void bindMacroToButton(selectedButton, idx, macro)}
                       >
@@ -812,7 +839,7 @@ function positionClass(buttonId: ButtonId) {
     case ButtonId.Backward:
       return 'left-[4%] top-[58%]';
     case ButtonId.Dpi:
-      return 'right-[20%] top-[4%]';
+      return 'right-[4%] top-[55%]';
     default:
       return 'left-1/2 top-1/2';
   }
@@ -831,7 +858,7 @@ function dotClass(buttonId: ButtonId) {
     case ButtonId.Backward:
       return 'left-[29%] top-[53%]';
     case ButtonId.Dpi:
-      return 'left-[48%] top-[30%]';
+      return 'left-[48%] top-[7%]';
     default:
       return 'left-1/2 top-1/2';
   }

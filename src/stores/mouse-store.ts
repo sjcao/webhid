@@ -12,7 +12,7 @@ import {
   WorkMode,
   parseMouseResponse,
 } from '@/protocol/mouse';
-import { getMacroDelay, SavedMacro } from './macro-store';
+import { getMacroDelay, MacroActionKind, type MacroAction, SavedMacro } from './macro-store';
 
 type MouseState = {
   activeProfile: number;
@@ -147,7 +147,7 @@ export const useMouseStore = create<MouseState>((set, get) => ({
         buttonId,
         macroId: macroIndex,
         repeatType: macro.repeatType === 0xf4 ? macro.loopTimes : macro.repeatType,
-        macroButtonType: action.direction === 'up' ? MacroButtonType.KeyUp : MacroButtonType.KeyboardDown,
+        macroButtonType: macroButtonTypeForAction(action),
         delayMs: getMacroDelay(index, macro.actions),
         values: action.direction === 'up' ? [0x00] : normalizeMacroValue(action.keyCode),
       }));
@@ -175,4 +175,9 @@ export const useMouseStore = create<MouseState>((set, get) => ({
 
 function normalizeMacroValue(values: number[]) {
   return values.length === 2 && values[1] === 0x00 ? [values[0]] : values;
+}
+
+export function macroButtonTypeForAction(action: MacroAction) {
+  if (action.direction === 'up') return MacroButtonType.KeyUp;
+  return action.kind === MacroActionKind.Mouse ? MacroButtonType.MouseDown : MacroButtonType.KeyboardDown;
 }

@@ -1,3 +1,4 @@
+import { Check } from 'lucide-react';
 import { useMouseStore } from '@/stores/mouse-store';
 import { useI18n } from '@/i18n/use-i18n';
 
@@ -16,51 +17,55 @@ export function DpiPanel() {
   const updateDpi = useMouseStore((state) => state.updateDpi);
 
   return (
-    <div className="min-h-full bg-white text-[#101114]">
-      <div className="flex items-center justify-between border-b border-[#eef0f2] px-6 py-4">
+    <div className="min-h-full bg-driver-bg text-driver-text">
+      <div className="flex items-center justify-between border-b border-driver-line bg-driver-panel px-6 py-4">
         <div>
           <h1 className="text-lg font-black">{t('nav.dpi')}</h1>
-          <p className="mt-1 text-xs text-[#7a808a]">{t('mouse.protocolFixedDpi')}</p>
+          <p className="mt-1 text-xs text-driver-muted">{t('mouse.chooseDpi')}</p>
         </div>
-        <div className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white">{currentDpi} DPI</div>
+        <div className="rounded-md bg-driver-text px-4 py-2 text-sm font-semibold text-driver-panel">{currentDpi} DPI</div>
       </div>
 
-      <div className="grid gap-4 bg-[#f6f7f9] p-6 lg:grid-cols-2">
-        {dpiStages.map((stage) => {
-          const active = currentDpi === stage.value;
-          return (
-            <button
-              key={stage.name}
-              className={`rounded-lg bg-white p-6 text-left shadow-[0_1px_0_rgba(0,0,0,0.04)] transition ${active ? 'ring-2 ring-black' : 'hover:bg-[#fbfbfc]'}`}
-              onClick={() => void updateDpi(stage.value)}
-            >
-              <div className="mb-5 flex items-center justify-between">
-                <span className="inline-flex items-center gap-2 rounded-full bg-[#dedfe2] px-4 py-2 text-sm">
-                  <span className="h-4 w-4 rounded-full" style={{ background: stage.color }} />
-                  {stage.name}
-                </span>
-                {active && <span className="rounded-full bg-black px-3 py-1 text-xs text-white">{t('mouse.active')}</span>}
-              </div>
+      <div className="p-6">
+        <section className="rounded-xl border border-driver-line bg-driver-panel p-6 shadow-sm">
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wider text-driver-muted">{t('mouse.currentDpi')}</div>
+              <div className="mt-1 text-3xl font-black">{currentDpi} DPI</div>
+            </div>
+            <div className="rounded-full bg-warn/10 px-3 py-1.5 text-xs font-bold text-warn">{t('mouse.protocolFixedDpi')}</div>
+          </div>
 
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm font-medium">DPI</span>
-                <span className="rounded-md border border-[#d5dae2] bg-white px-4 py-1 text-sm font-semibold">{stage.value}</span>
-              </div>
-              <div className="relative h-3 rounded-full bg-[#e2e5eb]">
-                <div
-                  className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-[#333] bg-white"
-                  style={{ left: `${Math.min((stage.value / 8000) * 100, 100)}%` }}
-                />
-              </div>
-              <div className="mt-2 flex justify-between text-xs text-[#6b7280]">
-                <span>800</span>
-                <span>3200</span>
-                <span>6000</span>
-                <span>8000</span>
-              </div>
-            </button>
-          );
-        })}
+          <div className="relative pt-3">
+            <div className="absolute left-[8.333%] right-[8.333%] top-8 h-1 rounded-full bg-driver-raised" aria-hidden="true" />
+            <div className="relative grid grid-cols-6 gap-2">
+              {dpiStages.map((stage) => {
+                const active = currentDpi === stage.value;
+                return (
+                  <button
+                    key={stage.name}
+                    type="button"
+                    aria-pressed={active}
+                    aria-label={stage.name}
+                    className={`group flex min-w-0 flex-col items-center rounded-lg px-2 pb-4 pt-1 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warn ${
+                      active ? 'bg-driver-raised' : 'hover:bg-driver-hover'
+                    }`}
+                    onClick={() => void updateDpi(stage.value)}
+                  >
+                    <span
+                      className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full border-4 border-driver-panel shadow-sm transition ${active ? 'scale-110' : 'group-hover:scale-105'}`}
+                      style={{ background: stage.color }}
+                    >
+                      {active && <Check size={16} className="text-white" strokeWidth={3} />}
+                    </span>
+                    <span className="mt-3 text-xs font-bold text-driver-muted">{stage.name}</span>
+                    <span className="mt-1 whitespace-nowrap text-sm font-black">{stage.value} DPI</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

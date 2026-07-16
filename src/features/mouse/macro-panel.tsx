@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Play, Square, Copy, RotateCcw, Save, Trash2, Plus, Menu, Keyboard, Mouse } from 'lucide-react';
+import { ArrowDown, ArrowUp, Play, Square, Copy, RotateCcw, Save, Trash2, Plus, Menu, Keyboard, Mouse } from 'lucide-react';
 import { useMacroStore, MacroAction, MacroActionKind, MacroDirection } from '@/stores/macro-store';
+import { useUiStore } from '@/stores/ui-store';
 import { browserKeyToHid, MacroRepeatType } from '@/protocol/mouse';
 import { useI18n } from '@/i18n/use-i18n';
 import { Button } from '@/shared/ui/button';
+import { ConfirmDialog } from '@/shared/ui/dialog';
+import { reorderMacroActions } from './macro-actions';
 
 export function MacroPanel() {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
 
   // Zustand Store
   const macros = useMacroStore((state) => state.macros);
@@ -14,6 +17,7 @@ export function MacroPanel() {
   const deleteMacro = useMacroStore((state) => state.deleteMacro);
   const updateMacro = useMacroStore((state) => state.updateMacro);
   const duplicateMacro = useMacroStore((state) => state.duplicateMacro);
+  const setMacroEditorDirty = useUiStore((state) => state.setMacroEditorDirty);
 
   // 编辑器管理状态
   const [selectedMacroId, setSelectedMacroId] = useState<string | null>(null);
@@ -38,9 +42,21 @@ export function MacroPanel() {
   const [editingActionIndex, setEditingActionIndex] = useState<number | null>(null);
   const [isInsertingKey, setIsInsertingKey] = useState(false);
   const [insertMouseMenuOpen, setInsertMouseMenuOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{ type: 'select'; id: string } | { type: 'create' } | null>(null);
+  const [deleteMacroId, setDeleteMacroId] = useState<string | null>(null);
 
   // HTML5 Drag & Drop 拖拽状态
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const dirty = useMemo(() => {
+    if (!currentMacro) return false;
+    return (
+      tempName !== currentMacro.name ||
+      repeatType !== currentMacro.repeatType ||
+      loopTimes !== currentMacro.loopTimes ||
+      JSON.stringify(tempActions) !== JSON.stringify(currentMacro.actions)
+    );
+  }, [currentMacro, loopTimes, repeatType, tempActions, tempName]);
 
   // 1. 初始化时默认选中第一个宏
   useEffect(() => {
@@ -69,6 +85,21 @@ export function MacroPanel() {
     setIsInsertingKey(false);
     setInsertMouseMenuOpen(false);
   }, [currentMacro]);
+
+  useEffect(() => {
+    setMacroEditorDirty(dirty);
+  }, [dirty, setMacroEditorDirty]);
+
+  useEffect(() => () => setMacroEditorDirty(false), [setMacroEditorDirty]);
+
+  useEffect(() => {
+    if (!dirty) return undefined;
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [dirty]);
 
   // 3. 全局键盘录制逻辑
   useEffect(() => {
@@ -186,7 +217,7 @@ export function MacroPanel() {
   }, [isInsertingKey, tempActions]);
 
   // 新建一个宏快捷指令
-  function handleCreateNew() {
+  function createMacro() {
     const newName = `M${macros.length + 1}`;
     const newMacro = saveMacro({
       name: newName,
@@ -197,11 +228,28 @@ export function MacroPanel() {
     setSelectedMacroId(newMacro.id);
   }
 
+  function handleCreateNew() {
+    if (dirty) {
+      setPendingAction({ type: 'create' });
+      return;
+    }
+    createMacro();
+  }
+
+  function selectMacro(id: string) {
+    if (id === selectedMacroId) return;
+    if (dirty) {
+      setPendingAction({ type: 'select', id });
+      return;
+    }
+    setSelectedMacroId(id);
+  }
+
   // 保存当前修改
   function handleSave() {
     if (!selectedMacroId) return;
     updateMacro(selectedMacroId, {
-      name: tempName,
+      name: tempName.trim(),
       repeatType,
       loopTimes,
       actions: tempActions,
@@ -214,13 +262,36 @@ export function MacroPanel() {
     duplicateMacro(selectedMacroId, locale === 'zh-CN' ? '副本' : 'Clone');
   }
 
+  function resetDraft() {
+    if (!currentMacro) return;
+    setTempName(currentMacro.name);
+    setRepeatType(currentMacro.repeatType);
+    setLoopTimes(currentMacro.loopTimes);
+    setTempActions(currentMacro.actions.map((action) => ({ ...action })));
+  }
+
   // 删除宏
   function handleDelete(id: string, e: React.MouseEvent) {
     e.stopPropagation();
+    setDeleteMacroId(id);
+  }
+
+  function confirmDelete() {
+    if (!deleteMacroId) return;
+    const id = deleteMacroId;
     deleteMacro(id);
     if (selectedMacroId === id) {
       setSelectedMacroId(null);
     }
+    setDeleteMacroId(null);
+  }
+
+  function confirmDiscard() {
+    const action = pendingAction;
+    setPendingAction(null);
+    if (!action) return;
+    if (action.type === 'create') createMacro();
+    if (action.type === 'select') setSelectedMacroId(action.id);
   }
 
   // 修改延迟毫秒数 (平移时间轴算法)
@@ -247,7 +318,7 @@ export function MacroPanel() {
 
   // 删除单个动作
   function removeAction(idx: number) {
-    const delayOfRemoved = idx === 0 ? 0 : tempActions[idx].timestamp - tempActions[idx - 1].timestamp;
+    const delayOfRemoved = idx === 0 ? tempActions[idx].timestamp : tempActions[idx].timestamp - tempActions[idx - 1].timestamp;
     
     // 删除该项后，将后续的各项绝对时间戳向前平移以消除这一动作的相对延迟
     const nextActions = tempActions
@@ -308,57 +379,29 @@ export function MacroPanel() {
     e.preventDefault();
     if (draggedIndex === null || draggedIndex === index) return;
 
-    // 1. 先计算原始顺序下，每个动作相对于前一项的相对延时 (delays)
-    const oldDelays = tempActions.map((act, i) =>
-      i === 0 ? act.timestamp : act.timestamp - tempActions[i - 1].timestamp
-    );
-
-    // 2. 对动作数组及相对延迟数组进行同步调整
-    const list = [...tempActions];
-    const delayList = [...oldDelays];
-
-    const draggedItem = list[draggedIndex];
-    const draggedDelay = delayList[draggedIndex];
-
-    list.splice(draggedIndex, 1);
-    delayList.splice(draggedIndex, 1);
-
-    list.splice(index, 0, draggedItem);
-    delayList.splice(index, 0, draggedDelay);
-
-    // 3. 根据重排后的相对延时，重新累加出绝对时间戳 (timestamp)
-    const nextActions = list.map((act, i) => {
-      const ts = i === 0 ? delayList[i] : list[i - 1].timestamp + delayList[i];
-      return { ...act, timestamp: ts };
-    });
-
-    setTempActions(nextActions);
+    setTempActions(reorderMacroActions(tempActions, draggedIndex, index));
     setDraggedIndex(null);
   }
 
+  function moveAction(index: number, offset: -1 | 1) {
+    setTempActions((actions) => reorderMacroActions(actions, index, index + offset));
+  }
+
   return (
-    <div className="flex h-full min-h-0 w-full overflow-hidden bg-[#f6f7f9] text-[#101114]">
-      
-      {/* 录制时的防误触局部毛玻璃遮罩（精准遮盖左侧与顶部，暴露右侧工作区动作流） */}
-      {recording && (
-        <>
-          {/* 左侧遮罩：覆盖外部导航aside (228px) 与 宏指令库列表 (240px) */}
-          <div className="fixed left-0 top-0 bottom-0 z-40 bg-slate-950/10 backdrop-blur-[2px] w-[468px] pointer-events-auto" />
-          {/* 顶部遮罩：覆盖顶部header (h-12) */}
-          <div className="fixed left-0 top-0 right-0 z-40 bg-slate-950/10 backdrop-blur-[2px] h-12 pointer-events-auto" />
-        </>
-      )}
+    <div className="flex h-full min-h-0 w-full overflow-hidden bg-driver-bg text-driver-text">
 
       {/* 左侧侧边栏：已创建的宏列表 */}
-      <div className="flex h-full w-[240px] shrink-0 flex-col border-r border-[#eef0f2] bg-white p-4">
-        <h2 className="text-sm font-black text-[#86909c] mb-3 uppercase tracking-wider">
+      <div className="relative flex h-full w-[220px] shrink-0 flex-col border-r border-driver-line bg-driver-panel p-4 min-[1200px]:w-[240px]">
+        {recording && <div className="absolute inset-0 z-20 bg-driver-panel/75 backdrop-blur-[2px]" aria-hidden="true" />}
+        <h2 className="mb-3 text-sm font-black uppercase tracking-wider text-driver-muted">
           {locale === 'zh-CN' ? '快捷指令库' : 'Shortcuts Library'}
         </h2>
         
         {/* 新建按钮 */}
         <Button
+          variant="black"
           onClick={handleCreateNew}
-          className="w-full bg-[#101114] text-white hover:bg-slate-800 font-bold text-xs h-10 mb-4 flex items-center justify-center gap-2 shadow-sm rounded-md"
+          className="mb-4 flex h-10 w-full items-center justify-center gap-2 rounded-md text-xs font-bold shadow-sm"
         >
           <Plus size={15} />
           {locale === 'zh-CN' ? '新建快捷指令' : 'New Shortcut'}
@@ -371,23 +414,29 @@ export function MacroPanel() {
             return (
               <div
                 key={macro.id}
-                onClick={() => setSelectedMacroId(macro.id)}
-                className={`group flex h-11 cursor-pointer items-center justify-between rounded-md px-3 border transition duration-200 ${
+                className={`group flex min-h-11 items-center justify-between rounded-md border transition duration-200 ${
                   active
-                    ? 'border-[#ff6b00] bg-[#ff6b00]/5 text-[#ff6b00]'
-                    : 'border-[#eef0f2] bg-white hover:border-slate-300'
+                    ? 'border-warn bg-warn/5 text-warn'
+                    : 'border-driver-line bg-driver-panel hover:bg-driver-hover'
                 }`}
               >
-                <div className="min-w-0 pr-2">
-                  <div className="text-xs font-bold truncate">{macro.name}</div>
-                  <div className="mt-0.5 text-[9px] font-semibold text-[#86909c]">
-                    {macro.actions.length} {locale === 'zh-CN' ? '动作' : 'acts'}
-                  </div>
-                </div>
                 <button
                   type="button"
+                  className="min-w-0 flex-1 px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warn"
+                  aria-pressed={active}
+                  onClick={() => selectMacro(macro.id)}
+                >
+                  <span className="block truncate text-xs font-bold">{macro.name}</span>
+                  <span className="mt-0.5 block text-[9px] font-semibold text-driver-muted">
+                    {macro.actions.length} {locale === 'zh-CN' ? '动作' : 'acts'}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  aria-label={`${t('mouse.delete')} ${macro.name}`}
+                  title={t('mouse.delete')}
                   onClick={(e) => handleDelete(macro.id, e)}
-                  className="rounded p-1 text-[#86909c] hover:bg-[#f3f4f6] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="mr-2 rounded p-1 text-driver-muted opacity-60 transition hover:bg-driver-raised hover:text-danger focus:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger group-hover:opacity-100"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -396,7 +445,7 @@ export function MacroPanel() {
           })}
 
           {macros.length === 0 && (
-            <div className="py-12 text-center text-xs text-[#9aa0a9] font-medium leading-relaxed">
+            <div className="py-12 text-center text-xs font-medium leading-relaxed text-driver-muted">
               {locale === 'zh-CN' ? '暂无配置，请点击上方按钮新建' : 'No shortcuts yet. Click above to create one.'}
             </div>
           )}
@@ -404,31 +453,36 @@ export function MacroPanel() {
       </div>
 
       {/* 右侧主详情面板：可视化动作流编辑器 */}
-      <div className="flex-1 flex flex-col h-full min-h-0 bg-[#f7f8fa]">
+      <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col bg-driver-bg">
         
         {currentMacro ? (
-          <div className="flex-1 flex flex-col h-full min-h-0">
+          <div className="flex h-full min-h-0 flex-1 flex-col">
             {/* 顶部工具控制栏 */}
-            <div className="flex min-h-14 shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b border-[#eef0f2] bg-white px-6 py-2.5 shadow-sm">
+            <div className="flex min-h-14 shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b border-driver-line bg-driver-panel px-6 py-2.5 shadow-sm">
               <div className="flex shrink-0 items-center gap-2">
-                <span className="whitespace-nowrap text-xs font-bold text-[#86909c]">{locale === 'zh-CN' ? '指令名称' : 'Name'}:</span>
+                <span className="whitespace-nowrap text-xs font-bold text-driver-muted">{locale === 'zh-CN' ? '指令名称' : 'Name'}:</span>
                 <input
                   type="text"
                   maxLength={20}
                   disabled={recording}
-                  className="h-8 w-40 rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2.5 text-xs font-bold outline-none focus:border-[#ff6b00] focus:bg-white disabled:opacity-50"
+                  aria-label={locale === 'zh-CN' ? '指令名称' : 'Shortcut name'}
+                  className="h-8 w-36 rounded border border-driver-line bg-driver-raised px-2.5 text-xs font-bold text-driver-text outline-none focus:border-warn disabled:opacity-50 min-[1200px]:w-40"
                   value={tempName}
                   onChange={(e) => setTempName(e.target.value)}
                 />
+                <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${dirty ? 'bg-warn/10 text-warn' : 'bg-success/10 text-success'}`}>
+                  {dirty ? t('mouse.unsaved') : t('mouse.saved')}
+                </span>
               </div>
 
               {/* 循环参数设置 */}
               <div className="flex shrink-0 items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="whitespace-nowrap text-xs font-bold text-[#86909c]">{locale === 'zh-CN' ? '循环方式' : 'Loop Mode'}:</span>
+                  <span className="whitespace-nowrap text-xs font-bold text-driver-muted">{locale === 'zh-CN' ? '循环方式' : 'Loop Mode'}:</span>
                   <select
                     disabled={recording}
-                    className="h-8 rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2 text-xs font-bold outline-none disabled:opacity-50"
+                    aria-label={locale === 'zh-CN' ? '循环方式' : 'Loop mode'}
+                    className="h-8 rounded border border-driver-line bg-driver-raised px-2 text-xs font-bold text-driver-text outline-none focus:border-warn disabled:opacity-50"
                     value={repeatType}
                     onChange={(e) => setRepeatType(Number(e.target.value) as MacroRepeatType)}
                   >
@@ -441,15 +495,16 @@ export function MacroPanel() {
 
                 {repeatType === MacroRepeatType.LoopTimes && (
                   <div className="flex items-center gap-2">
-                    <span className="whitespace-nowrap text-xs font-bold text-[#86909c]">{locale === 'zh-CN' ? '循环次数' : 'Count'}:</span>
+                    <span className="whitespace-nowrap text-xs font-bold text-driver-muted">{locale === 'zh-CN' ? '循环次数' : 'Count'}:</span>
                     <input
                       type="number"
                       min={1}
                       max={255}
                       disabled={recording}
-                      className="h-8 w-16 rounded border border-[#d7dbe2] bg-[#f7f8fa] px-2 text-xs font-bold outline-none disabled:opacity-50"
+                      aria-label={locale === 'zh-CN' ? '循环次数' : 'Loop count'}
+                      className="h-8 w-16 rounded border border-driver-line bg-driver-raised px-2 text-xs font-bold text-driver-text outline-none focus:border-warn disabled:opacity-50"
                       value={loopTimes}
-                      onChange={(e) => setLoopTimes(Math.max(1, Number(e.target.value)))}
+                      onChange={(e) => setLoopTimes(Math.min(255, Math.max(1, Number(e.target.value))))}
                     />
                   </div>
                 )}
@@ -458,9 +513,9 @@ export function MacroPanel() {
               {/* 控制按钮组 */}
               <div className="flex shrink-0 items-center gap-1.5 ml-auto">
                 <Button
-                  variant={recording ? 'danger' : 'primary'}
+                  variant={recording ? 'danger' : 'black'}
                   onClick={() => setRecording((prev) => !prev)}
-                  className={`font-bold text-xs h-8 flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all duration-200 ${
+                  className={`flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-bold transition-all duration-200 ${
                     recording ? 'z-50 relative shadow-[0_0_15px_rgba(239,68,68,0.45)] ring-2 ring-red-500' : ''
                   }`}
                 >
@@ -480,16 +535,16 @@ export function MacroPanel() {
                 <Button
                   onClick={handleDuplicate}
                   disabled={recording}
-                  className="border border-[#d7dbe2] bg-white text-[#1d2129] hover:bg-[#eff0f2] font-bold text-xs h-8 flex items-center gap-1.5 shadow-sm whitespace-nowrap shrink-0"
+                  className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap border border-driver-line bg-driver-panel text-xs font-bold text-driver-text shadow-sm hover:bg-driver-hover"
                 >
                   <Copy size={13} className="shrink-0" />
                   <span className="whitespace-nowrap">{locale === 'zh-CN' ? '复制' : 'Clone'}</span>
                 </Button>
 
                 <Button
-                  onClick={() => setTempActions([])}
+                  onClick={resetDraft}
                   disabled={recording}
-                  className="border border-[#d7dbe2] bg-white text-[#1d2129] hover:bg-[#eff0f2] font-bold text-xs h-8 flex items-center gap-1.5 shadow-sm whitespace-nowrap shrink-0"
+                  className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap border border-driver-line bg-driver-panel text-xs font-bold text-driver-text shadow-sm hover:bg-driver-hover"
                 >
                   <RotateCcw size={13} className="shrink-0" />
                   <span className="whitespace-nowrap">{locale === 'zh-CN' ? '重置' : 'Reset'}</span>
@@ -497,8 +552,8 @@ export function MacroPanel() {
 
                 <Button
                   onClick={handleSave}
-                  disabled={recording || !tempName}
-                  className="bg-[#101114] text-white hover:bg-slate-800 font-bold text-xs h-8 flex items-center gap-1.5 shadow-sm whitespace-nowrap shrink-0"
+                  disabled={recording || !tempName.trim() || !dirty}
+                  className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap bg-driver-text text-xs font-bold text-driver-panel shadow-sm hover:opacity-90"
                 >
                   <Save size={13} className="shrink-0" />
                   <span className="whitespace-nowrap">{locale === 'zh-CN' ? '保存' : 'Save'}</span>
@@ -507,7 +562,7 @@ export function MacroPanel() {
             </div>
 
             {/* 动作序列列表 */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-2">
+            <div className="flex-1 space-y-2 overflow-y-auto p-4 min-[1200px]:p-6">
               
               {tempActions.map((action, idx) => {
                 const prevTimestamp = idx === 0 ? 0 : tempActions[idx - 1].timestamp;
@@ -522,14 +577,14 @@ export function MacroPanel() {
                     onDragStart={() => onDragStart(idx)}
                     onDragOver={(e) => onDragOver(e)}
                     onDrop={(e) => onDrop(e, idx)}
-                    className={`flex h-14 items-center justify-between rounded-lg bg-white border border-[#eef0f2] px-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition duration-150 ${
-                      draggedIndex === idx ? 'opacity-40 scale-95 border-dashed border-warn' : 'hover:border-slate-300'
+                    className={`flex min-h-14 items-center justify-between gap-3 rounded-lg border border-driver-line bg-driver-panel px-3 py-2 shadow-sm transition duration-150 min-[1200px]:px-4 ${
+                      draggedIndex === idx ? 'scale-95 border-dashed border-warn opacity-40' : 'hover:bg-driver-hover'
                     }`}
                   >
                     {/* 左侧：手柄和动作名 */}
-                    <div className="flex items-center gap-4">
+                      <div className="flex min-w-0 items-center gap-2 min-[1200px]:gap-4">
                       {!recording && (
-                        <div className="cursor-grab text-[#a9adb3] hover:text-[#5d6673]" title={locale === 'zh-CN' ? '拖拽排序' : 'Drag to sort'}>
+                        <div className="cursor-grab text-driver-muted hover:text-driver-text" title={locale === 'zh-CN' ? '拖拽排序' : 'Drag to sort'}>
                           <Menu size={16} />
                         </div>
                       )}
@@ -542,8 +597,8 @@ export function MacroPanel() {
                           onClick={() => setEditingActionIndex(isCapturing ? null : idx)}
                           className={`flex h-9 items-center justify-center rounded px-4 text-xs font-black min-w-16 transition ${
                             isCapturing
-                              ? 'bg-[#ff6b00] text-white border border-[#ff6b00] animate-pulse'
-                              : 'bg-[#f0f1f3] text-[#1d2129] border border-[#eef0f2] hover:bg-slate-200'
+                              ? 'animate-pulse border border-warn bg-warn text-white'
+                              : 'border border-driver-line bg-driver-raised text-driver-text hover:bg-driver-hover'
                           }`}
                         >
                           {isCapturing
@@ -565,31 +620,53 @@ export function MacroPanel() {
                         
                         {/* 悬浮提示气泡卡片 */}
                         {!recording && !isCapturing && (
-                          <div className="absolute left-1/2 bottom-[calc(100%+8px)] -translate-x-1/2 scale-0 group-hover/btn:scale-100 bg-[#101114] text-white text-[10px] font-bold py-1 px-2.5 rounded shadow-lg pointer-events-none transition duration-150 whitespace-nowrap z-50">
+                          <div className="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-50 -translate-x-1/2 scale-0 whitespace-nowrap rounded bg-driver-text px-2.5 py-1 text-[10px] font-bold text-driver-panel shadow-lg transition duration-150 group-hover/btn:scale-100 group-focus-within/btn:scale-100">
                             {locale === 'zh-CN' ? '按任意键修改绑定' : 'Press key to modify'}
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#101114]" />
+                            <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-driver-text" />
                           </div>
                         )}
                       </div>
 
                       {/* 动作类型说明 */}
-                      <span className="text-[10px] text-[#86909c] font-black uppercase">
+                      <span className="text-[10px] font-black uppercase text-driver-muted">
                         {action.kind === MacroActionKind.Mouse ? (locale === 'zh-CN' ? '鼠标' : 'Mouse') : (locale === 'zh-CN' ? '键盘' : 'Keyboard')}
                       </span>
                     </div>
 
                     {/* 右侧：方向按钮、延迟输入框和删除 */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex shrink-0 items-center gap-2 min-[1200px]:gap-3">
+                      <div className="flex items-center rounded bg-driver-raised p-0.5">
+                        <button
+                          type="button"
+                          disabled={recording || idx === 0}
+                          onClick={() => moveAction(idx, -1)}
+                          aria-label={t('mouse.moveUp')}
+                          title={t('mouse.moveUp')}
+                          className="rounded p-1.5 text-driver-muted transition hover:bg-driver-hover hover:text-driver-text disabled:opacity-30"
+                        >
+                          <ArrowUp size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={recording || idx === tempActions.length - 1}
+                          onClick={() => moveAction(idx, 1)}
+                          aria-label={t('mouse.moveDown')}
+                          title={t('mouse.moveDown')}
+                          className="rounded p-1.5 text-driver-muted transition hover:bg-driver-hover hover:text-driver-text disabled:opacity-30"
+                        >
+                          <ArrowDown size={13} />
+                        </button>
+                      </div>
                       {/* 方向单选按钮 */}
-                      <div className="flex rounded bg-[#f0f1f3] p-0.5">
+                      <div className="flex rounded bg-driver-raised p-0.5">
                         <button
                           type="button"
                           disabled={recording}
                           onClick={() => toggleDirection(idx, MacroDirection.Down)}
                           className={`rounded px-3 py-1.5 text-[10px] font-black transition flex items-center gap-1 ${
                             isDown
-                              ? 'bg-[#101114] text-white shadow-sm'
-                              : 'text-[#5d6673] hover:bg-slate-200'
+                              ? 'bg-driver-text text-driver-panel shadow-sm'
+                              : 'text-driver-muted hover:bg-driver-hover'
                           }`}
                         >
                           ↓ {locale === 'zh-CN' ? '按下' : 'Down'}
@@ -600,8 +677,8 @@ export function MacroPanel() {
                           onClick={() => toggleDirection(idx, MacroDirection.Up)}
                           className={`rounded px-3 py-1.5 text-[10px] font-black transition flex items-center gap-1 ${
                             !isDown
-                              ? 'bg-[#101114] text-white shadow-sm'
-                              : 'text-[#5d6673] hover:bg-slate-200'
+                              ? 'bg-driver-text text-driver-panel shadow-sm'
+                              : 'text-driver-muted hover:bg-driver-hover'
                           }`}
                         >
                           ↑ {locale === 'zh-CN' ? '抬起' : 'Up'}
@@ -620,7 +697,9 @@ export function MacroPanel() {
                         type="button"
                         disabled={recording}
                         onClick={() => removeAction(idx)}
-                        className="rounded p-1.5 text-[#86909c] hover:bg-[#f3f4f6] hover:text-red-500 transition"
+                        aria-label={t('mouse.delete')}
+                        title={t('mouse.delete')}
+                        className="rounded p-1.5 text-driver-muted transition hover:bg-driver-hover hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -630,22 +709,22 @@ export function MacroPanel() {
               })}
 
               {tempActions.length === 0 && !recording && (
-                <div className="py-24 text-center rounded-lg border border-dashed border-[#d7dbe2] bg-white">
-                  <div className="text-sm font-bold text-[#5d6673] mb-2">
+                <div className="rounded-lg border border-dashed border-driver-line bg-driver-panel py-20 text-center">
+                  <div className="mb-2 text-sm font-bold text-driver-text">
                     {locale === 'zh-CN' ? '动作列表空空如也' : 'Action Sequence is Empty'}
                   </div>
-                  <div className="text-xs text-[#86909c] leading-relaxed">
+                  <div className="text-xs leading-relaxed text-driver-muted">
                     {locale === 'zh-CN' ? '请点击上方“开始录制”记录按键，或使用下方按钮手动添加动作。' : 'Click "Start Record" to record keyboard, or use buttons below to insert.'}
                   </div>
                 </div>
               )}
 
               {recording && tempActions.length === 0 && (
-                <div className="py-24 text-center rounded-lg border border-dashed border-[#ff6b00]/30 bg-[#ff6b00]/5 animate-pulse">
-                  <div className="text-sm font-bold text-[#ff6b00] mb-2">
+                <div className="animate-pulse rounded-lg border border-dashed border-warn/30 bg-warn/5 py-20 text-center">
+                  <div className="mb-2 text-sm font-bold text-warn">
                     {locale === 'zh-CN' ? '正在录制动作...' : 'Recording keyboard input...'}
                   </div>
-                  <div className="text-xs text-[#ff6b00]/70 font-semibold">
+                  <div className="text-xs font-semibold text-warn/70">
                     {locale === 'zh-CN' ? '请在键盘上按下组合按键，实时捕获序列流。' : 'Please press keys on your keyboard.'}
                   </div>
                 </div>
@@ -653,17 +732,17 @@ export function MacroPanel() {
             </div>
 
             {/* 底部手动插入控制栏 */}
-            <div className="h-16 shrink-0 border-t border-[#eef0f2] bg-white px-6 flex items-center gap-3">
+            <div className="flex h-16 shrink-0 items-center gap-3 border-t border-driver-line bg-driver-panel px-6">
               
               {/* 插入键盘按键 */}
               <button
                 type="button"
                 disabled={recording}
                 onClick={() => setIsInsertingKey((prev) => !prev)}
-                className={`flex h-10 px-5 rounded-md border text-xs font-bold items-center gap-2 shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-[#86909c] ${
+                className={`flex h-10 items-center gap-2 rounded-md border px-5 text-xs font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 ${
                   isInsertingKey
-                    ? 'border-[#ff6b00] bg-[#ff6b00]/5 text-[#ff6b00] animate-pulse'
-                    : 'border-[#d7dbe2] bg-white hover:bg-slate-50 text-[#1d2129]'
+                    ? 'animate-pulse border-warn bg-warn/5 text-warn'
+                    : 'border-driver-line bg-driver-panel text-driver-text hover:bg-driver-hover'
                 }`}
               >
                 <Keyboard size={15} />
@@ -678,7 +757,7 @@ export function MacroPanel() {
                   type="button"
                   disabled={recording}
                   onClick={() => setInsertMouseMenuOpen((prev) => !prev)}
-                  className="flex h-10 px-5 rounded-md border border-[#d7dbe2] bg-white hover:bg-slate-50 text-xs font-bold items-center gap-2 shadow-sm text-[#1d2129] disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-[#86909c]"
+                  className="flex h-10 items-center gap-2 rounded-md border border-driver-line bg-driver-panel px-5 text-xs font-bold text-driver-text shadow-sm hover:bg-driver-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Mouse size={15} />
                   {locale === 'zh-CN' ? '插入鼠标按键' : 'Insert Mouse Key'}
@@ -690,7 +769,7 @@ export function MacroPanel() {
                     <div className="fixed inset-0 z-40" onClick={() => setInsertMouseMenuOpen(false)} />
                     
                     {/* 下拉菜单菜单项 */}
-                    <div className="absolute bottom-[calc(100%+8px)] left-0 z-50 w-44 rounded-md border border-[#eef0f2] bg-white py-1 shadow-lg">
+                    <div className="absolute bottom-[calc(100%+8px)] left-0 z-50 w-44 rounded-md border border-driver-line bg-driver-panel py-1 shadow-lg">
                       {(
                         [
                           { nameZh: '左键按下', nameEn: 'Left Down', value: 1, dir: MacroDirection.Down },
@@ -707,7 +786,7 @@ export function MacroPanel() {
                             key={`${item.nameZh}-${item.dir}`}
                             type="button"
                             onClick={() => insertMouseAction(item.nameZh, item.value, item.dir)}
-                            className="flex w-full h-8 items-center px-4 text-left text-xs font-semibold text-[#4b5563] hover:bg-[#f3f4f6] hover:text-[#101114]"
+                            className="flex h-8 w-full items-center px-4 text-left text-xs font-semibold text-driver-text hover:bg-driver-hover"
                           >
                             {item.dir === MacroDirection.Down ? '↓' : '↑'} {displayName}
                           </button>
@@ -722,27 +801,49 @@ export function MacroPanel() {
           </div>
         ) : (
           /* 空白配置占位页 */
-          <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white m-6 rounded-lg border border-[#eef0f2] shadow-sm">
-            <div className="mb-4 rounded-full bg-[#f6f7f9] p-5 text-[#86909c]">
+          <div className="m-6 flex flex-1 flex-col items-center justify-center rounded-lg border border-driver-line bg-driver-panel p-8 shadow-sm">
+            <div className="mb-4 rounded-full bg-driver-raised p-5 text-driver-muted">
               <Plus size={42} />
             </div>
-            <h3 className="text-sm font-black text-[#1d2129] mb-1">
+            <h3 className="mb-1 text-sm font-black text-driver-text">
               {locale === 'zh-CN' ? '暂无快捷指令配置' : 'No Shortcut Selected'}
             </h3>
-            <p className="text-xs text-[#86909c] mb-5 text-center leading-normal max-w-sm">
+            <p className="mb-5 max-w-sm text-center text-xs leading-normal text-driver-muted">
               {locale === 'zh-CN'
                 ? '您可以新建配置来录制、编辑宏。之后在改键页签中将其绑定到鼠标按键上。'
                 : 'Create a shortcut config to record macros. Then assign it to any mouse button in Key Settings.'}
             </p>
             <Button
+              variant="black"
               onClick={handleCreateNew}
-              className="bg-[#101114] text-white hover:bg-slate-800 font-bold text-xs h-10 px-6 rounded-md shadow-sm"
+              className="h-10 rounded-md px-6 text-xs font-bold shadow-sm"
             >
               {locale === 'zh-CN' ? '新建快捷指令' : 'New Shortcut'}
             </Button>
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={pendingAction !== null}
+        title={t('mouse.discardChanges')}
+        description={t('mouse.discardChangesHint')}
+        confirmLabel={t('mouse.discardChanges')}
+        cancelLabel={t('mouse.cancel')}
+        confirmVariant="danger"
+        onOpenChange={(open) => !open && setPendingAction(null)}
+        onConfirm={confirmDiscard}
+      />
+      <ConfirmDialog
+        open={deleteMacroId !== null}
+        title={t('mouse.deleteMacroTitle')}
+        description={t('mouse.deleteMacroHint')}
+        confirmLabel={t('mouse.delete')}
+        cancelLabel={t('mouse.cancel')}
+        confirmVariant="danger"
+        onOpenChange={(open) => !open && setDeleteMacroId(null)}
+        onConfirm={confirmDelete}
+      />
 
     </div>
   );
@@ -802,12 +903,13 @@ function DelayInput({
   }
 
   return (
-    <div className="flex items-center rounded border border-[#d7dbe2] bg-[#f7f8fa] h-8 w-[116px] overflow-hidden shrink-0">
+    <div className="flex h-8 w-[116px] shrink-0 items-center overflow-hidden rounded border border-driver-line bg-driver-raised">
       <button
         type="button"
         disabled={disabled}
         onClick={handleDecrease}
-        className="h-full px-2 text-[#5d6673] hover:bg-slate-200 disabled:opacity-50 transition border-r border-[#d7dbe2] select-none font-bold text-xs"
+        aria-label="Decrease delay"
+        className="h-full select-none border-r border-driver-line px-2 text-xs font-bold text-driver-muted transition hover:bg-driver-hover disabled:opacity-50"
       >
         -
       </button>
@@ -822,17 +924,17 @@ function DelayInput({
           onChange={handleChange}
           onBlur={handleBlur}
         />
-        <span className="text-[10px] text-[#86909c] font-bold select-none shrink-0">ms</span>
+        <span className="shrink-0 select-none text-[10px] font-bold text-driver-muted">ms</span>
       </div>
       <button
         type="button"
         disabled={disabled}
         onClick={handleIncrease}
-        className="h-full px-2 text-[#5d6673] hover:bg-slate-200 disabled:opacity-50 transition border-l border-[#d7dbe2] select-none font-bold text-xs"
+        aria-label="Increase delay"
+        className="h-full select-none border-l border-driver-line px-2 text-xs font-bold text-driver-muted transition hover:bg-driver-hover disabled:opacity-50"
       >
         +
       </button>
     </div>
   );
 }
-

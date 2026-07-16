@@ -15,8 +15,32 @@
   --color-warn: #ff6900;
   --color-danger: #ff4d4f;
   --color-success: #2fcb64;
+  --color-driver-bg: var(--driver-bg);
+  --color-driver-panel: var(--driver-panel);
+  --color-driver-raised: var(--driver-raised);
+  --color-driver-hover: var(--driver-hover);
+  --color-driver-line: var(--driver-line);
+  --color-driver-text: var(--driver-text);
+  --color-driver-muted: var(--driver-muted);
   --shadow-panel: 0 18px 50px rgba(0, 0, 0, 0.32);
   --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+:root {
+  --color-driver-bg: #181a1f;
+  --color-driver-panel: #14161a;
+  --color-driver-raised: #202329;
+  --color-driver-hover: #282c33;
+  --color-driver-line: rgba(255, 255, 255, 0.1);
+  --color-driver-text: #f2f4f7;
+  --color-driver-muted: #9aa4ad;
+  --driver-bg: #181a1f;
+  --driver-panel: #14161a;
+  --driver-raised: #202329;
+  --driver-hover: #282c33;
+  --driver-line: rgba(255, 255, 255, 0.1);
+  --driver-text: #f2f4f7;
+  --driver-muted: #9aa4ad;
 }
 
 * {
@@ -55,6 +79,20 @@ body.light {
   --color-line: rgba(29, 33, 41, 0.12);
   --color-text: #1d2129;
   --color-muted: #64727c;
+  --color-driver-bg: #f6f7f9;
+  --color-driver-panel: #ffffff;
+  --color-driver-raised: #f1f2f4;
+  --color-driver-hover: #e8eaee;
+  --color-driver-line: #e6e8eb;
+  --color-driver-text: #101114;
+  --color-driver-muted: #737b86;
+  --driver-bg: #f6f7f9;
+  --driver-panel: #ffffff;
+  --driver-raised: #f1f2f4;
+  --driver-hover: #e8eaee;
+  --driver-line: #e6e8eb;
+  --driver-text: #101114;
+  --driver-muted: #737b86;
 }
 
 ::-webkit-scrollbar {
@@ -71,57 +109,17 @@ body.light {
   border-radius: 999px;
 }
 
-body:not(.light) .driver-theme-scope,
-body:not(.light) .driver-theme-scope .bg-white {
-  background-color: var(--color-surface-1);
-  color: var(--color-text);
+.driver-theme-scope {
+  background: var(--driver-bg);
+  color: var(--driver-text);
 }
 
-body:not(.light) .driver-theme-scope .bg-\[\#f6f7f9\],
-body:not(.light) .driver-theme-scope .bg-\[\#f7f8fa\],
-body:not(.light) .driver-theme-scope .bg-\[\#f1f2f4\],
-body:not(.light) .driver-theme-scope .bg-\[\#f1f1f2\],
-body:not(.light) .driver-theme-scope .bg-\[\#eff0f2\],
-body:not(.light) .driver-theme-scope .bg-\[\#e5e7eb\] {
-  background-color: var(--color-surface-2);
-}
-
-body:not(.light) .driver-theme-scope .hover\:bg-\[\#fbfbfc\]:hover,
-body:not(.light) .driver-theme-scope .hover\:bg-\[\#f0f1f3\]:hover,
-body:not(.light) .driver-theme-scope .hover\:bg-\[\#eff0f2\]:hover,
-body:not(.light) .driver-theme-scope .hover\:bg-\[\#e5e7eb\]:hover,
-body:not(.light) .driver-theme-scope .hover\:bg-\[\#e5e6eb\]:hover,
-body:not(.light) .driver-theme-scope .hover\:bg-\[\#dfe2e7\]:hover {
-  background-color: var(--color-surface-4);
-}
-
-body:not(.light) .driver-theme-scope .text-\[\#101114\],
-body:not(.light) .driver-theme-scope .text-\[\#111827\],
-body:not(.light) .driver-theme-scope .text-\[\#15171b\],
-body:not(.light) .driver-theme-scope .text-\[\#1d2129\] {
-  color: var(--color-text);
-}
-
-body:not(.light) .driver-theme-scope .text-\[\#7a808a\],
-body:not(.light) .driver-theme-scope .text-\[\#69717d\],
-body:not(.light) .driver-theme-scope .text-\[\#6b7280\],
-body:not(.light) .driver-theme-scope .text-\[\#4b5563\],
-body:not(.light) .driver-theme-scope .text-\[\#515861\],
-body:not(.light) .driver-theme-scope .text-\[\#9aa0a9\],
-body:not(.light) .driver-theme-scope .text-\[\#a9adb3\] {
-  color: var(--color-muted);
-}
-
-body:not(.light) .driver-theme-scope .border-\[\#eef0f2\],
-body:not(.light) .driver-theme-scope .border-\[\#e6e8eb\],
-body:not(.light) .driver-theme-scope .border-\[\#d7dbe2\],
-body:not(.light) .driver-theme-scope .border-\[\#d5dae2\] {
-  border-color: var(--color-line);
+.driver-theme-scope input,
+.driver-theme-scope select {
+  color-scheme: light;
 }
 
 body:not(.light) .driver-theme-scope input,
 body:not(.light) .driver-theme-scope select {
-  background-color: var(--color-surface-2);
-  border-color: var(--color-line);
-  color: var(--color-text);
+  color-scheme: dark;
 }

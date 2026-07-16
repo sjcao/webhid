@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RotateCcw, Settings2 } from 'lucide-react';
+import { ChevronRight, RotateCcw, Settings2 } from 'lucide-react';
 import { useMouseStore } from '@/stores/mouse-store';
 import { useI18n } from '@/i18n/use-i18n';
 import { ConfirmDialog } from '@/shared/ui/dialog';
@@ -16,36 +16,40 @@ export function ResetPanel() {
     setMode(null);
   }
 
+  const description = mode === 'all' ? t('mouse.resetAllDescription') : t('mouse.resetButtonsDescription');
+
   return (
-    <div className="min-h-full bg-white text-[#101114]">
-      <div className="flex items-center justify-between border-b border-[#eef0f2] px-6 py-4">
-        <div>
-          <h1 className="text-lg font-black">{t('nav.other')}</h1>
-          <p className="mt-1 text-xs text-[#7a808a]">{t('mouse.resetHint')}</p>
-        </div>
+    <div className="min-h-full bg-driver-bg text-driver-text">
+      <div className="border-b border-driver-line bg-driver-panel px-6 py-4">
+        <h1 className="text-lg font-black">{t('nav.other')}</h1>
+        <p className="mt-1 text-xs text-driver-muted">{t('mouse.resetHint')}</p>
       </div>
 
-      <div className="grid gap-4 bg-[#f6f7f9] p-6 md:grid-cols-2">
-        <ResetAction
-          icon={Settings2}
-          title={t('mouse.resetButtons')}
-          description={t('mouse.irreversible')}
-          onClick={() => setMode('buttons')}
-        />
-        <ResetAction
-          icon={RotateCcw}
-          title={t('mouse.resetAll')}
-          description={t('mouse.irreversible')}
-          onClick={() => setMode('all')}
-        />
+      <div className="p-6">
+        <div className="overflow-hidden rounded-xl border border-driver-line bg-driver-panel">
+          <ResetAction
+            icon={Settings2}
+            title={t('mouse.resetButtons')}
+            description={t('mouse.resetButtonsDescription')}
+            onClick={() => setMode('buttons')}
+          />
+          <ResetAction
+            icon={RotateCcw}
+            title={t('mouse.resetAll')}
+            description={t('mouse.resetAllDescription')}
+            onClick={() => setMode('all')}
+            separated
+          />
+        </div>
       </div>
 
       <ConfirmDialog
         open={mode !== null}
         title={mode === 'all' ? t('mouse.resetAll') : t('mouse.resetButtons')}
-        description={t('mouse.irreversible')}
+        description={`${description} ${t('mouse.irreversible')}`}
         confirmLabel={t('mouse.confirm')}
         cancelLabel={t('mouse.cancel')}
+        confirmVariant="danger"
         onOpenChange={(open) => !open && setMode(null)}
         onConfirm={() => void confirm()}
       />
@@ -53,16 +57,35 @@ export function ResetPanel() {
   );
 }
 
-function ResetAction({ icon: Icon, title, description, onClick }: { icon: typeof RotateCcw; title: string; description: string; onClick: () => void }) {
+function ResetAction({
+  icon: Icon,
+  title,
+  description,
+  onClick,
+  separated = false,
+}: {
+  icon: typeof RotateCcw;
+  title: string;
+  description: string;
+  onClick: () => void;
+  separated?: boolean;
+}) {
   return (
-    <button className="rounded-lg bg-white p-5 text-left shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5" onClick={onClick}>
-      <span className="mb-5 flex h-11 w-11 items-center justify-center rounded-md bg-[#fff0e7] text-[#ff6900]">
-        <Icon size={22} />
+    <button
+      type="button"
+      className={`flex w-full items-center gap-4 px-5 py-5 text-left transition hover:bg-driver-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-danger ${separated ? 'border-t border-driver-line' : ''}`}
+      onClick={onClick}
+    >
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-danger/10 text-danger">
+        <Icon size={21} />
       </span>
-      <span className="block text-base font-bold">{title}</span>
-      <span className="mt-2 block text-sm leading-6 text-[#7a808a]">{description}</span>
-      <span className="mt-5 inline-flex h-10 items-center rounded-md bg-[#ff4d4f]/10 px-4 text-sm font-semibold text-[#d9363e]">
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-bold">{title}</span>
+        <span className="mt-1 block text-xs leading-5 text-driver-muted">{description}</span>
+      </span>
+      <span className="inline-flex items-center gap-1 text-xs font-bold text-danger">
         {title}
+        <ChevronRight size={15} />
       </span>
     </button>
   );

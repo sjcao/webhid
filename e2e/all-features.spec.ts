@@ -28,12 +28,12 @@ test('runs all features end-to-end to ensure perfect stability', async ({ page }
   // 切换至 P2
   await profileSelector.click();
   await page.getByRole('button', { name: 'P2', exact: true }).click();
-  await expect(page.getByText('P2', { exact: true })).toBeVisible();
+  await expect(profileSelector).toContainText('P2');
   
   // 切换回 P1
   await profileSelector.click();
   await page.getByRole('button', { name: 'P1', exact: true }).click();
-  await expect(page.getByText('P1', { exact: true })).toBeVisible();
+  await expect(profileSelector).toContainText('P1');
 
   const navigation = page.getByRole('navigation');
 
@@ -43,7 +43,7 @@ test('runs all features end-to-end to ensure perfect stability', async ({ page }
   
   // 点击 DPI 3 (3200) 并检查更新
   await page.getByRole('button', { name: 'DPI 3' }).click();
-  await expect(page.getByText('3200 DPI', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'DPI 3' })).toHaveAttribute('aria-pressed', 'true');
   
   // 检查侧边栏中的当前 DPI
   await expect(page.getByText('当前 DPI: 3200')).toBeVisible();
@@ -77,8 +77,8 @@ test('runs all features end-to-end to ensure perfect stability', async ({ page }
   await expect(page.getByText('MyMacro 副本')).toBeVisible();
   
   // 删除克隆宏
-  const clonedRow = page.locator('div.group', { hasText: 'MyMacro 副本' });
-  await clonedRow.locator('button').click();
+  await page.getByRole('button', { name: '删除 MyMacro 副本' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '删除' }).click();
   await expect(page.getByText('MyMacro 副本')).not.toBeVisible();
 
   // 7. 改键设置测试
@@ -89,13 +89,13 @@ test('runs all features end-to-end to ensure perfect stability', async ({ page }
   await page.getByRole('button', { name: '右键', exact: false }).first().click();
   
   // 7.1 键盘功能映射 (映射为 Q)
-  await page.getByRole('button', { name: '键盘' }).click();
+  await page.getByRole('tab', { name: '键盘' }).click();
   await page.getByRole('button', { name: 'Q', exact: true }).click();
   // 检查右键卡片上的绑定文字是否更新为 Q
   await expect(page.getByRole('button', { name: '右键', exact: false }).locator('span').nth(1)).toHaveText('Q');
 
   // 7.2 特殊功能之火力键配置
-  await page.getByRole('button', { name: '特殊' }).click();
+  await page.getByRole('tab', { name: '特殊' }).click();
   await page.locator('input[type="number"]').first().fill('50'); // 设置点击间隔 50ms
   // 使用 times 模式 (10 次)
   await page.getByRole('button', { name: '单/多次触发' }).click();
@@ -112,7 +112,7 @@ test('runs all features end-to-end to ensure perfect stability', async ({ page }
   await expect(page.getByRole('button', { name: '右键', exact: false }).locator('span').nth(1)).toHaveText('Ctrl');
 
   // 7.4 快捷指令 (宏) 绑定配置
-  await page.getByRole('button', { name: '快捷指令', exact: true }).click();
+  await page.getByRole('tab', { name: '快捷指令', exact: true }).click();
 
   await page.getByRole('button', { name: '绑定' }).click();
   // 验证绑定文本更新为 MyMacro
