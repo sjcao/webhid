@@ -1,4 +1,5 @@
 import { PropsWithChildren, useLayoutEffect } from 'react';
+import { messages } from '@/i18n/messages';
 import { useUiStore } from '@/stores/ui-store';
 
 export function AppProviders({ children }: PropsWithChildren) {
@@ -11,7 +12,7 @@ export function AppProviders({ children }: PropsWithChildren) {
 
   useLayoutEffect(() => {
     document.documentElement.lang = locale;
-    document.title = locale === 'zh-CN' ? '鼠标网页驱动' : 'Mouse HID Hub';
+    document.title = messages[locale].app.htmlTitle;
   }, [locale]);
 
   return children;

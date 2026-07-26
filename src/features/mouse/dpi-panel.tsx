@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react';
 import { useMouseStore } from '@/stores/mouse-store';
 import { useI18n } from '@/i18n/use-i18n';
+import { PanelHeader } from '@/shared/ui/panel-header';
 
 const dpiStages = [
   { name: 'DPI 1', color: '#ff1717', value: 800 },
@@ -18,13 +19,11 @@ export function DpiPanel() {
 
   return (
     <div className="min-h-full bg-driver-bg text-driver-text">
-      <div className="flex items-center justify-between border-b border-driver-line bg-driver-panel px-6 py-4">
-        <div>
-          <h1 className="text-lg font-black">{t('nav.dpi')}</h1>
-          <p className="mt-1 text-xs text-driver-muted">{t('mouse.chooseDpi')}</p>
-        </div>
-        <div className="rounded-md bg-driver-text px-4 py-2 text-sm font-semibold text-driver-panel">{currentDpi} DPI</div>
-      </div>
+      <PanelHeader
+        title={t('nav.dpi')}
+        subtitle={t('mouse.chooseDpi')}
+        actions={<div className="rounded-md bg-driver-text px-4 py-2 text-sm font-semibold text-driver-panel">{currentDpi} DPI</div>}
+      />
 
       <div className="p-6">
         <section className="rounded-xl border border-driver-line bg-driver-panel p-6 shadow-sm">

@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
-import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Globe2, MonitorPlay, Moon, RefreshCw, Sun, Usb } from 'lucide-react';
 import { useDeviceStore } from '@/stores/device-store';
 import { useUiStore } from '@/stores/ui-store';
 import { useI18n } from '@/i18n/use-i18n';
+import { formatUsbId } from '@/lib/hex';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 
@@ -19,10 +19,12 @@ export function ConnectPage() {
   const devices = useDeviceStore((state) => state.devices);
   const connecting = useDeviceStore((state) => state.connecting);
   const error = useDeviceStore((state) => state.error);
+  const errorKey = useDeviceStore((state) => state.errorKey);
   const refreshDevices = useDeviceStore((state) => state.refreshDevices);
   const requestDevice = useDeviceStore((state) => state.requestDevice);
   const connectDevice = useDeviceStore((state) => state.connectDevice);
   const enterPreviewMode = useDeviceStore((state) => state.enterPreviewMode);
+  const [connectingId, setConnectingId] = useState<string | null>(null);
 
   useEffect(() => {
     void refreshDevices();
@@ -30,7 +32,13 @@ export function ConnectPage() {
 
   async function openWorkspace(deviceId?: string) {
     if (deviceId) {
-      await connectDevice(deviceId);
+      setConnectingId(deviceId);
+      try {
+        const connected = await connectDevice(deviceId);
+        if (!connected) return;
+      } finally {
+        setConnectingId(null);
+      }
     } else {
       enterPreviewMode();
     }
@@ -46,12 +54,12 @@ export function ConnectPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <IconButton label={theme === 'dark' ? t('app.light') : t('app.dark')} onClick={toggleTheme}>
+          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label={theme === 'dark' ? t('app.light') : t('app.dark')} title={theme === 'dark' ? t('app.light') : t('app.dark')}>
             {theme === 'dark' ? <Sun size={22} /> : <Moon size={22} />}
-          </IconButton>
-          <IconButton label={t('app.language')} onClick={() => setLocale(locale === 'zh-CN' ? 'en' : 'zh-CN')}>
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => setLocale(locale === 'zh-CN' ? 'en' : 'zh-CN')} aria-label={t('app.language')} title={t('app.language')}>
             <Globe2 size={22} />
-          </IconButton>
+          </Button>
         </div>
       </header>
 
@@ -80,6 +88,7 @@ export function ConnectPage() {
           <Button
             className="mt-4 rounded-md bg-surface-3 text-muted hover:bg-surface-4 hover:text-text"
             onClick={() => openWorkspace()}
+            disabled={connecting}
           >
             <MonitorPlay size={17} />
             {t('connect.preview')}
@@ -90,9 +99,9 @@ export function ConnectPage() {
               {t('connect.unsupported')}
             </div>
           )}
-          {error && (
+          {(errorKey || error) && (
             <div className="mt-6 rounded-lg border border-danger/35 bg-danger/10 px-4 py-3 text-sm text-danger">
-              {error}
+              {errorKey ? t(errorKey) : error}
             </div>
           )}
 
@@ -117,19 +126,21 @@ export function ConnectPage() {
             {devices.map((device) => (
               <button
                 key={device.id}
-                className="w-full rounded-lg border border-line bg-surface-2/70 p-4 text-left transition hover:border-brand/60 hover:bg-surface-3"
+                className="w-full rounded-lg border border-line bg-surface-2/70 p-4 text-left transition hover:border-brand/60 hover:bg-surface-3 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={connecting}
+                aria-busy={connectingId === device.id}
                 onClick={() => openWorkspace(device.id)}
               >
                 <div className="flex items-center justify-between gap-4">
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold text-text">{device.productName}</div>
                     <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted">
-                      <span>{t('connect.vendor')}: {device.vendorId}</span>
-                      <span>{t('connect.product')}: {device.productId}</span>
+                      <span>{t('connect.vendor')}: {formatUsbId(device.vendorId)}</span>
+                      <span>{t('connect.product')}: {formatUsbId(device.productId)}</span>
                     </div>
                   </div>
-                  <Badge className={device.opened ? 'border-success/30 text-success' : ''}>
-                    {device.opened ? t('app.connected') : t('app.disconnected')}
+                  <Badge className={connectingId === device.id ? 'border-warn/40 text-warn' : device.opened ? 'border-success/30 text-success' : ''}>
+                    {connectingId === device.id ? t('connect.connecting') : device.opened ? t('app.connected') : t('app.disconnected')}
                   </Badge>
                 </div>
               </button>
@@ -139,19 +150,5 @@ export function ConnectPage() {
         </div>
       </section>
     </main>
-  );
-}
-
-function IconButton({ label, onClick, children }: { label: string; onClick?: () => void; children: ReactNode }) {
-  return (
-    <button
-      className="rounded-md p-1.5 text-text transition hover:bg-surface-3"
-      type="button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-    >
-      {children}
-    </button>
   );
 }

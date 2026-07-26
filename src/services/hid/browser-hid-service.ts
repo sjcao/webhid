@@ -2,10 +2,46 @@ import { MouseCommands, MouseCommand } from '@/protocol/mouse';
 import { toHexString } from '@/lib/hex';
 
 export type HidInputHandler = (data: Uint8Array) => void;
+export type HidConnectHandler = (device: HIDDevice) => void;
+export type HidDisconnectHandler = (device: HIDDevice) => void;
+
+export class UnsupportedDeviceError extends Error {
+  constructor() {
+    super('This device does not expose the mouse control protocol.');
+    this.name = 'UnsupportedDeviceError';
+  }
+}
+
+const PACKET_SIZE = MouseCommands.payloadSize + 1;
+
+function collectionHasProtocolOutput(collection: HIDCollectionInfo): boolean {
+  if ((collection.outputReports ?? []).some((report) => report.reportId === MouseCommands.reportId)) {
+    return true;
+  }
+  return (collection.children ?? []).some(collectionHasProtocolOutput);
+}
 
 class BrowserHidService {
   private device: HIDDevice | null = null;
   private handlers = new Set<HidInputHandler>();
+  private connectHandlers = new Set<HidConnectHandler>();
+  private disconnectHandlers = new Set<HidDisconnectHandler>();
+  private sendTail: Promise<unknown> = Promise.resolve();
+
+  constructor() {
+    if (this.supported) {
+      navigator.hid.addEventListener('connect', (event) => {
+        this.connectHandlers.forEach((handler) => handler(event.device));
+      });
+      navigator.hid.addEventListener('disconnect', (event) => {
+        if (event.device === this.device) {
+          this.device.oninputreport = null;
+          this.device = null;
+        }
+        this.disconnectHandlers.forEach((handler) => handler(event.device));
+      });
+    }
+  }
 
   get supported() {
     return typeof navigator !== 'undefined' && 'hid' in navigator;
@@ -28,6 +64,10 @@ class BrowserHidService {
   }
 
   async connect(device: HIDDevice) {
+    if (!device.collections.some(collectionHasProtocolOutput)) {
+      throw new UnsupportedDeviceError();
+    }
+
     if (this.device && this.device !== device) {
       await this.disconnect();
     }
@@ -38,19 +78,24 @@ class BrowserHidService {
 
     this.device = device;
     device.oninputreport = (event) => {
-      const data = new Uint8Array(event.data.buffer);
-      this.handlers.forEach((handler) => handler(data));
+      const packet = this.toProtocolPacket(event);
+      if (!packet) return;
+      this.handlers.forEach((handler) => handler(packet));
     };
   }
 
   async disconnect() {
     if (!this.device) return;
     const device = this.device;
+    this.device = null;
     device.oninputreport = null;
     if (device.opened) {
-      await device.close();
+      try {
+        await device.close();
+      } catch (error) {
+        console.warn('HID close failed', error);
+      }
     }
-    this.device = null;
   }
 
   subscribe(handler: HidInputHandler) {
@@ -60,7 +105,40 @@ class BrowserHidService {
     };
   }
 
-  async send(command: MouseCommand) {
+  onConnect(handler: HidConnectHandler) {
+    this.connectHandlers.add(handler);
+    return () => {
+      this.connectHandlers.delete(handler);
+    };
+  }
+
+  onDisconnect(handler: HidDisconnectHandler) {
+    this.disconnectHandlers.add(handler);
+    return () => {
+      this.disconnectHandlers.delete(handler);
+    };
+  }
+
+  send(command: MouseCommand) {
+    return this.enqueue(() => this.performSend(command));
+  }
+
+  // 整批命令作为单个队列任务串行发送，期间不允许其他命令插入
+  sendBatch(commands: readonly MouseCommand[]) {
+    return this.enqueue(async () => {
+      for (const command of commands) {
+        await this.performSend(command);
+      }
+    });
+  }
+
+  private enqueue<T>(task: () => Promise<T>): Promise<T> {
+    const run = this.sendTail.catch(() => undefined).then(task);
+    this.sendTail = run;
+    return run;
+  }
+
+  private async performSend(command: MouseCommand) {
     if (!this.device) {
       throw new Error('No HID device is connected.');
     }
@@ -69,6 +147,22 @@ class BrowserHidService {
     }
     console.debug('HID ->', toHexString(command));
     await this.device.sendReport(MouseCommands.reportId, command);
+  }
+
+  private toProtocolPacket(event: HIDInputReportEvent): Uint8Array | null {
+    const view = event.data;
+    const payload = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
+    if (payload.length === MouseCommands.payloadSize) {
+      if (event.reportId !== MouseCommands.reportId) return null;
+      const packet = new Uint8Array(payload.length + 1);
+      packet[0] = event.reportId;
+      packet.set(payload, 1);
+      return packet;
+    }
+    if (payload.length === PACKET_SIZE && payload[0] === MouseCommands.reportId) {
+      return payload;
+    }
+    return null;
   }
 }
 

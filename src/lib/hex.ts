@@ -5,3 +5,7 @@ export function toHexByte(value: number) {
 export function toHexString(bytes: Iterable<number>) {
   return Array.from(bytes, toHexByte).join(' ');
 }
+
+export function formatUsbId(value: number) {
+  return `0x${value.toString(16).toUpperCase().padStart(4, '0')}`;
+}

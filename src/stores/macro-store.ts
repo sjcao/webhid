@@ -32,35 +32,51 @@ export type SavedMacro = {
   createdAt: string;
 };
 
-function migrateLegacyMacros(): SavedMacro[] {
-  const existing = readJson<SavedMacro[]>(MACRO_STORAGE_KEY, []);
-  if (existing.length) return existing;
-
-  const legacy = readJson<Array<{ looperType: number; looperTimes: number; actions: Array<{
+type LegacyMacro = {
+  looperType: number;
+  looperTimes: number;
+  actions: Array<{
     keyName: string;
     type: number;
     keyCode: number[];
     action: number;
     timeStamp: number;
-  }> }>>(LEGACY_MACRO_STORAGE_KEY, []);
+  }>;
+};
 
-  if (!legacy.length) return [];
-  const migrated = legacy.map((macro, index) => ({
-    id: crypto.randomUUID(),
-    name: `Legacy Macro ${index + 1}`,
-    repeatType: macro.looperType as MacroRepeatType,
-    loopTimes: macro.looperTimes || 1,
-    createdAt: new Date().toISOString(),
-    actions: macro.actions.map((action) => ({
-      keyName: action.keyName,
-      kind: action.type === 1 ? MacroActionKind.Mouse : MacroActionKind.Keyboard,
-      direction: action.action === 0 ? MacroDirection.Down : MacroDirection.Up,
-      keyCode: action.keyCode,
-      timestamp: action.timeStamp,
-    })),
-  }));
-  writeJson(MACRO_STORAGE_KEY, migrated);
-  return migrated;
+function migrateLegacyMacros(): SavedMacro[] {
+  try {
+    if (localStorage.getItem(MACRO_STORAGE_KEY) !== null) {
+      const existing = readJson<unknown>(MACRO_STORAGE_KEY, []);
+      if (!Array.isArray(existing)) return [];
+      return existing.filter((macro): macro is SavedMacro => Boolean(macro) && Array.isArray((macro as SavedMacro).actions));
+    }
+
+    const legacy = readJson<unknown>(LEGACY_MACRO_STORAGE_KEY, []);
+    if (!Array.isArray(legacy) || !legacy.length) return [];
+    const migrated = legacy
+      .filter((macro): macro is LegacyMacro => Boolean(macro) && Array.isArray((macro as LegacyMacro).actions))
+      .map((macro, index) => ({
+        id: crypto.randomUUID(),
+        name: `Legacy Macro ${index + 1}`,
+        repeatType: macro.looperType as MacroRepeatType,
+        loopTimes: macro.looperTimes || 1,
+        createdAt: new Date().toISOString(),
+        actions: macro.actions.map((action) => ({
+          keyName: action.keyName,
+          kind: action.type === 1 ? MacroActionKind.Mouse : MacroActionKind.Keyboard,
+          direction: action.action === 0 ? MacroDirection.Down : MacroDirection.Up,
+          keyCode: action.keyCode,
+          timestamp: action.timeStamp,
+        })),
+      }));
+    if (writeJson(MACRO_STORAGE_KEY, migrated)) {
+      localStorage.removeItem(LEGACY_MACRO_STORAGE_KEY);
+    }
+    return migrated;
+  } catch {
+    return [];
+  }
 }
 
 function persistMacros(macros: SavedMacro[]) {
@@ -69,7 +85,6 @@ function persistMacros(macros: SavedMacro[]) {
 
 type MacroState = {
   macros: SavedMacro[];
-  loadMacros: () => void;
   saveMacro: (macro: Omit<SavedMacro, 'id' | 'createdAt'>) => SavedMacro;
   deleteMacro: (id: string) => void;
   updateMacro: (id: string, updates: Partial<Omit<SavedMacro, 'id' | 'createdAt'>>) => void;
@@ -78,18 +93,17 @@ type MacroState = {
 
 export const useMacroStore = create<MacroState>((set, get) => ({
   macros: migrateLegacyMacros(),
-  loadMacros: () => set({ macros: migrateLegacyMacros() }),
   saveMacro: (macro) => {
     const saved: SavedMacro = { ...macro, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
     const macros = [...get().macros, saved];
-    persistMacros(macros);
     set({ macros });
+    persistMacros(macros);
     return saved;
   },
   deleteMacro: (id) => {
     const macros = get().macros.filter((macro) => macro.id !== id);
-    persistMacros(macros);
     set({ macros });
+    persistMacros(macros);
   },
   updateMacro: (id, updates) => {
     const macros = get().macros.map((m) => {
@@ -102,8 +116,8 @@ export const useMacroStore = create<MacroState>((set, get) => ({
       }
       return m;
     });
-    persistMacros(macros);
     set({ macros });
+    persistMacros(macros);
   },
   duplicateMacro: (id, suffix) => {
     const target = get().macros.find((m) => m.id === id);
@@ -117,20 +131,20 @@ export const useMacroStore = create<MacroState>((set, get) => ({
       actions: target.actions.map((act) => ({ ...act })),
     };
     const macros = [...get().macros, duplicated];
-    persistMacros(macros);
     set({ macros });
+    persistMacros(macros);
   },
 }));
 
-export function keyboardEventToMacroAction(event: KeyboardEvent, direction: MacroDirection, startedAt: number): MacroAction | null {
-  const keyCode = browserKeyToHid[event.key] ?? browserKeyToHid[event.key.toLowerCase()];
+export function keyboardEventToMacroAction(event: KeyboardEvent, direction: MacroDirection, timestamp: number): MacroAction | null {
+  const keyCode = browserKeyToHid[event.key] ?? browserKeyToHid[event.key.toLowerCase()] ?? browserKeyToHid[event.code];
   if (!keyCode) return null;
   return {
     keyName: event.key === ' ' ? 'Space' : event.key,
     kind: MacroActionKind.Keyboard,
     direction,
     keyCode,
-    timestamp: Date.now() - startedAt,
+    timestamp,
   };
 }
 

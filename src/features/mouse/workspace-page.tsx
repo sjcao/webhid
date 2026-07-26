@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Cable, Check, ChevronRight, Cpu, Globe2, Grid2X2, Home, Keyboard, MonitorPlay, Moon, Mouse, Settings, SlidersHorizontal, Sun, X } from 'lucide-react';
 import { hidService } from '@/services/hid/browser-hid-service';
@@ -39,32 +40,50 @@ export function MouseWorkspacePage() {
   const currentDevice = useDeviceStore((state) => state.currentDevice);
   const previewMode = useDeviceStore((state) => state.previewMode);
   const disconnectDevice = useDeviceStore((state) => state.disconnectDevice);
+  const disconnectNotice = useDeviceStore((state) => state.disconnectNotice);
+  const clearDisconnectNotice = useDeviceStore((state) => state.clearDisconnectNotice);
   const activeProfile = useMouseStore((state) => state.activeProfile);
-  const selectProfile = useMouseStore((state) => state.selectProfile);
   const dpi = useMouseStore((state) => state.dpi);
   const workMode = useMouseStore((state) => state.workMode);
   const deviceType = useMouseStore((state) => state.deviceType);
+  const lastError = useMouseStore((state) => state.lastError);
+  const deviceUnresponsive = useMouseStore((state) => state.deviceUnresponsive);
+  const clearLastError = useMouseStore((state) => state.clearLastError);
   const handleInputReport = useMouseStore((state) => state.handleInputReport);
   const refreshInitialState = useMouseStore((state) => state.refreshInitialState);
   const [profileOpen, setProfileOpen] = useState(false);
   const [deviceOpen, setDeviceOpen] = useState(false);
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
+  const closeProfile = useCallback(() => setProfileOpen(false), []);
+  const closeDevice = useCallback(() => setDeviceOpen(false), []);
 
   useEffect(() => {
-    setActivePanel('buttons');
     const unsubscribe = hidService.subscribe(handleInputReport);
     void refreshInitialState();
     return unsubscribe;
-  }, [handleInputReport, refreshInitialState, setActivePanel]);
+  }, [handleInputReport, refreshInitialState]);
 
   async function leaveWorkspace(force = false) {
     if (macroEditorDirty && !force) {
       setExitConfirmOpen(true);
       return;
     }
-    await disconnectDevice();
-    await navigate({ to: '/' });
+    try {
+      await disconnectDevice();
+    } finally {
+      await navigate({ to: '/' });
+    }
   }
+
+  const banner = previewMode
+    ? null
+    : disconnectNotice
+      ? { message: t('mouse.deviceDisconnected'), onDismiss: clearDisconnectNotice }
+      : deviceUnresponsive
+        ? { message: t('mouse.deviceUnresponsive'), onDismiss: clearLastError }
+        : lastError
+          ? { message: `${t('mouse.communicationError')}: ${lastError}`, onDismiss: clearLastError }
+          : null;
 
   const panel = {
     buttons: <ButtonsPanel />,
@@ -95,6 +114,23 @@ export function MouseWorkspacePage() {
         </div>
       </header>
 
+      {banner && (
+        <div
+          role="alert"
+          className="fixed left-1/2 top-14 z-50 flex max-w-xl -translate-x-1/2 items-center gap-3 rounded-md border border-danger/40 bg-surface-2 px-4 py-2 text-sm text-danger shadow-panel"
+        >
+          <span className="min-w-0">{banner.message}</span>
+          <button
+            type="button"
+            className="shrink-0 rounded p-1 hover:bg-surface-3"
+            aria-label={t('mouse.dismiss')}
+            onClick={banner.onDismiss}
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       <div className="grid h-[calc(100vh-48px)] grid-cols-[72px_minmax(0,1fr)] gap-0 min-[1200px]:grid-cols-[228px_minmax(0,1fr)]">
         <aside className="flex min-h-0 flex-col bg-surface-2 px-2 pb-3 pt-2">
           <button className="hidden rounded-md bg-surface-3 p-3 text-left shadow-[inset_0_0_0_1px_var(--color-line)] min-[1200px]:block" onClick={() => setActivePanel('params')}>
@@ -118,6 +154,8 @@ export function MouseWorkspacePage() {
             <button
               className="flex w-full items-center justify-between px-3 py-3 text-left text-sm font-semibold"
               aria-expanded={profileOpen}
+              aria-haspopup="dialog"
+              aria-controls="profile-popover-desktop"
               onClick={() => setProfileOpen(true)}
             >
               <span>{t('mouse.profileSelector')}</span>
@@ -131,40 +169,12 @@ export function MouseWorkspacePage() {
             </div>
 
             {profileOpen && (
-              <div className="absolute left-[calc(100%+10px)] top-0 w-[260px] rounded-md border border-line bg-surface-2 p-3 text-text shadow-[0_18px_48px_rgba(0,0,0,0.32)]">
-                <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-bold">{t('mouse.profileSelector')}</div>
-                    <div className="mt-0.5 text-xs text-muted">{t('mouse.profileHint')}</div>
-                  </div>
-                  <button className="rounded-md p-1.5 text-muted hover:bg-surface-3 hover:text-text" aria-label={t('mouse.cancel')} onClick={() => setProfileOpen(false)}>
-                    <X size={16} />
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {[0, 1, 2, 3].map((profile) => {
-                    const active = profile === activeProfile;
-                    return (
-                      <button
-                        key={profile}
-                        className={`flex h-11 items-center justify-between rounded-md px-3 text-sm font-semibold transition ${
-                          active ? 'bg-warn text-white' : 'bg-surface-3 text-text hover:bg-surface-4'
-                        }`}
-                        onClick={() => {
-                          void selectProfile(profile);
-                          setProfileOpen(false);
-                        }}
-                      >
-                        P{profile + 1}
-                        {active && <Check size={16} />}
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="mt-3 rounded-md bg-surface-3 px-3 py-2 text-xs text-muted">
-                  {t('mouse.currentDpi')}: <span className="font-semibold text-text">{dpi}</span>
-                </div>
-              </div>
+              <ProfilePopover
+                id="profile-popover-desktop"
+                className="left-[calc(100%+10px)] top-0 w-[260px] shadow-[0_18px_48px_rgba(0,0,0,0.32)]"
+                showDpi
+                onClose={closeProfile}
+              />
             )}
           </div>
 
@@ -173,6 +183,8 @@ export function MouseWorkspacePage() {
               type="button"
               className="flex h-12 w-full items-center justify-center rounded-md bg-surface-3 text-text shadow-[inset_0_0_0_1px_var(--color-line)]"
               aria-expanded={deviceOpen}
+              aria-haspopup="dialog"
+              aria-controls="device-popover-mobile"
               aria-label={currentDevice?.productName ?? t('mouse.previewDeviceName')}
               title={currentDevice?.productName ?? t('mouse.previewDeviceName')}
               onClick={() => {
@@ -183,13 +195,18 @@ export function MouseWorkspacePage() {
               <Mouse size={20} />
             </button>
             {deviceOpen && (
-              <div className="absolute left-[calc(100%+10px)] top-0 w-[270px] rounded-md border border-line bg-surface-2 p-3 text-text shadow-panel">
+              <PopoverShell
+                id="device-popover-mobile"
+                label={currentDevice?.productName ?? t('mouse.previewDeviceName')}
+                className="left-[calc(100%+10px)] top-0 w-[270px] shadow-panel"
+                onClose={closeDevice}
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="truncate text-sm font-bold">{currentDevice?.productName ?? t('mouse.previewDeviceName')}</div>
                     <div className="mt-1 text-xs text-muted">{previewMode ? t('app.preview') : t('app.connected')}</div>
                   </div>
-                  <button type="button" className="rounded p-1 text-muted hover:bg-surface-3 hover:text-text" aria-label={t('mouse.cancel')} onClick={() => setDeviceOpen(false)}>
+                  <button type="button" className="rounded p-1 text-muted hover:bg-surface-3 hover:text-text" aria-label={t('mouse.cancel')} onClick={closeDevice}>
                     <X size={15} />
                   </button>
                 </div>
@@ -197,13 +214,15 @@ export function MouseWorkspacePage() {
                   {t('mouse.openDetails')}
                   <ChevronRight size={15} />
                 </button>
-              </div>
+              </PopoverShell>
             )}
 
             <button
               type="button"
               className="flex h-12 w-full items-center justify-center rounded-md bg-surface-3 text-xs font-bold text-text shadow-[inset_0_0_0_1px_var(--color-line)]"
               aria-expanded={profileOpen}
+              aria-haspopup="dialog"
+              aria-controls="profile-popover-mobile"
               aria-label={`${t('mouse.profileSelector')} P${activeProfile + 1}`}
               title={`${t('mouse.profileSelector')} P${activeProfile + 1}`}
               onClick={() => {
@@ -214,33 +233,11 @@ export function MouseWorkspacePage() {
               P{activeProfile + 1}
             </button>
             {profileOpen && (
-              <div className="absolute left-[calc(100%+10px)] top-14 w-[260px] rounded-md border border-line bg-surface-2 p-3 text-text shadow-panel">
-                <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-bold">{t('mouse.profileSelector')}</div>
-                    <div className="mt-0.5 text-xs text-muted">{t('mouse.profileHint')}</div>
-                  </div>
-                  <button type="button" className="rounded p-1.5 text-muted hover:bg-surface-3 hover:text-text" aria-label={t('mouse.cancel')} onClick={() => setProfileOpen(false)}>
-                    <X size={16} />
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {[0, 1, 2, 3].map((profile) => {
-                    const active = profile === activeProfile;
-                    return (
-                      <button
-                        key={profile}
-                        type="button"
-                        className={`flex h-11 items-center justify-between rounded-md px-3 text-sm font-semibold transition ${active ? 'bg-warn text-white' : 'bg-surface-3 text-text hover:bg-surface-4'}`}
-                        onClick={() => { void selectProfile(profile); setProfileOpen(false); }}
-                      >
-                        P{profile + 1}
-                        {active && <Check size={16} />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              <ProfilePopover
+                id="profile-popover-mobile"
+                className="left-[calc(100%+10px)] top-14 w-[260px] shadow-panel"
+                onClose={closeProfile}
+              />
             )}
           </div>
 
@@ -299,5 +296,93 @@ export function MouseWorkspacePage() {
       />
 
     </main>
+  );
+}
+
+function PopoverShell({ id, label, className, onClose, children }: {
+  id: string;
+  label: string;
+  className?: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  useEffect(() => {
+    const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      trigger?.focus();
+    };
+  }, [onClose]);
+
+  return (
+    <>
+      <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
+      <div
+        id={id}
+        role="dialog"
+        aria-label={label}
+        className={`absolute rounded-md border border-line bg-surface-2 p-3 text-text ${className ?? ''}`}
+      >
+        {children}
+      </div>
+    </>
+  );
+}
+
+function ProfilePopover({ id, className, showDpi = false, onClose }: {
+  id: string;
+  className?: string;
+  showDpi?: boolean;
+  onClose: () => void;
+}) {
+  const { t } = useI18n();
+  const activeProfile = useMouseStore((state) => state.activeProfile);
+  const dpi = useMouseStore((state) => state.dpi);
+  const selectProfile = useMouseStore((state) => state.selectProfile);
+
+  return (
+    <PopoverShell id={id} label={t('mouse.profileSelector')} className={className} onClose={onClose}>
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <div className="text-sm font-bold">{t('mouse.profileSelector')}</div>
+          <div className="mt-0.5 text-xs text-muted">{t('mouse.profileHint')}</div>
+        </div>
+        <button type="button" className="rounded-md p-1.5 text-muted hover:bg-surface-3 hover:text-text" aria-label={t('mouse.cancel')} onClick={onClose}>
+          <X size={16} />
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {[0, 1, 2, 3].map((profile) => {
+          const active = profile === activeProfile;
+          return (
+            <button
+              key={profile}
+              type="button"
+              className={`flex h-11 items-center justify-between rounded-md px-3 text-sm font-semibold transition ${
+                active ? 'bg-warn text-white' : 'bg-surface-3 text-text hover:bg-surface-4'
+              }`}
+              onClick={() => {
+                void selectProfile(profile);
+                onClose();
+              }}
+            >
+              P{profile + 1}
+              {active && <Check size={16} />}
+            </button>
+          );
+        })}
+      </div>
+      {showDpi && (
+        <div className="mt-3 rounded-md bg-surface-3 px-3 py-2 text-xs text-muted">
+          {t('mouse.currentDpi')}: <span className="font-semibold text-text">{dpi}</span>
+        </div>
+      )}
+    </PopoverShell>
   );
 }

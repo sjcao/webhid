@@ -1,7 +1,7 @@
-import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
+import { createRootRoute, createRoute, createRouter, lazyRouteComponent, redirect } from '@tanstack/react-router';
 import { RootLayout } from '@/app/root-layout';
 import { ConnectPage } from '@/features/mouse/connect-page';
-import { MouseWorkspacePage } from '@/features/mouse/workspace-page';
+import { useDeviceStore } from '@/stores/device-store';
 
 const rootRoute = createRootRoute({
   component: RootLayout,
@@ -16,7 +16,15 @@ const indexRoute = createRoute({
 const workspaceRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/workspace',
-  component: MouseWorkspacePage,
+  beforeLoad: async () => {
+    const { currentDevice, previewMode, reconnectAuthorizedDevice } = useDeviceStore.getState();
+    if (currentDevice || previewMode) return;
+    const reconnected = await reconnectAuthorizedDevice();
+    if (!reconnected) {
+      throw redirect({ to: '/' });
+    }
+  },
+  component: lazyRouteComponent(() => import('@/features/mouse/workspace-page'), 'MouseWorkspacePage'),
 });
 
 const routeTree = rootRoute.addChildren([indexRoute, workspaceRoute]);

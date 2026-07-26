@@ -2,6 +2,8 @@ import { Cable, Cpu, MonitorPlay } from 'lucide-react';
 import { useMouseStore } from '@/stores/mouse-store';
 import { useDeviceStore } from '@/stores/device-store';
 import { useI18n } from '@/i18n/use-i18n';
+import { formatUsbId } from '@/lib/hex';
+import { PanelHeader } from '@/shared/ui/panel-header';
 import { workModeKey } from './work-mode';
 
 export function DeviceInfoPanel() {
@@ -15,16 +17,16 @@ export function DeviceInfoPanel() {
 
   return (
     <div className="min-h-full bg-driver-bg text-driver-text">
-      <div className="flex items-center justify-between border-b border-driver-line bg-driver-panel px-6 py-4">
-        <div>
-          <h1 className="text-lg font-black">{t('nav.params')}</h1>
-          <p className="mt-1 text-xs text-driver-muted">{t('mouse.deviceInfoHint')}</p>
-        </div>
-        <div className="flex items-center gap-2 rounded-md bg-driver-raised px-3 py-2 text-xs font-bold">
-          {previewMode ? <MonitorPlay size={15} className="text-warn" /> : <Cable size={15} className="text-success" />}
-          {previewMode ? t('app.demoData') : t('app.connected')}
-        </div>
-      </div>
+      <PanelHeader
+        title={t('nav.params')}
+        subtitle={t('mouse.deviceInfoHint')}
+        actions={
+          <div className="flex items-center gap-2 rounded-md bg-driver-raised px-3 py-2 text-xs font-bold">
+            {previewMode ? <MonitorPlay size={15} className="text-warn" /> : <Cable size={15} className="text-success" />}
+            {previewMode ? t('app.demoData') : t('app.connected')}
+          </div>
+        }
+      />
 
       <div className="p-6">
         <div className="mb-4 flex items-center gap-3 rounded-xl border border-driver-line bg-driver-panel p-5">
@@ -44,7 +46,7 @@ export function DeviceInfoPanel() {
           <InfoRow label={t('mouse.workMode')} value={previewMode ? t('app.demoData') : t(workModeKey(workMode))} />
           <InfoRow label={t('mouse.profileStatus')} value={`Profile ${activeProfile + 1}`} />
           <InfoRow label={t('mouse.receiverStatus')} value={deviceType === 'mouse' ? t('mouse.mouse') : t('mouse.receiver')} />
-          <InfoRow label="VID / PID" value={device ? `${device.vendorId} / ${device.productId}` : '—'} />
+          <InfoRow label="VID / PID" value={device ? `${formatUsbId(device.vendorId)} / ${formatUsbId(device.productId)}` : '—'} />
           <InfoRow label={t('mouse.protocolStatus')} value="WebHID · 0x09 · 17 bytes" />
         </div>
       </div>

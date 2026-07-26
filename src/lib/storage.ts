@@ -7,6 +7,12 @@ export function readJson<T>(key: string, fallback: T): T {
   }
 }
 
-export function writeJson<T>(key: string, value: T) {
-  localStorage.setItem(key, JSON.stringify(value));
+export function writeJson<T>(key: string, value: T): boolean {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    console.warn(`Failed to persist "${key}" to localStorage`, error);
+    return false;
+  }
 }

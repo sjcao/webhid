@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MacroActionKind, MacroDirection, type MacroAction } from '@/stores/macro-store';
-import { reorderMacroActions } from './macro-actions';
+import { normalizeMacroTimestamps, reorderMacroActions } from './macro-actions';
 
 function action(keyName: string, timestamp: number): MacroAction {
   return {
@@ -29,5 +29,33 @@ describe('reorderMacroActions', () => {
     const actions = [action('A', 100)];
     expect(reorderMacroActions(actions, 0, 1)).toBe(actions);
     expect(reorderMacroActions(actions, 0, 0)).toBe(actions);
+  });
+
+  it('preserves extra properties such as editor ids', () => {
+    const actions = [
+      { ...action('A', 100), id: 'a' },
+      { ...action('B', 250), id: 'b' },
+    ];
+    const result = reorderMacroActions(actions, 1, 0);
+    expect(result.map((item) => item.id)).toEqual(['b', 'a']);
+  });
+});
+
+describe('normalizeMacroTimestamps', () => {
+  it('shifts all timestamps so the first action starts at zero', () => {
+    const result = normalizeMacroTimestamps([
+      action('A', 3000),
+      action('B', 3150),
+      action('C', 3400),
+    ]);
+
+    expect(result.map((item) => item.timestamp)).toEqual([0, 150, 400]);
+  });
+
+  it('returns the original collection when already normalized or empty', () => {
+    const actions = [action('A', 0), action('B', 100)];
+    expect(normalizeMacroTimestamps(actions)).toBe(actions);
+    const empty: MacroAction[] = [];
+    expect(normalizeMacroTimestamps(empty)).toBe(empty);
   });
 });

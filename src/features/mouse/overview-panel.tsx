@@ -1,6 +1,7 @@
 import { Activity, Check, SlidersHorizontal, Workflow } from 'lucide-react';
 import { useMouseStore } from '@/stores/mouse-store';
 import { useI18n } from '@/i18n/use-i18n';
+import { PanelHeader } from '@/shared/ui/panel-header';
 import { workModeKey } from './work-mode';
 
 export function OverviewPanel() {
@@ -12,13 +13,11 @@ export function OverviewPanel() {
 
   return (
     <div className="min-h-full bg-driver-bg text-driver-text">
-      <div className="flex items-center justify-between border-b border-driver-line bg-driver-panel px-6 py-4">
-        <div>
-          <h1 className="text-lg font-black">{t('nav.profiles')}</h1>
-          <p className="mt-1 text-xs text-driver-muted">{t('mouse.profileHint')}</p>
-        </div>
-        <div className="rounded-md bg-driver-text px-4 py-2 text-sm font-semibold text-driver-panel">Profile {activeProfile + 1}</div>
-      </div>
+      <PanelHeader
+        title={t('nav.profiles')}
+        subtitle={t('mouse.profileHint')}
+        actions={<div className="rounded-md bg-driver-text px-4 py-2 text-sm font-semibold text-driver-panel">Profile {activeProfile + 1}</div>}
+      />
 
       <div className="p-6">
         <div className="mb-5 grid grid-cols-3 gap-3">

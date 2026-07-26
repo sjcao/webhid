@@ -1,6 +1,6 @@
 import type { MacroAction } from '@/stores/macro-store';
 
-export function reorderMacroActions(actions: MacroAction[], fromIndex: number, toIndex: number) {
+export function reorderMacroActions<T extends MacroAction>(actions: T[], fromIndex: number, toIndex: number): T[] {
   if (
     fromIndex === toIndex ||
     fromIndex < 0 ||
@@ -26,4 +26,12 @@ export function reorderMacroActions(actions: MacroAction[], fromIndex: number, t
     timestamp += reorderedDelays[index];
     return { ...item, timestamp };
   });
+}
+
+// 首动作的绝对时间戳不会写入设备（协议只传输动作间隔），统一归零使 UI 与协议语义对齐
+export function normalizeMacroTimestamps<T extends MacroAction>(actions: T[]): T[] {
+  if (actions.length === 0) return actions;
+  const offset = actions[0].timestamp;
+  if (offset === 0) return actions;
+  return actions.map((action) => ({ ...action, timestamp: action.timestamp - offset }));
 }

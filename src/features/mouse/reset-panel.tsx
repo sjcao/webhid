@@ -3,6 +3,7 @@ import { ChevronRight, RotateCcw, Settings2 } from 'lucide-react';
 import { useMouseStore } from '@/stores/mouse-store';
 import { useI18n } from '@/i18n/use-i18n';
 import { ConfirmDialog } from '@/shared/ui/dialog';
+import { PanelHeader } from '@/shared/ui/panel-header';
 
 export function ResetPanel() {
   const { t } = useI18n();
@@ -20,10 +21,7 @@ export function ResetPanel() {
 
   return (
     <div className="min-h-full bg-driver-bg text-driver-text">
-      <div className="border-b border-driver-line bg-driver-panel px-6 py-4">
-        <h1 className="text-lg font-black">{t('nav.other')}</h1>
-        <p className="mt-1 text-xs text-driver-muted">{t('mouse.resetHint')}</p>
-      </div>
+      <PanelHeader title={t('nav.other')} subtitle={t('mouse.resetHint')} />
 
       <div className="p-6">
         <div className="overflow-hidden rounded-xl border border-driver-line bg-driver-panel">
