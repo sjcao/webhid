@@ -13,7 +13,7 @@ The UI can reference the layout density and terminology style of the external de
 - Radix/shadcn-style local UI primitives
 - TanStack Router
 - Zustand stores
-- React Hook Form + Zod
+- ESLint (typescript-eslint + react-hooks) for linting
 - Vitest for protocol/store tests
 - Playwright for browser smoke tests
 - npm package manager
@@ -177,9 +177,10 @@ Repeat modes:
 Run these after protocol or UI changes:
 
 ```bash
-npm.cmd run build
-npm.cmd run test
-npm.cmd run e2e
+npm run lint
+npm run build
+npm run test
+npm run e2e
 ```
 
 Expected current status:
@@ -190,7 +191,7 @@ Expected current status:
 
 ## Local Preview
 
-The app base path is `/webhid/`.
+The app base path is `/webhid/` (set via `base` in `vite.config.ts`, matching the GitHub Pages deployment at `https://sjcao.github.io/webhid/`).
 
 Local preview URL commonly used during development:
 
@@ -201,5 +202,5 @@ http://127.0.0.1:5173/webhid/
 If the dev server is not running, start it with:
 
 ```bash
-npm.cmd run dev -- --host 127.0.0.1 --port 5173
+npm run dev -- --host 127.0.0.1 --port 5173
 ```

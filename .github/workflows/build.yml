@@ -1,6 +1,7 @@
 name: Build and upload to Github pages
 on:
   push:
+    branches: [main]
     paths-ignore:
       - 'README.md'
       - 'docs/**'
@@ -16,15 +17,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - name: Download pyodide
-        run: mkdir -p ./public/pyodide && wget -O - https://github.com/pyodide/pyodide/releases/download/0.26.2/pyodide-core-0.26.2.tar.bz2 | tar -xvj -C ./public/pyodide --strip-components=1
+        uses: actions/checkout@v4
       - name: Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Test
+        run: npm run test
       - name: Build
         run: npm run build
       - name: Upload artifact
@@ -34,6 +38,7 @@ jobs:
   # Deployment job
   deploy:
     needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     environment:
       name: github-pages
@@ -43,6 +48,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          github_token: ${{ secrets.SENJUCAO }}
-          publish_dir: ./dist

@@ -6,19 +6,9 @@ import { defineConfig } from 'vitest/config';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: '/',
+  base: '/webhid/',
   resolve: {
     alias: [{ find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) }],
-  },
-  build: {
-    rollupOptions: {
-      input: {
-        app: './index.html',
-      },
-      output: {
-        entryFileNames: '[name].js',
-      },
-    },
   },
   test: {
     environment: 'jsdom',

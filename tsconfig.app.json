@@ -26,5 +26,5 @@
     },
     "types": ["vite/client", "@types/w3c-web-hid"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "service-worker.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

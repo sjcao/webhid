@@ -1,9 +1,3 @@
-hidapi*
-hid.py
-
-.py[c]
-__pycache__
-
 .vite
 
 # Logs
@@ -19,6 +13,7 @@ node_modules
 dist
 dist-ssr
 *.local
+*.tar.gz
 
 # Editor directories and files
 .vscode/*
