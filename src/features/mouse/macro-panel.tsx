@@ -117,7 +117,11 @@ export function MacroPanel() {
   }, [dirty]);
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (dirtyRef.current) event.preventDefault();
+      if (dirtyRef.current) {
+        event.preventDefault();
+        // 部分浏览器仍要求设置 returnValue 才会弹出离开确认
+        event.returnValue = '';
+      }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);

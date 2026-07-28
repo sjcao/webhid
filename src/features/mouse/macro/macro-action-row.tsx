@@ -53,7 +53,12 @@ export const MacroActionRow = memo(function MacroActionRow({
   return (
     <div
       draggable={!recording}
-      onDragStart={() => onDragStart(index)}
+      onDragStart={(e) => {
+        // Firefox 需要设置 dataTransfer 才会真正发起拖拽
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(index));
+        onDragStart(index);
+      }}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
         e.preventDefault();
