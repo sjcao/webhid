@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Plus } from 'lucide-react';
-import { keyboardEventToMacroAction, MacroActionKind, MacroDirection, useMacroStore } from '@/stores/macro-store';
+import { MacroActionKind, MacroDirection, useMacroStore } from '@/stores/macro-store';
 import { useUiStore } from '@/stores/ui-store';
 import { MacroRepeatType } from '@/protocol/mouse';
 import { useI18n } from '@/i18n/use-i18n';
@@ -19,6 +19,7 @@ import { MacroSidebar } from './macro/macro-sidebar';
 import { MacroToolbar } from './macro/macro-toolbar';
 import { MacroActionRow } from './macro/macro-action-row';
 import { InsertBar } from './macro/insert-bar';
+import { useMacroKeyCapture } from './macro/use-macro-key-capture';
 
 export function MacroPanel() {
   const { t } = useI18n();
@@ -47,8 +48,6 @@ export function MacroPanel() {
 
   // 录制相关状态
   const [recording, setRecording] = useState(false);
-  const startedAt = useRef(0);
-  const pressedKeys = useRef(new Set<string>());
 
   // 捕获与编辑动作相关的局部状态
   const [editingActionId, setEditingActionId] = useState<string | null>(null);
@@ -61,15 +60,21 @@ export function MacroPanel() {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
 
+  // 已保存动作的序列化只随选中宏变化，独立缓存以避免每次渲染都重复序列化
+  const savedActionsJson = useMemo(
+    () => (currentMacro ? JSON.stringify(toComparableActions(currentMacro.actions)) : ''),
+    [currentMacro]
+  );
+
   const dirty = useMemo(() => {
     if (!currentMacro) return false;
     return (
       tempName !== currentMacro.name ||
       repeatType !== currentMacro.repeatType ||
       loopTimes !== currentMacro.loopTimes ||
-      JSON.stringify(stripEditorIds(tempActions)) !== JSON.stringify(toComparableActions(currentMacro.actions))
+      JSON.stringify(stripEditorIds(tempActions)) !== savedActionsJson
     );
-  }, [currentMacro, loopTimes, repeatType, tempActions, tempName]);
+  }, [currentMacro, loopTimes, repeatType, tempActions, tempName, savedActionsJson]);
 
   // 1. 初始化时默认选中第一个宏
   useEffect(() => {
@@ -105,100 +110,28 @@ export function MacroPanel() {
 
   useEffect(() => () => setMacroEditorDirty(false), [setMacroEditorDirty]);
 
+  // beforeunload 只注册一次，通过 ref 读取最新 dirty，避免每次切换都增删监听器
+  const dirtyRef = useRef(dirty);
   useEffect(() => {
-    if (!dirty) return undefined;
+    dirtyRef.current = dirty;
+  }, [dirty]);
+  useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
+      if (dirtyRef.current) event.preventDefault();
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [dirty]);
+  }, []);
 
-  // 3. 全局键盘录制逻辑
-  useEffect(() => {
-    if (!recording) return undefined;
-
-    startedAt.current = Date.now();
-    pressedKeys.current.clear();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      event.preventDefault();
-      if (pressedKeys.current.has(event.code)) return;
-      pressedKeys.current.add(event.code);
-
-      const action = keyboardEventToMacroAction(event, MacroDirection.Down, Date.now() - startedAt.current);
-      if (!action) return;
-      setTempActions((prev) => [...prev, { ...action, id: crypto.randomUUID() }]);
-    };
-
-    const handleKeyUp = (event: KeyboardEvent) => {
-      event.preventDefault();
-      // 忽略从未按下就抬起的按键（如触发"开始录制"按钮的 Enter）
-      if (!pressedKeys.current.delete(event.code)) return;
-
-      const action = keyboardEventToMacroAction(event, MacroDirection.Up, Date.now() - startedAt.current);
-      if (!action) return;
-      setTempActions((prev) => [...prev, { ...action, id: crypto.randomUUID() }]);
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-      pressedKeys.current.clear();
-    };
-  }, [recording]);
-
-  // 4. 按键单个动作捕获修改逻辑
-  useEffect(() => {
-    if (editingActionId === null) return undefined;
-
-    const handleSingleCapture = (event: KeyboardEvent) => {
-      event.preventDefault();
-      const captured = keyboardEventToMacroAction(event, MacroDirection.Down, 0);
-      if (!captured) return;
-
-      // 更新该行的按键和 HID 代码
-      setTempActions((prev) =>
-        prev.map((act) =>
-          act.id === editingActionId
-            ? { ...act, keyName: captured.keyName, kind: captured.kind, keyCode: captured.keyCode }
-            : act
-        )
-      );
-      setEditingActionId(null);
-    };
-
-    window.addEventListener('keydown', handleSingleCapture);
-    return () => window.removeEventListener('keydown', handleSingleCapture);
-  }, [editingActionId]);
-
-  // 5. 底部手动插入键盘按键监听
-  useEffect(() => {
-    if (!isInsertingKey) return undefined;
-
-    const handleInsertCapture = (event: KeyboardEvent) => {
-      event.preventDefault();
-      const captured = keyboardEventToMacroAction(event, MacroDirection.Down, 0);
-      if (!captured) return;
-
-      // 自动追加 Down 和 Up 两条指令，中间延迟 100ms
-      setTempActions((prev) => {
-        const base = prev.length > 0 ? prev[prev.length - 1].timestamp + 100 : 0;
-        return [
-          ...prev,
-          { ...captured, timestamp: base, id: crypto.randomUUID() },
-          { ...captured, direction: MacroDirection.Up, timestamp: base + 100, id: crypto.randomUUID() },
-        ];
-      });
-      setIsInsertingKey(false);
-    };
-
-    window.addEventListener('keydown', handleInsertCapture);
-    return () => window.removeEventListener('keydown', handleInsertCapture);
-  }, [isInsertingKey]);
+  // 3. 全局键盘捕获（录制 / 单键改绑 / 手动插入）统一由 hook 管理，三种模式互斥
+  useMacroKeyCapture({
+    recording,
+    editingActionId,
+    isInsertingKey,
+    setTempActions,
+    setEditingActionId,
+    setIsInsertingKey,
+  });
 
   // 开始/停止录制：开始时关闭改绑与插入模式，停止时把首动作时间戳归零
   function toggleRecording() {

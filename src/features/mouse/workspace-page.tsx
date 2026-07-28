@@ -114,22 +114,22 @@ export function MouseWorkspacePage() {
         </div>
       </header>
 
-      {banner && (
-        <div
-          role="alert"
-          className="fixed left-1/2 top-14 z-50 flex max-w-xl -translate-x-1/2 items-center gap-3 rounded-md border border-danger/40 bg-surface-2 px-4 py-2 text-sm text-danger shadow-panel"
-        >
-          <span className="min-w-0">{banner.message}</span>
-          <button
-            type="button"
-            className="shrink-0 rounded p-1 hover:bg-surface-3"
-            aria-label={t('mouse.dismiss')}
-            onClick={banner.onDismiss}
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
+      {/* 常驻 live region：容器始终存在，内容变化才能被屏幕阅读器稳定播报 */}
+      <div role="alert" aria-live="assertive" className="pointer-events-none fixed left-1/2 top-14 z-50 -translate-x-1/2">
+        {banner && (
+          <div className="pointer-events-auto flex max-w-xl items-center gap-3 rounded-md border border-danger/40 bg-surface-2 px-4 py-2 text-sm text-danger shadow-panel">
+            <span className="min-w-0">{banner.message}</span>
+            <button
+              type="button"
+              className="shrink-0 rounded p-1 hover:bg-surface-3"
+              aria-label={t('mouse.dismiss')}
+              onClick={banner.onDismiss}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+      </div>
 
       <div className="grid h-[calc(100vh-48px)] grid-cols-[72px_minmax(0,1fr)] gap-0 min-[1200px]:grid-cols-[228px_minmax(0,1fr)]">
         <aside className="flex min-h-0 flex-col bg-surface-2 px-2 pb-3 pt-2">

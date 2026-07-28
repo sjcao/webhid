@@ -125,6 +125,9 @@ function commandFailure(error: unknown) {
   return { lastError: failureMessage(error), lastErrorSource: 'command' as const };
 }
 
+// 每次尝试都新建订阅：JS 事件同步派发，订阅前到达的报文不会补发给我们，
+// 因此天然排除了上一次读取的历史报文。再按 type（按键读取额外按 buttonId）精确匹配，
+// 即可将响应关联到当前请求——硬件协议无序列号字段，这是可行的最强关联方式。
 function waitForResponse(type: ParamType, buttonId?: ButtonId) {
   if (useDeviceStore.getState().previewMode) return Promise.resolve(true);
   return new Promise<boolean>((resolve) => {
@@ -141,7 +144,7 @@ function waitForResponse(type: ParamType, buttonId?: ButtonId) {
         unsubscribe();
         resolve(true);
       } catch {
-        // Malformed reports are recorded by handleInputReport; keep waiting.
+        // 畸形报文由 handleInputReport 记录，这里继续等待
       }
     });
   });
