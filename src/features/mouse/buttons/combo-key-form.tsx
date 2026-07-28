@@ -18,6 +18,7 @@ export function ComboKeyForm({ selectedButton, active }: ComboKeyFormProps) {
   const [comboModifiers, setComboModifiers] = useState<number[]>([]);
   const [comboNormalKey, setComboNormalKey] = useState<{ name: string; value: number } | null>(null);
   const [isRecordingCombo, setIsRecordingCombo] = useState(false);
+  const [saving, setSaving] = useState(false);
   const lastSyncedRef = useRef<string | null>(null);
 
   // 切换目标按键时取消录制
@@ -92,11 +93,17 @@ export function ComboKeyForm({ selectedButton, active }: ComboKeyFormProps) {
   }, [isRecordingCombo]);
 
   async function saveComboKey() {
+    if (saving) return;
     const values = [...comboModifiers];
     if (comboNormalKey) {
       values.push(comboNormalKey.value);
     }
-    await bindComboToButton(selectedButton, values);
+    setSaving(true);
+    try {
+      await bindComboToButton(selectedButton, values);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function clearComboKey() {
@@ -174,7 +181,7 @@ export function ComboKeyForm({ selectedButton, active }: ComboKeyFormProps) {
           <Button
             variant="primary"
             className="flex-1 font-bold text-xs"
-            disabled={comboModifiers.length === 0 && !comboNormalKey}
+            disabled={saving || (comboModifiers.length === 0 && !comboNormalKey)}
             onClick={saveComboKey}
           >
             {t('mouse.save')}

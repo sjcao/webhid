@@ -25,6 +25,7 @@ export function BurstFireForm({ selectedButton }: BurstFireFormProps) {
   const [intervalText, setIntervalText] = useState(String(DEFAULT_INTERVAL));
   const [burstMode, setBurstMode] = useState<'times' | 'hold'>('times');
   const [countText, setCountText] = useState(String(DEFAULT_COUNT));
+  const [saving, setSaving] = useState(false);
   const lastSyncedRef = useRef<string | null>(null);
 
   // 配置回显；内容未变的重复响应不覆盖未保存草稿
@@ -54,18 +55,24 @@ export function BurstFireForm({ selectedButton }: BurstFireFormProps) {
   }, [selectedButton, config]);
 
   async function saveBurstFire() {
+    if (saving) return;
     const interval = clampByte(intervalText, DEFAULT_INTERVAL);
     const count = burstMode === 'hold' ? 0 : clampByte(countText, DEFAULT_COUNT);
     setIntervalText(String(interval));
     if (burstMode === 'times') {
       setCountText(String(count));
     }
-    await setButtonMapping({
-      buttonId: selectedButton,
-      functionType: KeyFunctionType.BurstFire,
-      index: 0,
-      values: [interval, count],
-    });
+    setSaving(true);
+    try {
+      await setButtonMapping({
+        buttonId: selectedButton,
+        functionType: KeyFunctionType.BurstFire,
+        index: 0,
+        values: [interval, count],
+      });
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -142,7 +149,7 @@ export function BurstFireForm({ selectedButton }: BurstFireFormProps) {
           </div>
         )}
 
-        <Button variant="primary" className="w-full mt-2 font-bold text-xs" onClick={saveBurstFire}>
+        <Button variant="primary" className="w-full mt-2 font-bold text-xs" disabled={saving} onClick={saveBurstFire}>
           {t('mouse.save')}
         </Button>
       </div>

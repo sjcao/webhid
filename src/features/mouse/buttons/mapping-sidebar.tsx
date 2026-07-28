@@ -48,6 +48,7 @@ export function MappingSidebar({ open, selectedButton, onClose }: MappingSidebar
 
   const [activeTab, setActiveTab] = useState<SidebarTab>('system');
   const [searchQuery, setSearchQuery] = useState('');
+  const [applying, setApplying] = useState(false);
 
   // 仅在切换目标按键时按其配置自动跳转页签，被动刷新不覆盖手动选择
   useEffect(() => {
@@ -85,12 +86,19 @@ export function MappingSidebar({ open, selectedButton, onClose }: MappingSidebar
 
   // 应用普通键映射
   async function applyMapping(option: KeyOption) {
-    await setButtonMapping({
-      buttonId: selectedButton,
-      functionType: option.functionType,
-      index: option.index,
-      values: option.values,
-    });
+    // 上一次写入未完成时忽略重复点击，避免命令并发下发
+    if (applying) return;
+    setApplying(true);
+    try {
+      await setButtonMapping({
+        buttonId: selectedButton,
+        functionType: option.functionType,
+        index: option.index,
+        values: option.values,
+      });
+    } finally {
+      setApplying(false);
+    }
   }
 
   return (
