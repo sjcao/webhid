@@ -85,7 +85,7 @@ class BrowserHidService {
       await device.open();
     }
 
-    // 重连同一设备前先摍掉旧监听，防止重复挂载
+    // 重连同一设备前先摘掉旧监听，防止重复挂载
     this.detachInput();
     this.device = device;
     this.inputListener = (event) => {

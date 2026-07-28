@@ -44,7 +44,7 @@ export function useMacroKeyCapture({
 
     const handleKeyUp = (event: KeyboardEvent) => {
       event.preventDefault();
-      // 忽略从未按下就抬起的按键（如触发“开始录制”按钮的 Enter）
+      // 忽略从未按下就抬起的按键（如触发"开始录制"按钮的 Enter）
       if (!pressed.delete(event.code)) return;
 
       const action = keyboardEventToMacroAction(event, MacroDirection.Up, Date.now() - startedAt.current);
