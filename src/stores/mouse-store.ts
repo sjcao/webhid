@@ -299,7 +299,8 @@ export const useMouseStore = create<MouseState>((set, get) => ({
     }
   },
   bindMacroToButton: async (buttonId, macro) => {
-    const slots = pruneMacroSlots(get().macroSlots, useMacroStore.getState().macros);
+    const previousSlots = get().macroSlots;
+    const slots = pruneMacroSlots(previousSlots, useMacroStore.getState().macros);
     const slot = resolveMacroSlot(slots, macro.id, get().buttonConfigs);
     slots[slot] = macro.id;
 
@@ -345,8 +346,10 @@ export const useMouseStore = create<MouseState>((set, get) => ({
         } else {
           delete buttonConfigs[buttonId];
         }
-        return { buttonConfigs, ...commandFailure(error) };
+        return { buttonConfigs, macroSlots: previousSlots, ...commandFailure(error) };
       });
+      // 槽位映射随按键绑定一并回滚，避免残留孤立的 slot→macroId
+      persistMacroSlots(previousSlots);
       // 尽力补发终止帧闭合设备上的残缺宏，再回读该按键呈现真实状态
       await sendBatchOrPreview([terminator]).catch(() => undefined);
       await resendReads([MouseCommands.readButton(buttonId)]);

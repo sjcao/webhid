@@ -12,9 +12,11 @@ export function ResetPanel() {
   const resetAll = useMouseStore((state) => state.resetAll);
 
   async function confirm() {
-    if (mode === 'buttons') await resetButtons();
-    if (mode === 'all') await resetAll();
+    // 先关闭对话框再执行异步重置，避免异步期间对话框状态与操作错位
+    const target = mode;
     setMode(null);
+    if (target === 'buttons') await resetButtons();
+    if (target === 'all') await resetAll();
   }
 
   const description = mode === 'all' ? t('mouse.resetAllDescription') : t('mouse.resetButtonsDescription');
