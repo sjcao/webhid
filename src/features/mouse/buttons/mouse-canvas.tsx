@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ButtonId, findKeyOption, KeyFunctionType, mouseButtons } from '@/protocol/mouse';
 import { useMouseStore } from '@/stores/mouse-store';
 import { useMacroStore } from '@/stores/macro-store';
@@ -16,6 +17,16 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
   const buttonConfigs = useMouseStore((state) => state.buttonConfigs);
   const macroSlots = useMouseStore((state) => state.macroSlots);
   const macros = useMacroStore((state) => state.macros);
+
+  // 预计算「设备槽位 → 宏名」映射，避免每个按键在渲染时各跑一次 macros.find
+  const macroNameBySlot = useMemo(() => {
+    const map: Record<number, string> = {};
+    for (const [slot, macroId] of Object.entries(macroSlots)) {
+      const macro = macros.find((item) => item.id === macroId);
+      if (macro) map[Number(slot)] = macro.name;
+    }
+    return map;
+  }, [macroSlots, macros]);
 
   return (
     <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-4">
@@ -51,8 +62,7 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
               const normalLabel = normalValue !== undefined ? hidValueToName(normalValue) : '';
               binding = [...modLabels, normalLabel].filter(Boolean).join('+') || defaultName;
             } else if (config.functionType === KeyFunctionType.Macro) {
-              const macroObj = macros.find((macro) => macro.id === macroSlots[config.index]);
-              binding = macroObj ? macroObj.name : t('mouse.unknownMacro');
+              binding = macroNameBySlot[config.index] ?? t('mouse.unknownMacro');
             } else if (option) {
               binding = pickLabel(option, locale);
             }

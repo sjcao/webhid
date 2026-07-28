@@ -178,6 +178,10 @@ export const MacroActionRow = memo(function MacroActionRow({
   );
 });
 
+function clampDelay(value: number) {
+  return Math.min(65535, Math.max(0, value));
+}
+
 function DelayInput({
   value,
   disabled,
@@ -198,37 +202,33 @@ function DelayInput({
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value;
     setLocalVal(raw);
-    if (raw !== '') {
-      const num = Math.min(65535, Math.max(0, Number(raw)));
-      if (!isNaN(num)) {
-        onChange(num);
-      }
-    } else {
+    if (raw === '') {
       onChange(0);
+      return;
+    }
+    const num = Number(raw);
+    if (!Number.isNaN(num)) {
+      onChange(clampDelay(num));
     }
   }
 
   function handleBlur() {
-    if (localVal === '' || isNaN(Number(localVal))) {
-      setLocalVal('0');
-      onChange(0);
-    } else {
-      const num = Math.min(65535, Math.max(0, Number(localVal)));
-      setLocalVal(String(num));
-      onChange(num);
-    }
+    const num = Number(localVal);
+    const normalized = localVal === '' || Number.isNaN(num) ? 0 : clampDelay(num);
+    setLocalVal(String(normalized));
+    onChange(normalized);
   }
 
   function handleDecrease() {
     const current = localVal === '' ? 0 : Number(localVal);
-    const next = Math.max(0, current - 10);
+    const next = clampDelay((Number.isNaN(current) ? 0 : current) - 10);
     setLocalVal(String(next));
     onChange(next);
   }
 
   function handleIncrease() {
     const current = localVal === '' ? 0 : Number(localVal);
-    const next = Math.min(65535, current + 10);
+    const next = clampDelay((Number.isNaN(current) ? 0 : current) + 10);
     setLocalVal(String(next));
     onChange(next);
   }

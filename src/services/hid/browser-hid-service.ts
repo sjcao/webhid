@@ -23,6 +23,7 @@ function collectionHasProtocolOutput(collection: HIDCollectionInfo): boolean {
 
 class BrowserHidService {
   private device: HIDDevice | null = null;
+  private inputListener: ((event: HIDInputReportEvent) => void) | null = null;
   private handlers = new Set<HidInputHandler>();
   private connectHandlers = new Set<HidConnectHandler>();
   private disconnectHandlers = new Set<HidDisconnectHandler>();
@@ -35,12 +36,20 @@ class BrowserHidService {
       });
       navigator.hid.addEventListener('disconnect', (event) => {
         if (event.device === this.device) {
-          this.device.oninputreport = null;
+          this.detachInput();
           this.device = null;
         }
         this.disconnectHandlers.forEach((handler) => handler(event.device));
       });
     }
+  }
+
+  // 移除当前设备上的输入监听，供断开/重连复用，避免同一设备重复挂载导致监听器泄漏
+  private detachInput() {
+    if (this.device && this.inputListener) {
+      this.device.removeEventListener('inputreport', this.inputListener);
+    }
+    this.inputListener = null;
   }
 
   get supported() {
@@ -76,19 +85,22 @@ class BrowserHidService {
       await device.open();
     }
 
+    // 重连同一设备前先摍掉旧监听，防止重复挂载
+    this.detachInput();
     this.device = device;
-    device.oninputreport = (event) => {
+    this.inputListener = (event) => {
       const packet = this.toProtocolPacket(event);
       if (!packet) return;
       this.handlers.forEach((handler) => handler(packet));
     };
+    device.addEventListener('inputreport', this.inputListener);
   }
 
   async disconnect() {
     if (!this.device) return;
     const device = this.device;
+    this.detachInput();
     this.device = null;
-    device.oninputreport = null;
     if (device.opened) {
       try {
         await device.close();
