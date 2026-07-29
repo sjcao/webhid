@@ -28,6 +28,11 @@ export function parseMouseResponse(packetLike: ArrayLike<number>): ParsedMouseRe
 
   const paramType = packet[2] as ParamType;
   const dataLength = packet[3];
+  // data 占索引 4..14，其后紧跟 data-CRC(15) 与 packet-CRC(16)，最多 11 字节；
+  // 越界的长度字段说明报文畸形，直接拒绝，避免越界读取和错位比对 data-CRC
+  if (dataLength > 11) {
+    throw new Error(`Invalid mouse data length: ${dataLength}`);
+  }
   const data = packet.slice(4, 4 + dataLength);
   const dataCrc = packet[4 + dataLength];
   if (computeDataCrc(data) !== dataCrc) {
