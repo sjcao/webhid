@@ -39,8 +39,8 @@ const controlCodes: Array<[string, string, number]> = [
   ['Down', 'Down', 0x51], ['Right', 'Right', 0x4f], ['Print Screen', 'Print Screen', 0x46],
   ['Scroll Lock', 'Scroll Lock', 0x47], ['Pause', 'Pause', 0x48], ['Insert', 'Insert', 0x49],
   ['Home', 'Home', 0x4a], ['Delete', 'Delete', 0x4c], ['End', 'End', 0x4d],
-  ['Page Up', 'Page Up', 0x4b], ['Page Down', 'Page Down', 0x4e], ['Caps Lock', 'Caps Lock', 0x53],
-  ['Num Lock', 'Num Lock', 0x54],
+  ['Page Up', 'Page Up', 0x4b], ['Page Down', 'Page Down', 0x4e], ['Caps Lock', 'Caps Lock', 0x39],
+  ['Num Lock', 'Num Lock', 0x53],
 ];
 
 const numpadCodes: Array<[string, string, number]> = [
@@ -259,6 +259,15 @@ export const browserKeyToHid: Record<string, number[]> = Object.fromEntries([
   ['shift', [0xe1, 0x00]],
   ['alt', [0xe2, 0x00]],
   ['meta', [0xe3, 0x00]],
+  // event.code 形式的左右修饰键：event.key 无法区分左右，需按 code 精确映射到不同 HID 值
+  ['ControlLeft', [0xe0, 0x00]],
+  ['ControlRight', [0xe4, 0x00]],
+  ['ShiftLeft', [0xe1, 0x00]],
+  ['ShiftRight', [0xe5, 0x00]],
+  ['AltLeft', [0xe2, 0x00]],
+  ['AltRight', [0xe6, 0x00]],
+  ['MetaLeft', [0xe3, 0x00]],
+  ['MetaRight', [0xe7, 0x00]],
 ]);
 
 export function findKeyOption(functionType: KeyFunctionType, index: number, values: number[] = []) {
