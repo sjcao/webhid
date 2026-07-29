@@ -90,10 +90,15 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
   reconnectAuthorizedDevice: async () => {
     const devices = await hidService.getAuthorizedDevices().catch(() => [] as HIDDevice[]);
     for (let index = 0; index < devices.length; index += 1) {
+      const device = devices[index];
       try {
-        await hidService.connect(devices[index]);
+        await hidService.connect(device);
+        // 刷新列表后按设备对象取回 record，使 currentDevice.id 与 devices 列表保持一致，
+        // 避免用一次性下标合成的 id 与列表对不上
+        await get().refreshDevices();
+        const record = get().devices.find((item) => item.device === device);
         set({
-          currentDevice: toDeviceRecord(devices[index], index),
+          currentDevice: record ? { ...record, opened: true } : toDeviceRecord(device, index),
           previewMode: false,
           disconnectNotice: false,
           error: null,
@@ -119,7 +124,14 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
 }));
 
 hidService.onConnect(() => {
-  void useDeviceStore.getState().refreshDevices();
+  void useDeviceStore.getState().refreshDevices().then(() => {
+    // 热插拔：此前正在使用的设备曾断开(disconnectNotice)、当前无连接且非预览时，
+    // 设备重新插入即自动重连，避免用户停留在“已断开”横幅需返回首页重连
+    const { currentDevice, previewMode, disconnectNotice } = useDeviceStore.getState();
+    if (!currentDevice && !previewMode && disconnectNotice) {
+      void useDeviceStore.getState().reconnectAuthorizedDevice();
+    }
+  });
 });
 
 hidService.onDisconnect((device) => {

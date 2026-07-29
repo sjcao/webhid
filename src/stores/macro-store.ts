@@ -137,7 +137,8 @@ export const useMacroStore = create<MacroState>((set, get) => ({
 }));
 
 export function keyboardEventToMacroAction(event: KeyboardEvent, direction: MacroDirection, timestamp: number): MacroAction | null {
-  const keyCode = browserKeyToHid[event.key] ?? browserKeyToHid[event.key.toLowerCase()] ?? browserKeyToHid[event.code];
+  // 优先按 event.code 查表，以区分左右修饰键（event.key 对左右修饰键返回相同值）
+  const keyCode = browserKeyToHid[event.code] ?? browserKeyToHid[event.key] ?? browserKeyToHid[event.key.toLowerCase()];
   if (!keyCode) return null;
   return {
     keyName: event.key === ' ' ? 'Space' : event.key,

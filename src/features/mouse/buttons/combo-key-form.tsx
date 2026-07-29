@@ -64,7 +64,8 @@ export function ComboKeyForm({ selectedButton, active }: ComboKeyFormProps) {
         return;
       }
 
-      const code = browserKeyToHid[event.key] ?? browserKeyToHid[event.key.toLowerCase()] ?? browserKeyToHid[event.code];
+      // 优先按 event.code 查表，以区分左右修饰键（event.key 对左右修饰键返回相同值）
+      const code = browserKeyToHid[event.code] ?? browserKeyToHid[event.key] ?? browserKeyToHid[event.key.toLowerCase()];
       if (!code) return;
 
       const hidVal = code[0];
