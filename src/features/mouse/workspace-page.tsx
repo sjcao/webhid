@@ -59,9 +59,15 @@ export function MouseWorkspacePage() {
 
   useEffect(() => {
     const unsubscribe = hidService.subscribe(handleInputReport);
-    void refreshInitialState();
     return unsubscribe;
-  }, [handleInputReport, refreshInitialState]);
+  }, [handleInputReport]);
+
+  // 挂载及设备重连（热插拔后底层 HIDDevice 变化）时重新拉取设备状态
+  const activeDevice = currentDevice?.device ?? null;
+  useEffect(() => {
+    if (!activeDevice && !previewMode) return;
+    void refreshInitialState();
+  }, [activeDevice, previewMode, refreshInitialState]);
 
   async function leaveWorkspace(force = false) {
     if (macroEditorDirty && !force) {
