@@ -5,20 +5,21 @@ type MouseGraphicProps = {
 };
 
 /**
- * 纯矢量的鼠标俯视图，替代此前较大的位图 (ic-moouse.png)。
- * 使用浅银灰机身 + 深色滚轮，在深色首页与浅色驱动界面上都清晰可读。
- * viewBox 采用 26:25 比例，与按键画布容器的 aspect-[26/25] 对齐，
- * 便于按百分比在其上叠加按键标签与高亮圆点。
+ * 纯矢量的白色鼠标俯视图，参照原位图 (ic-moouse.png) 重绘：
+ * 竖向卵石机身、左右键分缝、顶部黑色滚轮与传感器标记、左侧两个侧键。
+ * viewBox 保持与原图一致的 627×1102 比例，默认 preserveAspectRatio (meet)
+ * 使其在容器内居中展示，行为等同于旧图的 object-contain，
+ * 所以叠加在上面的按键标签与高亮圆点百分比定位仍然对齐。
  */
 export function MouseGraphic({ className }: MouseGraphicProps) {
   const uid = useId();
   const bodyId = `mg-body-${uid}`;
-  const wheelId = `mg-wheel-${uid}`;
   const glossId = `mg-gloss-${uid}`;
+  const wheelId = `mg-wheel-${uid}`;
 
   return (
     <svg
-      viewBox="0 0 260 250"
+      viewBox="0 0 627 1102"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
@@ -26,42 +27,56 @@ export function MouseGraphic({ className }: MouseGraphicProps) {
       aria-label="mouse"
     >
       <defs>
-        <linearGradient id={bodyId} x1="130" y1="12" x2="130" y2="240" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#fbfcfd" />
-          <stop offset="0.55" stopColor="#e4e7ec" />
-          <stop offset="1" stopColor="#c7ccd4" />
+        <linearGradient id={bodyId} x1="313" y1="10" x2="313" y2="1090" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#ffffff" />
+          <stop offset="0.5" stopColor="#f3f4f6" />
+          <stop offset="1" stopColor="#e2e5e9" />
         </linearGradient>
-        <linearGradient id={wheelId} x1="130" y1="44" x2="130" y2="92" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#3a3d44" />
-          <stop offset="1" stopColor="#1d1f23" />
-        </linearGradient>
-        <radialGradient id={glossId} cx="0.5" cy="0.26" r="0.62">
-          <stop stopColor="#ffffff" stopOpacity="0.9" />
+        <radialGradient id={glossId} cx="0.5" cy="0.2" r="0.7">
+          <stop stopColor="#ffffff" stopOpacity="0.95" />
           <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
         </radialGradient>
+        <linearGradient id={wheelId} x1="313" y1="92" x2="313" y2="216" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#43464d" />
+          <stop offset="1" stopColor="#161719" />
+        </linearGradient>
       </defs>
 
       {/* 机身轮廓 */}
       <path
-        d="M130 14 C92 14 68 26 61 66 C55 104 42 118 42 152 C42 206 80 238 130 238 C180 238 218 206 218 152 C218 118 205 104 199 66 C192 26 168 14 130 14 Z"
+        d="M313 14 C220 14 150 22 128 40 C70 86 40 180 33 320 C26 470 30 640 70 800 C110 960 200 1088 313 1088 C426 1088 516 960 556 800 C596 640 600 470 593 320 C586 180 556 86 498 40 C476 22 406 14 313 14 Z"
         fill={`url(#${bodyId})`}
-        stroke="#aeb4bd"
-        strokeWidth="2"
+        stroke="#d3d6db"
+        strokeWidth="3"
       />
 
       {/* 顶部高光 */}
       <path
-        d="M130 14 C92 14 68 26 61 66 C58 84 52 96 48 108 C70 92 100 84 130 84 C160 84 190 92 212 108 C208 96 202 84 199 66 C192 26 168 14 130 14 Z"
+        d="M313 14 C220 14 150 22 128 40 C90 74 62 130 48 220 C150 150 220 128 313 128 C406 128 476 150 578 220 C564 130 536 74 498 40 C476 22 406 14 313 14 Z"
         fill={`url(#${glossId})`}
-        opacity="0.7"
+        opacity="0.85"
       />
 
       {/* 左右键分缝 */}
-      <path d="M130 20 L130 96" stroke="#aeb4bd" strokeWidth="2" strokeLinecap="round" />
+      <path d="M313 20 L313 388" stroke="#cfd3d9" strokeWidth="3" strokeLinecap="round" />
+      {/* 前部按键与机身的横向分缝 */}
+      <path d="M92 300 C 160 405 466 405 535 300" stroke="#cfd3d9" strokeWidth="3" fill="none" strokeLinecap="round" />
 
+      {/* 顶部传感器标记 */}
+      <ellipse cx="313" cy="66" rx="15" ry="7" fill="#e6e8ec" stroke="#c7cad0" strokeWidth="2" />
+
+      {/* 滚轮外壳 */}
+      <rect x="274" y="84" width="78" height="160" rx="30" fill="#111214" />
       {/* 滚轮 */}
-      <rect x="122" y="44" width="16" height="48" rx="8" fill={`url(#${wheelId})`} />
-      <line x1="130" y1="52" x2="130" y2="84" stroke="#ffffff" strokeOpacity="0.25" strokeWidth="2" strokeLinecap="round" />
+      <rect x="288" y="94" width="50" height="120" rx="24" fill={`url(#${wheelId})`} />
+      <line x1="313" y1="110" x2="313" y2="198" stroke="#ffffff" strokeOpacity="0.22" strokeWidth="3" strokeLinecap="round" />
+
+      {/* 左侧两个侧键 */}
+      <rect x="26" y="286" width="36" height="78" rx="17" fill="#141518" transform="rotate(-8 44 325)" />
+      <rect x="22" y="384" width="38" height="120" rx="18" fill="#141518" transform="rotate(-4 41 444)" />
+
+      {/* 底部传感器凹陷 */}
+      <ellipse cx="313" cy="640" rx="30" ry="20" fill="#000000" opacity="0.05" />
     </svg>
   );
 }
