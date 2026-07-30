@@ -5,155 +5,209 @@ type MouseGraphicProps = {
 };
 
 /**
- * 高清矢量鼠标俯视图组件
- * 采用 627×1102 比例 viewBox，完美对齐按键定位与视觉呈现
+ * 顶级电竞无线鼠标高保真 SVG 矢量组件 (GPW 风格)
+ * viewBox: 0 0 600 1000
+ * 饱满圆润的尾部、优雅人体工学腰线、精致按键指槽与滚轮侧键全细节
  */
 export function MouseGraphic({ className = '' }: MouseGraphicProps) {
   const uid = useId();
   const bodyGradId = `mg-body-${uid}`;
   const glossId = `mg-gloss-${uid}`;
+  const rimGradId = `mg-rim-${uid}`;
   const wheelGradId = `mg-wheel-${uid}`;
   const sideGradId = `mg-side-${uid}`;
-  const shadowId = `mg-shadow-${uid}`;
-  const rimId = `mg-rim-${uid}`;
+  const shadowFilterId = `mg-shadow-${uid}`;
+  const fingerLeftId = `mg-finger-l-${uid}`;
+  const fingerRightId = `mg-finger-r-${uid}`;
 
   return (
     <svg
-      viewBox="0 0 627 1102"
+      viewBox="0 0 600 1000"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={`select-none ${className}`}
       role="img"
-      aria-label="High Definition Vector Mouse Graphic"
+      aria-label="High End Esports Mouse Graphic"
     >
       <defs>
-        {/* 鼠标外阴影与投影 filter */}
-        <filter id={shadowId} x="-20%" y="-10%" width="140%" height="130%" filterUnits="userSpaceOnUse">
-          <feDropShadow dx="0" dy="28" stdDeviation="32" floodColor="#000000" floodOpacity="0.25" />
-          <feDropShadow dx="0" dy="6" stdDeviation="12" floodColor="#000000" floodOpacity="0.12" />
+        {/* 立体三层立体柔柔滤镜 */}
+        <filter id={shadowFilterId} x="-25%" y="-15%" width="150%" height="140%" filterUnits="userSpaceOnUse">
+          <feDropShadow dx="0" dy="32" stdDeviation="28" floodColor="#000000" floodOpacity="0.22" />
+          <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="#090d16" floodOpacity="0.12" />
         </filter>
 
-        {/* 鼠标机身渐变 (白灰细腻漆质感) */}
-        <linearGradient id={bodyGradId} x1="313" y1="14" x2="313" y2="1088" gradientUnits="userSpaceOnUse">
+        {/* 鼠标机身核心金属质感渐变 */}
+        <linearGradient id={bodyGradId} x1="300" y1="70" x2="300" y2="940" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="35%" stopColor="#f8f9fa" />
-          <stop offset="70%" stopColor="#e9ecef" />
-          <stop offset="100%" stopColor="#dbe0e6" />
+          <stop offset="25%" stopColor="#f8fafc" />
+          <stop offset="60%" stopColor="#f1f5f9" />
+          <stop offset="88%" stopColor="#e2e8f0" />
+          <stop offset="100%" stopColor="#cbd5e1" />
         </linearGradient>
 
-        {/* 边缘高光反射 */}
-        <linearGradient id={rimId} x1="50" y1="50" x2="577" y2="1050" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
-          <stop offset="50%" stopColor="#e2e8f0" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="#cbd5e1" stopOpacity="0.8" />
+        {/* 边缘倒角精致高光 */}
+        <linearGradient id={rimGradId} x1="100" y1="70" x2="500" y2="930" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+          <stop offset="30%" stopColor="#e2e8f0" stopOpacity="0.7" />
+          <stop offset="70%" stopColor="#cbd5e1" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#94a3b8" stopOpacity="0.8" />
         </linearGradient>
 
-        {/* 弧度高光 */}
-        <radialGradient id={glossId} cx="0.5" cy="0.18" r="0.65">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
-          <stop offset="60%" stopColor="#ffffff" stopOpacity="0.3" />
+        {/* 鼠标背部弧形立体高光 */}
+        <radialGradient id={glossId} cx="0.5" cy="0.32" r="0.55">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.85" />
+          <stop offset="50%" stopColor="#ffffff" stopOpacity="0.25" />
           <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
         </radialGradient>
 
-        {/* 滚轮金属铝/橡胶材质 */}
-        <linearGradient id={wheelGradId} x1="274" y1="84" x2="352" y2="244" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#374151" />
-          <stop offset="30%" stopColor="#111827" />
-          <stop offset="70%" stopColor="#1f2937" />
-          <stop offset="100%" stopColor="#030712" />
+        {/* 左主按键指槽暗影 */}
+        <radialGradient id={fingerLeftId} cx="0.35" cy="0.22" r="0.25">
+          <stop offset="0%" stopColor="#000000" stopOpacity="0.03" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0" />
+        </radialGradient>
+        {/* 右主按键指槽暗影 */}
+          <radialGradient id={fingerRightId} cx="0.65" cy="0.22" r="0.25">
+          <stop offset="0%" stopColor="#000000" stopOpacity="0.03" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0" />
+        </radialGradient>
+
+        {/* 金属/防滑橡胶滚轮 */}
+        <linearGradient id={wheelGradId} x1="268" y1="150" x2="332" y2="270" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#334155" />
+          <stop offset="35%" stopColor="#0f172a" />
+          <stop offset="70%" stopColor="#1e293b" />
+          <stop offset="100%" stopColor="#020617" />
         </linearGradient>
 
-        {/* 侧键质感 */}
-        <linearGradient id={sideGradId} x1="20" y1="280" x2="60" y2="500" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#1f2937" />
-          <stop offset="100%" stopColor="#111827" />
+        {/* 侧键黑锆材质 */}
+        <linearGradient id={sideGradId} x1="90" y1="360" x2="135" y2="540" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#1e293b" />
+          <stop offset="50%" stopColor="#0f172a" />
+          <stop offset="100%" stopColor="#020617" />
         </linearGradient>
       </defs>
 
-      {/* 机身底盘及主阴影层 */}
-      <g filter={`url(#${shadowId})`}>
-        {/* 侧面黑护翼底垫 */}
+      {/* 1. 主机身与阴影层 */}
+      <g filter={`url(#${shadowFilterId})`}>
+        {/* 底盘黑色防滑圈隐约底边 */}
         <path
-          d="M313 14 C218 14 148 22 126 40 C68 86 38 180 31 320 C24 470 28 640 68 800 C108 960 198 1088 313 1088 C428 1088 518 960 558 800 C598 640 602 470 595 320 C588 180 558 86 500 40 C478 22 408 14 313 14 Z"
-          fill="#1e293b"
-          opacity="0.15"
+          d="M 210 72
+             C 270 68, 330 68, 390 72
+             C 475 78, 515 170, 522 320
+             C 528 440, 502 560, 485 680
+             C 468 800, 415 934, 300 934
+             C 185 934, 132 800, 115 680
+             C 98 560, 72 440, 78 320
+             C 85 170, 125 78, 210 72 Z"
+          fill="#0f172a"
+          opacity="0.25"
         />
 
-        {/* 主机身面板 */}
+        {/* 经典电竞机身整体造型：圆润饱满的尾部、顺滑的人体工学曲率 */}
         <path
-          d="M313 14 C220 14 150 22 128 40 C70 86 40 180 33 320 C26 470 30 640 70 800 C110 960 200 1088 313 1088 C426 1088 516 960 556 800 C596 640 600 470 593 320 C586 180 556 86 498 40 C476 22 406 14 313 14 Z"
+          d="M 210 75
+             C 270 70, 330 70, 390 75
+             C 470 82, 510 170, 516 320
+             C 522 435, 498 550, 480 675
+             C 462 795, 410 925, 300 925
+             C 190 925, 138 795, 120 675
+             C 102 550, 78 435, 84 320
+             C 90 170, 130 82, 210 75 Z"
           fill={`url(#${bodyGradId})`}
-          stroke={`url(#${rimId})`}
-          strokeWidth="4"
+          stroke={`url(#${rimGradId})`}
+          strokeWidth="3.5"
         />
       </g>
 
-      {/* 顶部抛光/光线反射 */}
+      {/* 2. 人体工学微下凹指槽面板暗纹 */}
+      <rect x="95" y="85" width="195" height="260" fill={`url(#${fingerLeftId})`} />
+      <rect x="310" y="85" width="195" height="260" fill={`url(#${fingerRightId})`} />
+
+      {/* 3. 背部立体弧形高光反射 */}
       <path
-        d="M313 14 C220 14 150 22 128 40 C90 74 62 130 48 220 C150 150 220 128 313 128 C406 128 476 150 578 220 C564 130 536 74 498 40 C476 22 406 14 313 14 Z"
+        d="M 210 75
+           C 270 70, 330 70, 390 75
+           C 470 82, 510 170, 516 320
+           C 420 280, 180 280, 84 320
+           C 90 170, 130 82, 210 75 Z"
         fill={`url(#${glossId})`}
       />
 
-      {/* 左右按键中缝缝隙 */}
-      <path d="M313 18 L313 388" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" opacity="0.75" />
-      <path d="M313 20 L313 380" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" opacity="0.9" />
+      {/* 4. 左右按键中缝缝隙 */}
+      <path d="M 300 75 L 300 355" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+      <path d="M 300 77 L 300 350" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" opacity="0.95" />
 
-      {/* 主按键弧形分割线 */}
-      <path d="M92 300 C 160 405 466 405 535 300" stroke="#cbd5e1" strokeWidth="3.5" fill="none" strokeLinecap="round" />
-      <path d="M94 302 C 160 406 466 406 533 302" stroke="#ffffff" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      {/* 5. 左右主按键横向人体工学分缝弧线 */}
+      <path d="M 85 325 C 160 365, 440 365, 515 325" stroke="#cbd5e1" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <path d="M 86 327 C 160 366, 440 366, 514 327" stroke="#ffffff" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.9" />
 
-      {/* DPI 切换键指示圈及凹槽 */}
-      <rect x="291" y="56" width="44" height="20" rx="10" fill="#0f172a" opacity="0.85" />
-      <rect x="293" y="58" width="40" height="16" rx="8" fill="#334155" />
-      <circle cx="313" cy="66" r="4" fill="#f97316" />
-
-      {/* 滚轮开槽与外框 */}
-      <rect x="270" y="82" width="86" height="164" rx="32" fill="#090d16" />
-      <rect x="274" y="86" width="78" height="156" rx="28" fill="#1e293b" stroke="#334155" strokeWidth="2" />
+      {/* 6. 中间滚轮舱槽与发光线 */}
+      <rect x="264" y="152" width="72" height="126" rx="22" fill="#090d16" />
+      <rect x="268" y="156" width="64" height="118" rx="18" fill="#1e293b" stroke="#334155" strokeWidth="2" />
 
       {/* 滚轮主体 */}
-      <rect x="286" y="94" width="54" height="140" rx="26" fill={`url(#${wheelGradId})`} />
-      {/* 滚轮中央防滑金属环 */}
-      <rect x="309" y="98" width="8" height="132" rx="4" fill="#f97316" opacity="0.9" />
-      {/* 滚轮横向防滑刻度 */}
-      {[110, 126, 142, 158, 174, 190, 206, 222].map((y) => (
-        <line key={y} x1="290" y1={y} x2="336" y2={y} stroke="#475569" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+      <rect x="276" y="162" width="48" height="106" rx="14" fill={`url(#${wheelGradId})`} />
+      {/* 滚轮中央亮色防滑中轴环 */}
+      <rect x="297" y="165" width="6" height="100" rx="3" fill="#f97316" opacity="0.9" />
+      {/* 滚轮防滑横条刻度 */}
+      {[178, 192, 206, 220, 234, 248, 260].map((y) => (
+        <line key={y} x1="280" y1={y} x2="320" y2={y} stroke="#64748b" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
       ))}
 
-      {/* 左侧侧键 1 (Forward 侧前键) */}
+      {/* 7. DPI 切换按键及精致高光 (位于滚轮正下方 300, 305 处) */}
+      <g>
+        <rect x="278" y="292" width="44" height="24" rx="10" fill="#0f172a" stroke="#334155" strokeWidth="1.5" />
+        <rect x="282" y="296" width="36" height="16" rx="7" fill="#1e293b" />
+        <circle cx="300" cy="304" r="3.5" fill="#f97316" />
+      </g>
+
+      {/* 8. 左侧 Forward 按键 (自然贴合在左侧腰线内) */}
       <g>
         <path
-          d="M26 286 L60 292 C56 325 50 350 42 366 L20 360 C21 330 23 305 26 286 Z"
+          d="M 85 380 
+             C 105 383, 118 390, 118 412 
+             C 118 434, 105 442, 89 445 
+             C 86 422, 85 400, 85 380 Z"
           fill={`url(#${sideGradId})`}
           stroke="#475569"
           strokeWidth="1.5"
         />
-        <rect x="24" y="286" width="36" height="78" rx="17" fill="#1e293b" transform="rotate(-8 44 325)" opacity="0.95" />
-        <rect x="26" y="288" width="32" height="74" rx="15" fill="none" stroke="#f97316" strokeWidth="1.5" opacity="0.6" transform="rotate(-8 44 325)" />
+        {/* 前进按键细节边框 */}
+        <path
+          d="M 87 385 C 103 388, 113 394, 113 412 C 113 430, 103 437, 90 440"
+          fill="none"
+          stroke="#f97316"
+          strokeWidth="1.5"
+          opacity="0.8"
+        />
       </g>
 
-      {/* 左侧侧键 2 (Backward 侧后键) */}
+      {/* 9. 左侧 Backward 按键 (自然贴合在左侧腰线内) */}
       <g>
         <path
-          d="M22 384 L58 390 C50 430 42 470 32 504 L12 498 C18 460 20 420 22 384 Z"
+          d="M 90 455 
+             C 107 458, 118 466, 118 488 
+             C 118 510, 107 518, 97 525 
+             C 93 502, 91 478, 90 455 Z"
           fill={`url(#${sideGradId})`}
           stroke="#475569"
           strokeWidth="1.5"
         />
-        <rect x="20" y="384" width="38" height="120" rx="18" fill="#1e293b" transform="rotate(-4 41 444)" opacity="0.95" />
-        <rect x="22" y="386" width="34" height="116" rx="16" fill="none" stroke="#f97316" strokeWidth="1.5" opacity="0.6" transform="rotate(-4 41 444)" />
+        {/* 后退按键细节边框 */}
+        <path
+          d="M 92 460 C 103 463, 113 470, 113 488 C 113 506, 103 513, 98 518"
+          fill="none"
+          stroke="#f97316"
+          strokeWidth="1.5"
+          opacity="0.8"
+        />
       </g>
 
-      {/* 掌心品牌 logo 凹印指示线 */}
-      <path
-        d="M293 720 L313 740 L333 720 L313 700 Z"
-        fill="none"
-        stroke="#94a3b8"
-        strokeWidth="3"
-        strokeLinejoin="round"
-        opacity="0.35"
-      />
-      <circle cx="313" cy="720" r="2.5" fill="#f97316" opacity="0.8" />
+      {/* 10. 掌心处的现代极简 G 品牌/电竞 RGB 哑光标识 */}
+      <g opacity="0.35">
+        <circle cx="300" cy="710" r="28" stroke="#94a3b8" strokeWidth="2" fill="none" />
+        <path d="M 314 710 A 14 14 0 1 0 300 724 L 300 710 Z" fill="#64748b" />
+      </g>
     </svg>
   );
 }
