@@ -29,7 +29,7 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
 
   return (
     <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-4">
-      <div className="relative aspect-[2/3] h-full max-h-[540px] shrink-0">
+      <div className="relative aspect-[3/5] h-full max-h-[580px] shrink-0">
         <MouseGraphic className="mx-auto h-full w-full drop-shadow-[0_20px_42px_rgba(0,0,0,0.18)]" />
 
         {/* 渲染每一个按键的绑定显示标签 */}
@@ -117,17 +117,17 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
 function positionClass(buttonId: ButtonId) {
   switch (buttonId) {
     case ButtonId.Left:
-      return 'right-[102%] top-[25%]';
+      return 'right-[102%] top-[20%]';
     case ButtonId.Forward:
-      return 'right-[102%] top-[44%]';
+      return 'right-[102%] top-[36%]';
     case ButtonId.Backward:
-      return 'right-[102%] top-[62%]';
+      return 'right-[102%] top-[52%]';
     case ButtonId.Middle:
-      return 'left-[102%] top-[20%]';
+      return 'left-[102%] top-[14%]';
     case ButtonId.Right:
-      return 'left-[102%] top-[35%]';
+      return 'left-[102%] top-[28%]';
     case ButtonId.Dpi:
-      return 'left-[102%] top-[54%]';
+      return 'left-[102%] top-[46%]';
     default:
       return 'left-1/2 top-1/2';
   }
@@ -136,17 +136,17 @@ function positionClass(buttonId: ButtonId) {
 function dotClass(buttonId: ButtonId) {
   switch (buttonId) {
     case ButtonId.Left:
-      return 'left-[33%] top-[30%]';
+      return 'left-[33%] top-[26%]';
     case ButtonId.Right:
-      return 'left-[67%] top-[30%]';
+      return 'left-[67%] top-[26%]';
     case ButtonId.Middle:
-      return 'left-[50%] top-[26.1%]';
+      return 'left-[50%] top-[16.5%]';
     case ButtonId.Dpi:
-      return 'left-[50%] top-[41.1%]';
+      return 'left-[50%] top-[43%]';
     case ButtonId.Forward:
-      return 'left-[16.3%] top-[42%]';
+      return 'left-[16.5%] top-[32.2%]';
     case ButtonId.Backward:
-      return 'left-[16%] top-[51.6%]';
+      return 'left-[16%] top-[40%]';
     default:
       return 'left-1/2 top-1/2';
   }
