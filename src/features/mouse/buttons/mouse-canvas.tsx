@@ -29,7 +29,7 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
 
   return (
     <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-4">
-      <div className="relative aspect-[3/5] h-full max-h-[580px] shrink-0">
+      <div className="relative aspect-[26/25] w-full max-w-[520px] shrink-0">
         <MouseGraphic className="mx-auto h-full w-full drop-shadow-[0_20px_42px_rgba(0,0,0,0.18)]" />
 
         {/* 渲染每一个按键的绑定显示标签 */}
@@ -70,7 +70,7 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
               type="button"
               aria-pressed={active}
               aria-label={`${pickLabel(button, locale)}: ${binding}`}
-              className={`absolute w-[130px] rounded-md px-3 py-2 text-left text-sm font-black shadow-[0_8px_20px_rgba(0,0,0,0.08)] transition duration-200 hover:-translate-y-0.5 ${
+              className={`absolute w-[136px] rounded-md px-3 py-2 text-left text-sm font-black shadow-[0_8px_20px_rgba(0,0,0,0.08)] transition duration-200 hover:-translate-y-0.5 ${
                 active
                   ? 'bg-driver-text text-driver-panel ring-2 ring-warn ring-offset-2 ring-offset-driver-bg'
                   : 'bg-driver-panel text-driver-text hover:bg-driver-hover'
@@ -100,10 +100,10 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
               aria-label={label}
               aria-pressed={active}
               title={label}
-              className={`absolute h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full p-0 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warn focus-visible:ring-offset-2 focus-visible:ring-offset-driver-bg ${dotClass(button.id)} ${
+              className={`absolute h-6 w-6 rounded-full p-0 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warn focus-visible:ring-offset-2 focus-visible:ring-offset-driver-bg ${dotClass(button.id)} ${
                 active
-                  ? 'border-solid border-[3px] border-warn bg-warn/30 shadow-[0_0_12px_var(--color-warn)]'
-                  : 'border-dotted border-[3px] border-warn/70 bg-transparent hover:scale-110 hover:border-solid'
+                  ? 'border-solid border-[3px] border-warn bg-warn/30 shadow-[0_0_10px_var(--color-warn)]'
+                  : 'border-dotted border-[3px] border-warn/70 bg-transparent hover:scale-105 hover:border-solid'
               }`}
               onClick={() => onChoose(button.id)}
             />
@@ -117,17 +117,17 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
 function positionClass(buttonId: ButtonId) {
   switch (buttonId) {
     case ButtonId.Left:
-      return 'right-[102%] top-[20%]';
-    case ButtonId.Forward:
-      return 'right-[102%] top-[36%]';
-    case ButtonId.Backward:
-      return 'right-[102%] top-[52%]';
-    case ButtonId.Middle:
-      return 'left-[102%] top-[14%]';
+      return 'left-[4%] top-[14%]';
     case ButtonId.Right:
-      return 'left-[102%] top-[28%]';
+      return 'right-[4%] top-[34%]';
+    case ButtonId.Middle:
+      return 'right-[4%] top-[14%]';
+    case ButtonId.Forward:
+      return 'left-[4%] top-[38%]';
+    case ButtonId.Backward:
+      return 'left-[4%] top-[58%]';
     case ButtonId.Dpi:
-      return 'left-[102%] top-[46%]';
+      return 'right-[4%] top-[55%]';
     default:
       return 'left-1/2 top-1/2';
   }
@@ -136,17 +136,17 @@ function positionClass(buttonId: ButtonId) {
 function dotClass(buttonId: ButtonId) {
   switch (buttonId) {
     case ButtonId.Left:
-      return 'left-[33%] top-[26%]';
+      return 'left-[34%] top-[18%]';
     case ButtonId.Right:
-      return 'left-[67%] top-[26%]';
+      return 'right-[34%] top-[18%]';
     case ButtonId.Middle:
-      return 'left-[50%] top-[16.5%]';
-    case ButtonId.Dpi:
-      return 'left-[50%] top-[43%]';
+      return 'left-[48%] top-[20%]';
     case ButtonId.Forward:
-      return 'left-[16.5%] top-[32.2%]';
+      return 'left-[28%] top-[45%]';
     case ButtonId.Backward:
-      return 'left-[16%] top-[40%]';
+      return 'left-[29%] top-[53%]';
+    case ButtonId.Dpi:
+      return 'left-[48%] top-[7%]';
     default:
       return 'left-1/2 top-1/2';
   }
