@@ -117,15 +117,15 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
 function positionClass(buttonId: ButtonId) {
   switch (buttonId) {
     case ButtonId.Left:
-      return 'right-[102%] top-[14%]';
+      return 'right-[102%] top-[23%]';
     case ButtonId.Forward:
-      return 'right-[102%] top-[39%]';
+      return 'right-[102%] top-[41%]';
     case ButtonId.Backward:
-      return 'right-[102%] top-[57%]';
+      return 'right-[102%] top-[59%]';
     case ButtonId.Middle:
-      return 'left-[102%] top-[14%]';
+      return 'left-[102%] top-[18%]';
     case ButtonId.Right:
-      return 'left-[102%] top-[32%]';
+      return 'left-[102%] top-[33%]';
     case ButtonId.Dpi:
       return 'left-[102%] top-[52%]';
     default:
@@ -136,17 +136,17 @@ function positionClass(buttonId: ButtonId) {
 function dotClass(buttonId: ButtonId) {
   switch (buttonId) {
     case ButtonId.Left:
-      return 'left-[32%] top-[19%]';
+      return 'left-[33%] top-[28%]';
     case ButtonId.Right:
-      return 'left-[68%] top-[19%]';
+      return 'left-[67%] top-[28%]';
     case ButtonId.Middle:
-      return 'left-[50%] top-[21%]';
+      return 'left-[50%] top-[24.2%]';
     case ButtonId.Dpi:
-      return 'left-[50%] top-[30%]';
+      return 'left-[50%] top-[38.2%]';
     case ButtonId.Forward:
-      return 'left-[15%] top-[41%]';
+      return 'left-[16%] top-[38.8%]';
     case ButtonId.Backward:
-      return 'left-[16%] top-[48.5%]';
+      return 'left-[16%] top-[47.5%]';
     default:
       return 'left-1/2 top-1/2';
   }
