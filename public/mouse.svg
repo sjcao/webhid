@@ -1,0 +1,33 @@
+<svg viewBox="0 0 600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 纯净典雅正统极简描边鼠标 SVG -->
+  <path
+    d="M 100 180 
+       C 100 90, 200 45, 300 45 
+       C 400 45, 500 90, 500 180 
+       C 500 300, 485 450, 480 560 
+       C 475 720, 410 930, 300 930 
+       C 190 930, 125 720, 120 560 
+       C 115 450, 100 300, 100 180 Z"
+    stroke="#1e293b"
+    stroke-width="3.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <line x1="300" y1="45" x2="300" y2="350" stroke="#334155" stroke-width="2.5" stroke-linecap="round" />
+  <path d="M 98 340 C 180 375, 420 375, 502 340" stroke="#334155" stroke-width="3" fill="none" stroke-linecap="round" />
+
+  <rect x="270" y="85" width="60" height="135" rx="30" stroke="#0f172a" stroke-width="3" />
+  <rect x="276" y="91" width="48" height="123" rx="24" stroke="#64748b" stroke-width="1.5" />
+  <line x1="280" y1="110" x2="320" y2="110" stroke="#475569" stroke-width="2" stroke-linecap="round" />
+  <line x1="280" y1="125" x2="320" y2="125" stroke="#475569" stroke-width="2" stroke-linecap="round" />
+  <line x1="280" y1="140" x2="320" y2="140" stroke="#475569" stroke-width="2" stroke-linecap="round" />
+  <line x1="280" y1="155" x2="320" y2="155" stroke="#475569" stroke-width="2" stroke-linecap="round" />
+  <line x1="280" y1="170" x2="320" y2="170" stroke="#475569" stroke-width="2" stroke-linecap="round" />
+  <line x1="280" y1="185" x2="320" y2="185" stroke="#475569" stroke-width="2" stroke-linecap="round" />
+  <line x1="280" y1="200" x2="320" y2="200" stroke="#475569" stroke-width="2" stroke-linecap="round" />
+
+  <rect x="280" y="240" width="40" height="24" rx="12" stroke="#0f172a" stroke-width="2.5" />
+
+  <path d="M 94 285 C 104 287, 108 295, 108 315 C 108 335, 103 342, 92 345 C 90 325, 91 305, 94 285 Z" stroke="#334155" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M 91 355 C 105 357, 108 365, 108 385 C 108 405, 102 412, 89 417 C 87 397, 88 375, 91 355 Z" stroke="#334155" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

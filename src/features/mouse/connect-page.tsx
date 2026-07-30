@@ -67,11 +67,11 @@ export function ConnectPage() {
         <div className="absolute left-1/2 top-[31vh] z-10 h-16 w-9 -translate-x-1/2 rounded-b-sm bg-[#2b2d31] shadow-soft before:absolute before:left-0 before:top-0 before:h-6 before:w-full before:rounded-t-sm before:bg-warn" />
 
         <div className="relative z-20 mt-10 flex w-full max-w-5xl flex-col items-center">
-          <div className="relative w-full max-w-[880px]">
-            <MouseGraphic className="mx-auto block h-[340px] w-auto max-w-full" />
+          <div className="relative w-full max-w-[540px]">
+            <MouseGraphic className="mx-auto block h-[290px] w-auto max-w-full" />
             <Button
               variant="primary"
-              className="absolute left-1/2 top-[58%] h-10 -translate-x-1/2 rounded-md bg-black px-6 text-base text-white hover:bg-black/90"
+              className="absolute left-1/2 top-[54%] h-10 -translate-x-1/2 rounded-md bg-black px-6 text-base text-white hover:bg-black/90 shadow-md"
               onClick={requestDevice}
               disabled={!supported || connecting}
             >
@@ -80,7 +80,7 @@ export function ConnectPage() {
             </Button>
           </div>
 
-          <h1 className="mt-[-10px] text-center text-3xl font-black tracking-tight text-text md:text-4xl">
+          <h1 className="relative z-30 mt-6 text-center text-3xl font-black tracking-tight text-text md:text-4xl">
             {t('connect.title')}
           </h1>
           <p className="mt-6 text-center text-lg font-bold text-text/85">{t('connect.subtitle')}</p>

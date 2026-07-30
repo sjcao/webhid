@@ -3,14 +3,15 @@ type MouseGraphicProps = {
 };
 
 /**
- * 还原最开始的原生图片 MouseGraphic 组件 (引用 public/ic-moouse.png)
+ * 引用 WebP 格式的 MouseGraphic 组件 (public/ic-moouse.webp)
+ * 自适应容器高度与宽度，保持原始精致宽高比例
  */
 export function MouseGraphic({ className = '' }: MouseGraphicProps) {
   return (
     <img
-      src="./ic-moouse.png"
+      src="./ic-moouse.webp"
       alt="Mouse"
-      className={`mx-auto block h-full w-full object-contain ${className}`}
+      className={`mx-auto block max-h-full max-w-full object-contain ${className}`}
     />
   );
 }
