@@ -3,35 +3,35 @@ type MouseGraphicProps = {
 };
 
 /**
- * 经典 G102/G304 风格极简线框描边鼠标 SVG 组件
- * - 1:1 参考倒八字切割分缝、中轴滚轮舱与胶囊 DPI 键
+ * 经典 G102/G304 风格极简线框描边鼠标 SVG 组件 (圆润饱满尾部)
+ * - viewBox: 0 0 600 900
+ * - 宽阔圆润、饱满敦实的尾部线条
  * - 纯 Line-art 描边风格，无颜色填充，无商标
- * - viewBox: 0 0 600 1000
  */
 export function MouseGraphic({ className = '' }: MouseGraphicProps) {
   return (
     <svg
-      viewBox="0 0 600 1000"
+      viewBox="0 0 600 900"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={`select-none ${className}`}
       role="img"
-      aria-label="Minimalist Line Art Mouse Graphic"
+      aria-label="Minimalist Line Art Mouse Graphic with Rounded Tail"
     >
-      {/* 柔和阴影轮廓层（极淡底层背景提升立体感） */}
+      {/* 柔和阴影轮廓层 */}
       <path
         d="M 220 110 
            L 380 110 
            L 495 230 
-           C 512 330, 495 470, 485 580 
-           C 468 740, 415 930, 300 930 
-           C 185 930, 132 740, 115 580 
-           C 105 470, 88 330, 105 230 Z"
+           C 515 330, 502 460, 492 570 
+           C 480 700, 430 840, 300 840 
+           C 170 840, 120 700, 108 570 
+           C 98 460, 85 330, 105 230 Z"
         fill="currentColor"
         className="text-driver-panel/30"
       />
 
-      {/* 1. 顶部防折拉线护套 (Cord Relief / Tail Top) */}
+      {/* 1. 顶部防折拉线护套 (Cord Relief) */}
       <path
         d="M 284 45 L 316 45 L 316 110 L 284 110 Z"
         stroke="currentColor"
@@ -42,15 +42,15 @@ export function MouseGraphic({ className = '' }: MouseGraphicProps) {
       <line x1="284" y1="65" x2="316" y2="65" stroke="currentColor" strokeWidth="2.5" className="text-driver-text/70" />
       <line x1="284" y1="85" x2="316" y2="85" stroke="currentColor" strokeWidth="2.5" className="text-driver-text/70" />
 
-      {/* 2. 外机身主轮廓线 (如 G102/G304 的棱角头部与饱满椭圆尾部) */}
+      {/* 2. 外机身主轮廓线 (宽阔饱满圆润的下屁股/尾部) */}
       <path
         d="M 220 110 
            L 380 110 
            L 495 230 
-           C 512 330, 495 470, 485 580 
-           C 468 740, 415 930, 300 930 
-           C 185 930, 132 740, 115 580 
-           C 105 470, 88 330, 105 230 Z"
+           C 515 330, 502 460, 492 570 
+           C 480 700, 430 840, 300 840 
+           C 170 840, 120 700, 108 570 
+           C 98 460, 85 330, 105 230 Z"
         stroke="currentColor"
         strokeWidth="4"
         strokeLinecap="round"
@@ -60,7 +60,7 @@ export function MouseGraphic({ className = '' }: MouseGraphicProps) {
 
       {/* 3. 经典倒八字按键切割缝 (V-Shape Key Seam) */}
       <path
-        d="M 108 480 L 268 410 M 332 410 L 492 480"
+        d="M 108 470 L 268 400 M 332 400 L 492 470"
         stroke="currentColor"
         strokeWidth="3.5"
         strokeLinecap="round"
@@ -72,7 +72,7 @@ export function MouseGraphic({ className = '' }: MouseGraphicProps) {
         x="268"
         y="110"
         width="64"
-        height="325"
+        height="315"
         rx="32"
         stroke="currentColor"
         strokeWidth="3.5"
@@ -82,16 +82,16 @@ export function MouseGraphic({ className = '' }: MouseGraphicProps) {
       {/* 5. 滚轮 (Scroll Wheel) */}
       <rect
         x="274"
-        y="175"
+        y="170"
         width="52"
-        height="135"
+        height="130"
         rx="16"
         stroke="currentColor"
         strokeWidth="3"
         className="text-driver-text"
       />
       {/* 滚轮平行防滑刻度描边 */}
-      {[195, 210, 225, 240, 255, 270, 285, 295].map((y) => (
+      {[190, 205, 220, 235, 250, 265, 280].map((y) => (
         <line
           key={y}
           x1="278"
@@ -108,9 +108,9 @@ export function MouseGraphic({ className = '' }: MouseGraphicProps) {
       {/* 6. DPI 胶囊按键 (DPI Capsule Button) */}
       <rect
         x="280"
-        y="350"
+        y="340"
         width="40"
-        height="65"
+        height="60"
         rx="20"
         stroke="currentColor"
         strokeWidth="3"
@@ -119,7 +119,7 @@ export function MouseGraphic({ className = '' }: MouseGraphicProps) {
 
       {/* 7. 左侧侧前键 (Forward Side Button) */}
       <path
-        d="M 90 350 L 105 355 L 108 425 L 88 420 C 86 395, 87 370, 90 350 Z"
+        d="M 90 340 L 105 345 L 108 415 L 88 410 C 86 385, 87 360, 90 340 Z"
         stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
@@ -129,7 +129,7 @@ export function MouseGraphic({ className = '' }: MouseGraphicProps) {
 
       {/* 8. 左侧侧后键 (Backward Side Button) */}
       <path
-        d="M 88 435 L 108 440 L 110 515 L 84 505 C 83 480, 85 455, 88 435 Z"
+        d="M 88 425 L 108 430 L 110 505 L 84 495 C 83 470, 85 445, 88 425 Z"
         stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
