@@ -7,6 +7,7 @@ import { useI18n } from '@/i18n/use-i18n';
 import { formatUsbId } from '@/lib/hex';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
+import { MouseGraphic } from './mouse-graphic';
 
 export function ConnectPage() {
   const navigate = useNavigate();
@@ -67,11 +68,7 @@ export function ConnectPage() {
 
         <div className="relative z-20 mt-10 flex w-full max-w-5xl flex-col items-center">
           <div className="relative w-full max-w-[880px]">
-            <img
-              src={`${import.meta.env.BASE_URL}ic-moouse.webp`}
-              alt="Mouse"
-              className="mx-auto block h-[340px] w-auto max-w-full object-contain drop-shadow-[0_24px_38px_rgba(0,0,0,0.28)]"
-            />
+            <MouseGraphic className="mx-auto block h-[340px] w-auto max-w-full" />
             <Button
               variant="primary"
               className="absolute left-1/2 top-[58%] h-10 -translate-x-1/2 rounded-md bg-black px-6 text-base text-white hover:bg-black/90"

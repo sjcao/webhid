@@ -3,6 +3,7 @@ import { ButtonId, findKeyOption, KeyFunctionType, mouseButtons } from '@/protoc
 import { useMouseStore } from '@/stores/mouse-store';
 import { useMacroStore } from '@/stores/macro-store';
 import { useI18n } from '@/i18n/use-i18n';
+import { MouseGraphic } from '../mouse-graphic';
 import { formatTemplate, hidValueToName, modifierLabel, parseComboValues, pickLabel } from './helpers';
 
 type MouseCanvasProps = {
@@ -29,11 +30,7 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
   return (
     <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-4">
       <div className="relative aspect-[26/25] w-full max-w-[520px] shrink-0">
-        <img
-          src={`${import.meta.env.BASE_URL}ic-moouse.webp`}
-          alt="Mouse"
-          className="mx-auto h-full w-full object-contain drop-shadow-[0_20px_42px_rgba(0,0,0,0.18)]"
-        />
+        <MouseGraphic className="mx-auto h-full w-full drop-shadow-[0_20px_42px_rgba(0,0,0,0.18)]" />
 
         {/* 渲染每一个按键的绑定显示标签 */}
         {mouseButtons.map((button) => {
