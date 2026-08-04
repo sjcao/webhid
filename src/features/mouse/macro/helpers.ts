@@ -8,9 +8,9 @@ export type EditorAction = MacroAction & { id: string };
 export type MouseButtonKey = 'left' | 'right' | 'middle';
 
 export const MOUSE_BUTTON_VALUES: Record<MouseButtonKey, number> = {
-  left: 1,
-  right: 2,
-  middle: 3,
+  left: 0,
+  right: 1,
+  middle: 2,
 };
 
 export const MOUSE_BUTTON_LABEL_KEYS: Record<MouseButtonKey, TranslationKey> = {
@@ -51,8 +51,10 @@ export function mouseButtonKeyOf(action: MacroAction): MouseButtonKey | null {
 
 function normalizeMouseKeyName(action: MacroAction): MacroAction {
   const buttonKey = mouseButtonKeyOf(action);
-  if (!buttonKey || action.keyName === buttonKey) return action;
-  return { ...action, keyName: buttonKey };
+  if (!buttonKey) return action;
+  const keyCode = [MOUSE_BUTTON_VALUES[buttonKey]];
+  if (action.keyName === buttonKey && action.keyCode.length === 1 && action.keyCode[0] === keyCode[0]) return action;
+  return { ...action, keyName: buttonKey, keyCode };
 }
 
 // 统一存量数据形状（语言无关 keyName + 首动作时间戳归零），加载与脏检查两侧共用

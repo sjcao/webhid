@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Cable, Check, ChevronRight, Cpu, Globe2, Grid2X2, Home, Keyboard, MonitorPlay, Moon, Mouse, Settings, SlidersHorizontal, Sun, X } from 'lucide-react';
@@ -141,7 +141,7 @@ export function MouseWorkspacePage() {
         <aside className="flex min-h-0 flex-col bg-surface-2 px-2 pb-3 pt-2">
           <button className="hidden rounded-md bg-surface-3 p-3 text-left shadow-[inset_0_0_0_1px_var(--color-line)] min-[1200px]:block" onClick={() => setActivePanel('params')}>
             <span className="flex items-center justify-between gap-2">
-              <span className="block truncate text-sm font-semibold">{currentDevice?.productName ?? t('mouse.previewDeviceName')}</span>
+               <span className="block truncate text-sm font-semibold">{currentDevice?.productName ?? (previewMode ? t('mouse.previewDeviceName') : t('app.disconnected'))}</span>
               <ChevronRight size={16} className="shrink-0 text-muted" />
             </span>
             <span className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted">
@@ -150,8 +150,8 @@ export function MouseWorkspacePage() {
                 {deviceType === 'mouse' ? t('mouse.mouse') : t('mouse.receiver')}
               </span>
               <span className="flex items-center gap-1.5 rounded-md bg-surface-2 px-2 py-1.5">
-                {previewMode ? <MonitorPlay size={14} /> : <Cable size={14} />}
-                {previewMode ? t('app.preview') : t(workModeKey(workMode))}
+                 {previewMode ? <MonitorPlay size={14} /> : <Cable size={14} />}
+                 {previewMode ? t('app.preview') : currentDevice ? t(workModeKey(workMode)) : t('app.disconnected')}
               </span>
             </span>
           </button>
@@ -191,8 +191,8 @@ export function MouseWorkspacePage() {
               aria-expanded={deviceOpen}
               aria-haspopup="dialog"
               aria-controls="device-popover-mobile"
-              aria-label={currentDevice?.productName ?? t('mouse.previewDeviceName')}
-              title={currentDevice?.productName ?? t('mouse.previewDeviceName')}
+               aria-label={currentDevice?.productName ?? (previewMode ? t('mouse.previewDeviceName') : t('app.disconnected'))}
+               title={currentDevice?.productName ?? (previewMode ? t('mouse.previewDeviceName') : t('app.disconnected'))}
               onClick={() => {
                 setDeviceOpen((open) => !open);
                 setProfileOpen(false);
@@ -203,14 +203,14 @@ export function MouseWorkspacePage() {
             {deviceOpen && (
               <PopoverShell
                 id="device-popover-mobile"
-                label={currentDevice?.productName ?? t('mouse.previewDeviceName')}
+                 label={currentDevice?.productName ?? (previewMode ? t('mouse.previewDeviceName') : t('app.disconnected'))}
                 className="left-[calc(100%+10px)] top-0 w-[270px] shadow-panel"
                 onClose={closeDevice}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-bold">{currentDevice?.productName ?? t('mouse.previewDeviceName')}</div>
-                    <div className="mt-1 text-xs text-muted">{previewMode ? t('app.preview') : t('app.connected')}</div>
+                     <div className="truncate text-sm font-bold">{currentDevice?.productName ?? (previewMode ? t('mouse.previewDeviceName') : t('app.disconnected'))}</div>
+                     <div className="mt-1 text-xs text-muted">{previewMode ? t('app.preview') : currentDevice ? t('app.connected') : t('app.disconnected')}</div>
                   </div>
                   <button type="button" className="rounded p-1 text-muted hover:bg-surface-3 hover:text-text" aria-label={t('mouse.cancel')} onClick={closeDevice}>
                     <X size={15} />
@@ -312,11 +312,37 @@ function PopoverShell({ id, label, className, onClose, children }: {
   onClose: () => void;
   children: ReactNode;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const dialog = dialogRef.current;
+    const focusableElements = () => Array.from(dialog?.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    ) ?? []);
+    (focusableElements()[0] ?? dialog)?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        event.preventDefault();
         onClose();
+        return;
+      }
+      if (event.key === 'Tab') {
+        const elements = focusableElements();
+        if (elements.length === 0) {
+          event.preventDefault();
+          dialog?.focus();
+          return;
+        }
+        const first = elements[0];
+        const last = elements[elements.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
       }
     };
     document.addEventListener('keydown', handleKeyDown);
@@ -330,9 +356,12 @@ function PopoverShell({ id, label, className, onClose, children }: {
     <>
       <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
       <div
+        ref={dialogRef}
         id={id}
         role="dialog"
+        aria-modal="true"
         aria-label={label}
+        tabIndex={-1}
         className={`absolute rounded-md border border-line bg-surface-2 p-3 text-text ${className ?? ''}`}
       >
         {children}

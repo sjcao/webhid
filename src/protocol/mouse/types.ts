@@ -63,6 +63,7 @@ export type ParsedMouseResponse =
   | { type: ParamType.Dpi; dpi: number }
   | { type: ParamType.Button; buttonId: ButtonId; functionType: KeyFunctionType; index: number; values: number[] }
   | { type: ParamType.Profile; profile: number }
+  | { type: ParamType.Reset; resetType: number }
   | { type: ParamType.Version; deviceType: 'mouse' | 'receiver'; version: string }
   | { type: ParamType.WorkMode; mode: WorkMode }
   | { type: ParamType.None; rawData: number[] };

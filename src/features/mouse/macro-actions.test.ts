@@ -58,4 +58,15 @@ describe('normalizeMacroTimestamps', () => {
     const empty: MacroAction[] = [];
     expect(normalizeMacroTimestamps(empty)).toBe(empty);
   });
+
+  it('repairs non-finite, fractional, and decreasing persisted timestamps', () => {
+    const result = normalizeMacroTimestamps([
+      action('A', Number.NaN),
+      action('B', 100.6),
+      action('C', 90),
+      action('D', Number.POSITIVE_INFINITY),
+    ]);
+
+    expect(result.map((item) => item.timestamp)).toEqual([0, 101, 101, 101]);
+  });
 });

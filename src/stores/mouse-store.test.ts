@@ -56,7 +56,7 @@ function emitInput(data: Uint8Array) {
 function buildResponsePacket(paramType: ParamType, data: number[]) {
   const packet = new Array(17).fill(0);
   packet[0] = 0x09;
-  packet[1] = 0x80;
+  packet[1] = 0x81;
   packet[2] = paramType;
   packet[3] = data.length;
   data.forEach((value, index) => {
@@ -96,7 +96,7 @@ beforeEach(() => {
   sendMock.mockClear();
   sendMock.mockImplementation(async () => {});
   sendBatchMock.mockClear();
-  useDeviceStore.setState({ previewMode: false });
+  useDeviceStore.setState({ previewMode: false, currentDevice: null });
   useMacroStore.setState({ macros: [] });
   useMouseStore.setState({
     activeProfile: 0,
@@ -188,7 +188,8 @@ describe('bindMacroToButton', () => {
       actions: [
         keyboardAction([0x04, 0x00], MacroDirection.Down, 0),
         keyboardAction([0x04, 0x00], MacroDirection.Up, 120),
-        { keyName: 'LeftDown', kind: MacroActionKind.Mouse, direction: MacroDirection.Down, keyCode: [0xf0], timestamp: 500 },
+        // 旧版曾把 left 错存为 1；上传时必须按稳定 keyName 修正为协议定义的 0。
+        { keyName: 'left', kind: MacroActionKind.Mouse, direction: MacroDirection.Down, keyCode: [0x01], timestamp: 500 },
       ],
     });
     useMacroStore.setState({ macros: [macro] });
@@ -199,7 +200,7 @@ describe('bindMacroToButton', () => {
     expect(sentFrames()).toEqual([
       MouseCommands.setButtonMacro({ ...base, macroButtonType: MacroButtonType.KeyboardDown, delayMs: 120, values: [0x04] }),
       MouseCommands.setButtonMacro({ ...base, macroButtonType: MacroButtonType.KeyUp, delayMs: 380, values: [0x00] }),
-      MouseCommands.setButtonMacro({ ...base, macroButtonType: MacroButtonType.MouseDown, delayMs: 0, values: [0xf0] }),
+      MouseCommands.setButtonMacro({ ...base, macroButtonType: MacroButtonType.MouseDown, delayMs: 0, values: [0x00] }),
       MouseCommands.setButtonMacro({ ...base, macroButtonType: MacroButtonType.KeyUp, delayMs: 0, values: [0x00] }),
     ].map((command) => Array.from(command)));
 
@@ -312,7 +313,7 @@ describe('bindMacroToButton', () => {
     await useMouseStore.getState().bindMacroToButton(ButtonId.Forward, macro);
 
     const frames = sentFrames();
-    expect(frames.at(-2)).toEqual(Array.from(MouseCommands.setButtonMacro({
+    expect(frames[frames.length - 2]).toEqual(Array.from(MouseCommands.setButtonMacro({
       buttonId: ButtonId.Forward,
       macroId: 0,
       repeatType: 1,
@@ -320,7 +321,7 @@ describe('bindMacroToButton', () => {
       delayMs: 0,
       values: [0x00],
     })));
-    expect(frames.at(-1)).toEqual(Array.from(MouseCommands.readButton(ButtonId.Forward)));
+    expect(frames[frames.length - 1]).toEqual(Array.from(MouseCommands.readButton(ButtonId.Forward)));
     expect(useMouseStore.getState().lastError).toBe('frame lost');
   });
 
@@ -333,20 +334,111 @@ describe('bindMacroToButton', () => {
     expect(sendBatchMock).toHaveBeenCalledTimes(1);
     expect(sendBatchMock.mock.calls[0][0]).toHaveLength(2);
   });
+
+  it('clears a previous command error after a successful macro upload', async () => {
+    const macro = makeMacro();
+    useMacroStore.setState({ macros: [macro] });
+    useMouseStore.setState({ lastError: 'old failure', lastErrorSource: 'command' });
+
+    await useMouseStore.getState().bindMacroToButton(ButtonId.Forward, macro);
+
+    expect(useMouseStore.getState().lastError).toBeNull();
+    expect(useMouseStore.getState().lastErrorSource).toBeNull();
+  });
+
+  it('does not leave optimistic macro state behind when command construction is invalid', async () => {
+    const macro = makeMacro({ loopTimes: 1.5 });
+    useMacroStore.setState({ macros: [macro] });
+
+    await useMouseStore.getState().bindMacroToButton(ButtonId.Forward, macro);
+
+    const state = useMouseStore.getState();
+    expect(state.macroUploading).toBe(false);
+    expect(state.macroSlots).toEqual({});
+    expect(state.buttonConfigs[ButtonId.Forward]).toBeUndefined();
+    expect(state.lastError).toMatch(/repeat type/);
+    expect(sendBatchMock).not.toHaveBeenCalled();
+  });
 });
 
 describe('write failure recovery', () => {
+  it('keeps an optimistic dpi value only after the matching device acknowledgement arrives', async () => {
+    sendMock.mockImplementationOnce(async () => {
+      emitInput(buildResponsePacket(ParamType.Dpi, [0x0c, 0x80]));
+    });
+
+    await useMouseStore.getState().updateDpi(3200);
+
+    expect(useMouseStore.getState().dpi).toBe(3200);
+    expect(useMouseStore.getState().lastError).toBeNull();
+  });
+
   it('records lastError and re-reads the device value when a dpi write fails', async () => {
     sendMock.mockRejectedValueOnce(new Error('send failed'));
 
     await useMouseStore.getState().updateDpi(3200);
 
-    expect(useMouseStore.getState().dpi).toBe(3200);
+    expect(useMouseStore.getState().dpi).toBe(1600);
     expect(useMouseStore.getState().lastError).toBe('send failed');
     expect(sentFrames()).toEqual([
       Array.from(MouseCommands.setDpi(3200)),
       Array.from(MouseCommands.readDpi()),
     ]);
+  });
+
+  it('restores the previous button mapping when a write fails', async () => {
+    const previous = { buttonId: ButtonId.Right, functionType: KeyFunctionType.Mouse, index: 2, values: [] };
+    useMouseStore.setState({ buttonConfigs: { [ButtonId.Right]: previous } });
+    sendMock.mockRejectedValueOnce(new Error('mapping failed'));
+
+    await useMouseStore.getState().setButtonMapping({
+      buttonId: ButtonId.Right,
+      functionType: KeyFunctionType.Alphanumeric,
+      index: 0,
+      values: [0x14],
+    });
+
+    expect(useMouseStore.getState().buttonConfigs[ButtonId.Right]).toEqual(previous);
+    expect(useMouseStore.getState().lastError).toBe('mapping failed');
+  });
+
+  it('does not accept a stale button response with different value bytes as the write acknowledgement', async () => {
+    vi.useFakeTimers();
+    const previous = { buttonId: ButtonId.Right, functionType: KeyFunctionType.Mouse, index: 2, values: [] };
+    const payload = {
+      buttonId: ButtonId.Right,
+      functionType: KeyFunctionType.BurstFire,
+      index: 0,
+      values: [8, 3],
+    };
+    useMouseStore.setState({ buttonConfigs: { [ButtonId.Right]: previous } });
+    sendMock.mockImplementationOnce(async () => {
+      emitInput(buildResponsePacket(ParamType.Button, [
+        ButtonId.Right,
+        KeyFunctionType.BurstFire,
+        0,
+        16,
+        5,
+      ]));
+    });
+
+    const pending = useMouseStore.getState().setButtonMapping(payload);
+    await vi.advanceTimersByTimeAsync(500);
+    await pending;
+
+    expect(useMouseStore.getState().buttonConfigs[ButtonId.Right]).toEqual(previous);
+    expect(useMouseStore.getState().lastError).toMatch(/acknowledge/);
+  });
+
+  it('restores button state when reset acknowledgement cannot be sent', async () => {
+    const previous = { [ButtonId.Middle]: { buttonId: ButtonId.Middle, functionType: KeyFunctionType.Mouse, index: 3, values: [] } };
+    useMouseStore.setState({ buttonConfigs: previous });
+    sendMock.mockRejectedValueOnce(new Error('reset failed'));
+
+    await useMouseStore.getState().resetButtons();
+
+    expect(useMouseStore.getState().buttonConfigs).toEqual(previous);
+    expect(useMouseStore.getState().lastError).toBe('reset failed');
   });
 
   it('keeps a command failure visible when unrelated valid reports arrive', async () => {
@@ -419,6 +511,39 @@ describe('refreshInitialState', () => {
       MouseCommands.readButton(ButtonId.Dpi),
     ].map((command) => Array.from(command)));
     expect(useMouseStore.getState().deviceUnresponsive).toBe(false);
+  });
+
+  it('cancels a stale refresh when the active HID device changes', async () => {
+    const deviceA = { productName: 'A' } as HIDDevice;
+    const deviceB = { productName: 'B' } as HIDDevice;
+    const record = (device: HIDDevice) => ({
+      id: device.productName,
+      productName: device.productName,
+      vendorId: 1,
+      productId: 2,
+      opened: true,
+      device,
+    });
+    useDeviceStore.setState({ currentDevice: record(deviceA) });
+    sendMock.mockImplementationOnce(async () => {});
+
+    const staleRefresh = useMouseStore.getState().refreshInitialState();
+    await vi.waitFor(() => expect(sendMock).toHaveBeenCalledTimes(1));
+    useDeviceStore.setState({ currentDevice: record(deviceB) });
+    sendMock.mockImplementation(async (command) => {
+      const paramType = command[1];
+      if (paramType === ParamType.WorkMode) emitInput(buildResponsePacket(paramType, [WorkMode.Wired]));
+      if (paramType === ParamType.Version) emitInput(buildResponsePacket(paramType, [0, ...versionCodes('v2.0')]));
+      if (paramType === ParamType.Profile) emitInput(buildResponsePacket(paramType, [0]));
+      if (paramType === ParamType.Dpi) emitInput(buildResponsePacket(paramType, [0x06, 0x40]));
+      if (paramType === ParamType.Button) emitInput(buildResponsePacket(paramType, [command[3], KeyFunctionType.Mouse, 1]));
+    });
+
+    const currentRefresh = useMouseStore.getState().refreshInitialState();
+    await Promise.all([staleRefresh, currentRefresh]);
+
+    expect(useMouseStore.getState().deviceUnresponsive).toBe(false);
+    expect(sendMock).toHaveBeenCalledTimes(11);
   });
 
   it('marks the device unresponsive when every send rejects', async () => {

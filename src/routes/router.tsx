@@ -1,10 +1,11 @@
-import { createHashHistory, createRootRoute, createRoute, createRouter, lazyRouteComponent, NotFoundRoute, redirect } from '@tanstack/react-router';
+import { createHashHistory, createRootRoute, createRoute, createRouter, lazyRouteComponent, redirect } from '@tanstack/react-router';
 import { RootLayout } from '@/app/root-layout';
 import { ConnectPage } from '@/features/mouse/connect-page';
 import { useDeviceStore } from '@/stores/device-store';
 
 const rootRoute = createRootRoute({
   component: RootLayout,
+  notFoundComponent: ConnectPage,
 });
 
 const indexRoute = createRoute({
@@ -27,16 +28,10 @@ const workspaceRoute = createRoute({
   component: lazyRouteComponent(() => import('@/features/mouse/workspace-page'), 'MouseWorkspacePage'),
 });
 
-const notFoundRoute = new NotFoundRoute({
-  getParentRoute: () => rootRoute,
-  component: ConnectPage,
-});
-
 const routeTree = rootRoute.addChildren([indexRoute, workspaceRoute]);
 
 export const router = createRouter({
   routeTree,
-  notFoundRoute,
   history: createHashHistory(),
   defaultPreload: 'intent',
 });

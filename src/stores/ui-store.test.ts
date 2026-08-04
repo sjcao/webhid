@@ -1,5 +1,20 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { useUiStore } from './ui-store';
+import { normalizeUiPreferences, useUiStore } from './ui-store';
+
+describe('persisted UI preferences', () => {
+  it('keeps valid values and replaces corrupted local data with safe defaults', () => {
+    expect(normalizeUiPreferences({ locale: 'en', theme: 'dark', activePanel: 'dpi' })).toEqual({
+      locale: 'en',
+      theme: 'dark',
+      activePanel: 'dpi',
+    });
+    expect(normalizeUiPreferences({ locale: 'xx', theme: 3, activePanel: 'missing' })).toEqual({
+      locale: 'zh-CN',
+      theme: 'light',
+      activePanel: 'buttons',
+    });
+  });
+});
 
 describe('ui store panel dirty guard', () => {
   beforeEach(() => {

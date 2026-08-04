@@ -31,10 +31,11 @@ type DeviceState = {
   error: string | null;
   errorKey: TranslationKey | null;
   disconnectNotice: boolean;
+  autoReconnectPending: boolean;
   refreshDevices: () => Promise<void>;
   requestDevice: () => Promise<void>;
   connectDevice: (id: string) => Promise<boolean>;
-  reconnectAuthorizedDevice: () => Promise<boolean>;
+  reconnectAuthorizedDevice: (preferredDevice?: HIDDevice) => Promise<boolean>;
   disconnectDevice: () => Promise<void>;
   enterPreviewMode: () => void;
   clearDisconnectNotice: () => void;
@@ -49,9 +50,24 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
   error: null,
   errorKey: null,
   disconnectNotice: false,
+  autoReconnectPending: false,
   refreshDevices: async () => {
-    const devices = await hidService.getAuthorizedDevices();
-    set({ devices: devices.map(toDeviceRecord), supported: hidService.supported });
+    try {
+      const devices = await hidService.getAuthorizedDevices();
+      set({
+        devices: devices.map(toDeviceRecord),
+        supported: hidService.supported,
+        error: null,
+        errorKey: null,
+      });
+    } catch (error) {
+      set({
+        devices: [],
+        supported: hidService.supported,
+        error: error instanceof Error ? error.message : 'Failed to list authorized HID devices.',
+        errorKey: null,
+      });
+    }
   },
   requestDevice: async () => {
     set({ connecting: true, error: null, errorKey: null });
@@ -73,7 +89,7 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
     set({ connecting: true, error: null, errorKey: null });
     try {
       await hidService.connect(record.device);
-      set({ currentDevice: { ...record, opened: true }, previewMode: false, disconnectNotice: false });
+      set({ currentDevice: { ...record, opened: true }, previewMode: false, disconnectNotice: false, autoReconnectPending: false });
       await get().refreshDevices();
       return true;
     } catch (error) {
@@ -87,8 +103,11 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
       set({ connecting: false });
     }
   },
-  reconnectAuthorizedDevice: async () => {
-    const devices = await hidService.getAuthorizedDevices().catch(() => [] as HIDDevice[]);
+  reconnectAuthorizedDevice: async (preferredDevice) => {
+    const authorized = await hidService.getAuthorizedDevices().catch(() => [] as HIDDevice[]);
+    const devices = preferredDevice
+      ? [preferredDevice, ...authorized.filter((device) => device !== preferredDevice)]
+      : authorized;
     for (let index = 0; index < devices.length; index += 1) {
       const device = devices[index];
       try {
@@ -101,6 +120,7 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
           currentDevice: record ? { ...record, opened: true } : toDeviceRecord(device, index),
           previewMode: false,
           disconnectNotice: false,
+          autoReconnectPending: false,
           error: null,
           errorKey: null,
         });
@@ -115,21 +135,21 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
     try {
       await hidService.disconnect();
     } finally {
-      set({ currentDevice: null, previewMode: false, disconnectNotice: false });
+      set({ currentDevice: null, previewMode: false, disconnectNotice: false, autoReconnectPending: false });
       await get().refreshDevices();
     }
   },
-  enterPreviewMode: () => set({ previewMode: true, currentDevice: null, error: null, errorKey: null, disconnectNotice: false }),
+  enterPreviewMode: () => set({ previewMode: true, currentDevice: null, error: null, errorKey: null, disconnectNotice: false, autoReconnectPending: false }),
   clearDisconnectNotice: () => set({ disconnectNotice: false }),
 }));
 
-hidService.onConnect(() => {
+hidService.onConnect((connectedDevice) => {
   void useDeviceStore.getState().refreshDevices().then(() => {
-    // 热插拔：此前正在使用的设备曾断开(disconnectNotice)、当前无连接且非预览时，
+    // 热插拔：此前正在使用的设备曾断开(autoReconnectPending)、当前无连接且非预览时，
     // 设备重新插入即自动重连，避免用户停留在“已断开”横幅需返回首页重连
-    const { currentDevice, previewMode, disconnectNotice } = useDeviceStore.getState();
-    if (!currentDevice && !previewMode && disconnectNotice) {
-      void useDeviceStore.getState().reconnectAuthorizedDevice();
+    const { currentDevice, previewMode, autoReconnectPending } = useDeviceStore.getState();
+    if (!currentDevice && !previewMode && autoReconnectPending) {
+      void useDeviceStore.getState().reconnectAuthorizedDevice(connectedDevice);
     }
   });
 });
@@ -137,7 +157,7 @@ hidService.onConnect(() => {
 hidService.onDisconnect((device) => {
   const { currentDevice } = useDeviceStore.getState();
   if (currentDevice?.device === device) {
-    useDeviceStore.setState({ currentDevice: null, disconnectNotice: true });
+    useDeviceStore.setState({ currentDevice: null, disconnectNotice: true, autoReconnectPending: true });
   }
   void useDeviceStore.getState().refreshDevices();
 });

@@ -9,7 +9,7 @@ type MouseGraphicProps = {
 export function MouseGraphic({ className = '' }: MouseGraphicProps) {
   return (
     <img
-      src="./ic-moouse.webp"
+      src={`${import.meta.env.BASE_URL}ic-moouse.webp`}
       alt="Mouse"
       className={`mx-auto block max-h-full max-w-full object-contain ${className}`}
     />

@@ -13,6 +13,7 @@ export function ButtonsPanel() {
   const { t } = useI18n();
   const [selectedButton, setSelectedButton] = useState<ButtonId>(ButtonId.Middle);
   const [confirmLeft, setConfirmLeft] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const [mappingOpen, setMappingOpen] = useState(true);
 
   const readButton = useMouseStore((state) => state.readButton);
@@ -49,7 +50,7 @@ export function ButtonsPanel() {
               )}
               <Button
                 className="border border-driver-line bg-driver-panel text-driver-text shadow-sm hover:bg-driver-hover"
-                onClick={() => void resetButtons()}
+                 onClick={() => setConfirmReset(true)}
               >
                 {t('mouse.restoreDefault')}
               </Button>
@@ -76,6 +77,19 @@ export function ButtonsPanel() {
           setSelectedButton(ButtonId.Left);
           void readButton(ButtonId.Left);
           setMappingOpen(true);
+        }}
+      />
+      <ConfirmDialog
+        open={confirmReset}
+        title={t('mouse.resetButtons')}
+        description={`${t('mouse.resetButtonsDescription')} ${t('mouse.irreversible')}`}
+        confirmLabel={t('mouse.confirm')}
+        cancelLabel={t('mouse.cancel')}
+        confirmVariant="danger"
+        onOpenChange={setConfirmReset}
+        onConfirm={() => {
+          setConfirmReset(false);
+          void resetButtons();
         }}
       />
     </div>

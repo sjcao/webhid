@@ -141,7 +141,7 @@ export const keyGroups: Array<{ id: string; label: string; labelZh: string; opti
       labelZh,
       functionType: KeyFunctionType.Alphanumeric,
       index,
-      values: [code, 0x00],
+      values: [code],
     })),
   },
   {
@@ -154,7 +154,7 @@ export const keyGroups: Array<{ id: string; label: string; labelZh: string; opti
       labelZh: `F${index + 1}`,
       functionType: KeyFunctionType.FunctionKey,
       index,
-      values: [0x3a + index, 0x00],
+      values: [0x3a + index],
     })),
   },
   {
@@ -167,7 +167,7 @@ export const keyGroups: Array<{ id: string; label: string; labelZh: string; opti
       labelZh,
       functionType: KeyFunctionType.Numpad,
       index,
-      values: [code, 0x00],
+      values: [code],
     })),
   },
   {
@@ -180,7 +180,7 @@ export const keyGroups: Array<{ id: string; label: string; labelZh: string; opti
       labelZh,
       functionType: KeyFunctionType.ControlKey,
       index,
-      values: [code, 0x00],
+      values: [code],
     })),
   },
   {
@@ -237,45 +237,78 @@ export const keyGroups: Array<{ id: string; label: string; labelZh: string; opti
 ];
 
 export const browserKeyToHid: Record<string, number[]> = Object.fromEntries([
-  ...keyboardCodes.map(([label, , code]) => [label.toLowerCase(), [code, 0x00]]),
-  ...controlCodes.map(([label, , code]) => [label, [code, 0x00]]),
-  ...controlCodes.map(([label, , code]) => [label.toLowerCase(), [code, 0x00]]),
-  ...punctuationCodes.map(([label, , code]) => [label, [code, 0x00]]),
-  ['Enter', [0x28, 0x00]],
-  ['Escape', [0x29, 0x00]],
-  ['Backspace', [0x2a, 0x00]],
-  ['Tab', [0x2b, 0x00]],
-  [' ', [0x2c, 0x00]],
-  ['Space', [0x2c, 0x00]],
-  ['ArrowUp', [0x52, 0x00]],
-  ['ArrowLeft', [0x50, 0x00]],
-  ['ArrowDown', [0x51, 0x00]],
-  ['ArrowRight', [0x4f, 0x00]],
-  ['Control', [0xe0, 0x00]],
-  ['Shift', [0xe1, 0x00]],
-  ['Alt', [0xe2, 0x00]],
-  ['Meta', [0xe3, 0x00]],
-  ['ctrl', [0xe0, 0x00]],
-  ['shift', [0xe1, 0x00]],
-  ['alt', [0xe2, 0x00]],
-  ['meta', [0xe3, 0x00]],
+  ...keyboardCodes.map(([label, , code]) => [label.toLowerCase(), [code]]),
+  ...keyboardCodes.map(([label, , code]) => [/[A-Z]/.test(label) ? `Key${label}` : `Digit${label}`, [code]]),
+  ...controlCodes.map(([label, , code]) => [label, [code]]),
+  ...controlCodes.map(([label, , code]) => [label.toLowerCase(), [code]]),
+  ...punctuationCodes.map(([label, , code]) => [label, [code]]),
+  ...([
+    ['Backquote', 0x35], ['Minus', 0x2d], ['Equal', 0x2e], ['BracketLeft', 0x2f],
+    ['BracketRight', 0x30], ['Backslash', 0x31], ['Semicolon', 0x32], ['Quote', 0x34],
+    ['Comma', 0x36], ['Period', 0x37], ['Slash', 0x38],
+  ] as const).map(([code, value]) => [code, [value]]),
+  ...Array.from({ length: 12 }, (_, index) => [`F${index + 1}`, [0x3a + index]]),
+  ...([
+    ['NumpadDivide', 0x54], ['NumpadMultiply', 0x55], ['NumpadSubtract', 0x56],
+    ['NumpadAdd', 0x57], ['NumpadEnter', 0x58], ['Numpad1', 0x59], ['Numpad2', 0x5a],
+    ['Numpad3', 0x5b], ['Numpad4', 0x5c], ['Numpad5', 0x5d], ['Numpad6', 0x5e],
+    ['Numpad7', 0x5f], ['Numpad8', 0x60], ['Numpad9', 0x61], ['Numpad0', 0x62],
+    ['NumpadDecimal', 0x63],
+  ] as const).map(([code, value]) => [code, [value]]),
+  ['Enter', [0x28]],
+  ['Escape', [0x29]],
+  ['Backspace', [0x2a]],
+  ['Tab', [0x2b]],
+  [' ', [0x2c]],
+  ['Space', [0x2c]],
+  ['ArrowUp', [0x52]],
+  ['ArrowLeft', [0x50]],
+  ['ArrowDown', [0x51]],
+  ['ArrowRight', [0x4f]],
+  ['PrintScreen', [0x46]],
+  ['ScrollLock', [0x47]],
+  ['Pause', [0x48]],
+  ['Insert', [0x49]],
+  ['Home', [0x4a]],
+  ['PageUp', [0x4b]],
+  ['Delete', [0x4c]],
+  ['End', [0x4d]],
+  ['PageDown', [0x4e]],
+  ['CapsLock', [0x39]],
+  ['NumLock', [0x53]],
+  ['Control', [0xe0]],
+  ['Shift', [0xe1]],
+  ['Alt', [0xe2]],
+  ['Meta', [0xe3]],
+  ['ctrl', [0xe0]],
+  ['shift', [0xe1]],
+  ['alt', [0xe2]],
+  ['meta', [0xe3]],
   // event.code 形式的左右修饰键：event.key 无法区分左右，需按 code 精确映射到不同 HID 值
-  ['ControlLeft', [0xe0, 0x00]],
-  ['ControlRight', [0xe4, 0x00]],
-  ['ShiftLeft', [0xe1, 0x00]],
-  ['ShiftRight', [0xe5, 0x00]],
-  ['AltLeft', [0xe2, 0x00]],
-  ['AltRight', [0xe6, 0x00]],
-  ['MetaLeft', [0xe3, 0x00]],
-  ['MetaRight', [0xe7, 0x00]],
+  ['ControlLeft', [0xe0]],
+  ['ControlRight', [0xe4]],
+  ['ShiftLeft', [0xe1]],
+  ['ShiftRight', [0xe5]],
+  ['AltLeft', [0xe2]],
+  ['AltRight', [0xe6]],
+  ['MetaLeft', [0xe3]],
+  ['MetaRight', [0xe7]],
 ]);
+
+function withoutTrailingZeros(values: number[]) {
+  let end = values.length;
+  while (end > 0 && values[end - 1] === 0) end -= 1;
+  return values.slice(0, end);
+}
 
 export function findKeyOption(functionType: KeyFunctionType, index: number, values: number[] = []) {
   for (const group of keyGroups) {
     const option = group.options.find((item) => {
       if (item.functionType !== functionType || item.index !== index) return false;
-      if (item.values.length !== values.length) return item.values.length === 0;
-      return item.values.every((value, valueIndex) => value === values[valueIndex]);
+      if (item.values.length === 0) return true;
+      const expected = withoutTrailingZeros(item.values);
+      const actual = withoutTrailingZeros(values);
+      return expected.length === actual.length && expected.every((value, valueIndex) => value === actual[valueIndex]);
     });
     if (option) return option;
   }

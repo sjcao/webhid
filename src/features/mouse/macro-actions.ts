@@ -28,10 +28,19 @@ export function reorderMacroActions<T extends MacroAction>(actions: T[], fromInd
   });
 }
 
-// 首动作的绝对时间戳不会写入设备（协议只传输动作间隔），统一归零使 UI 与协议语义对齐
+// 首动作的绝对时间戳不会写入设备（协议只传输动作间隔），统一归零并修复异常的倒序时间戳
 export function normalizeMacroTimestamps<T extends MacroAction>(actions: T[]): T[] {
   if (actions.length === 0) return actions;
-  const offset = actions[0].timestamp;
-  if (offset === 0) return actions;
-  return actions.map((action) => ({ ...action, timestamp: action.timestamp - offset }));
+  const firstTimestamp = Number.isFinite(actions[0].timestamp) ? Math.round(actions[0].timestamp) : 0;
+  let previous = 0;
+  let changed = false;
+  const normalized = actions.map((action, index) => {
+    const raw = Number.isFinite(action.timestamp) ? Math.round(action.timestamp) - firstTimestamp : previous;
+    const timestamp = index === 0 ? 0 : Math.max(previous, raw, 0);
+    previous = timestamp;
+    if (timestamp === action.timestamp) return action;
+    changed = true;
+    return { ...action, timestamp };
+  });
+  return changed ? normalized : actions;
 }

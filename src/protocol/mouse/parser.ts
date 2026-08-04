@@ -1,6 +1,7 @@
 import { computeDataCrc, computePacketCrc } from './crc';
 import {
   ButtonId,
+  CommandType,
   KeyFunctionType,
   ParamType,
   ParsedMouseResponse,
@@ -14,11 +15,22 @@ function numericEnumValues(enumObj: Record<string, string | number>): Set<number
 const BUTTON_IDS = numericEnumValues(ButtonId);
 const KEY_FUNCTION_TYPES = numericEnumValues(KeyFunctionType);
 const WORK_MODES = numericEnumValues(WorkMode);
+const DPI_VALUES = new Set([800, 1600, 3200, 4000, 6000, 8000]);
+
+function requireDataLength(paramType: ParamType, data: number[], min: number, max = min) {
+  if (data.length < min || data.length > max) {
+    const expected = min === max ? String(min) : `${min}-${max}`;
+    throw new Error(`Invalid ${ParamType[paramType] ?? 'mouse'} response length: expected ${expected}, got ${data.length}`);
+  }
+}
 
 export function parseMouseResponse(packetLike: ArrayLike<number>): ParsedMouseResponse {
   const packet = Array.from(packetLike);
   if (packet.length !== 17 || packet[0] !== 0x09) {
     throw new Error(`Invalid mouse packet format: ${packet.length} bytes`);
+  }
+  if (packet[1] !== CommandType.Write) {
+    throw new Error(`Invalid mouse response command type: 0x${packet[1].toString(16).padStart(2, '0')}`);
   }
 
   const packetCrc = computePacketCrc(packet.slice(0, 16));
@@ -41,14 +53,21 @@ export function parseMouseResponse(packetLike: ArrayLike<number>): ParsedMouseRe
 
   switch (paramType) {
     case ParamType.Dpi:
-      return { type: ParamType.Dpi, dpi: ((data[0] ?? 0) << 8) | (data[1] ?? 0) };
+      requireDataLength(paramType, data, 2);
+      {
+        const dpi = ((data[0] ?? 0) << 8) | (data[1] ?? 0);
+        if (!DPI_VALUES.has(dpi)) throw new Error(`Unsupported DPI response: ${dpi}`);
+        return { type: ParamType.Dpi, dpi };
+      }
     case ParamType.Button: {
+      requireDataLength(paramType, data, 2, 11);
       const buttonId = data[0] ?? -1;
       const functionType = data[1] ?? -1;
-      // 设备字节越界时不强转枚举，退回 None 避免污染 store 状态
       if (!BUTTON_IDS.has(buttonId) || !KEY_FUNCTION_TYPES.has(functionType)) {
-        return { type: ParamType.None, rawData: data };
+        throw new Error(`Invalid button response values: button=${buttonId}, function=${functionType}`);
       }
+      if (functionType === KeyFunctionType.Default) requireDataLength(paramType, data, 2);
+      else requireDataLength(paramType, data, 3, 11);
       return {
         type: ParamType.Button,
         buttonId: buttonId as ButtonId,
@@ -57,17 +76,28 @@ export function parseMouseResponse(packetLike: ArrayLike<number>): ParsedMouseRe
         values: data.slice(3),
       };
     }
-    case ParamType.Profile:
-      return { type: ParamType.Profile, profile: data[0] ?? 0 };
+    case ParamType.Profile: {
+      requireDataLength(paramType, data, 1);
+      const profile = data[0];
+      if (profile > 3) throw new Error(`Invalid onboard profile: ${profile}`);
+      return { type: ParamType.Profile, profile };
+    }
+    case ParamType.Reset:
+      requireDataLength(paramType, data, 1);
+      if (data[0] > 2) throw new Error(`Invalid reset type: ${data[0]}`);
+      return { type: ParamType.Reset, resetType: data[0] };
     case ParamType.Version:
+      requireDataLength(paramType, data, 2, 11);
+      if (data[0] !== 0 && data[0] !== 1) throw new Error(`Invalid version device type: ${data[0]}`);
       return {
         type: ParamType.Version,
         deviceType: data[0] === 0 ? 'mouse' : 'receiver',
         version: String.fromCharCode(...data.slice(1)).replace(/\x00/g, ''),
       };
     case ParamType.WorkMode: {
+      requireDataLength(paramType, data, 1);
       const mode = data[0] ?? -1;
-      if (!WORK_MODES.has(mode)) return { type: ParamType.None, rawData: data };
+      if (!WORK_MODES.has(mode)) throw new Error(`Invalid work mode: ${mode}`);
       return { type: ParamType.WorkMode, mode: mode as WorkMode };
     }
     default:

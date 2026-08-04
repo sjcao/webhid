@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint';
 export default tseslint.config(
   { ignores: ['dist'] },
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', 'e2e/**/*.ts', '*.config.ts'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     plugins: {
       'react-hooks': reactHooks,
@@ -20,7 +20,7 @@ export default tseslint.config(
     },
   },
   {
-    // The mouse protocol layer is frozen; do not require edits to it.
+    // Version payloads may contain NUL padding that the parser removes explicitly.
     files: ['src/protocol/mouse/**'],
     rules: {
       'no-control-regex': 'off',

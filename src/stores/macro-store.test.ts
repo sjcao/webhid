@@ -4,6 +4,7 @@ import {
   keyboardEventToMacroAction,
   MacroActionKind,
   MacroDirection,
+  normalizeLoopTimes,
   useMacroStore,
   type MacroAction,
 } from './macro-store';
@@ -68,6 +69,16 @@ describe('macro store', () => {
   });
 });
 
+describe('macro loop count normalization', () => {
+  it('avoids byte values reserved for protocol repeat modes', () => {
+    expect(normalizeLoopTimes(239)).toBe(239);
+    expect(normalizeLoopTimes(240)).toBe(239);
+    expect(normalizeLoopTimes(241)).toBe(239);
+    expect(normalizeLoopTimes(242)).toBe(239);
+    expect(normalizeLoopTimes(243)).toBe(243);
+  });
+});
+
 describe('legacy macro migration', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -90,7 +101,7 @@ describe('legacy macro migration', () => {
       keyName: 'A',
       kind: 'keyboard',
       direction: 'down',
-      keyCode: [0x04, 0x00],
+      keyCode: [0x04],
       timestamp: 10,
     });
     expect(localStorage.getItem(LEGACY_KEY)).toBeNull();
@@ -155,6 +166,45 @@ describe('legacy macro migration', () => {
 
     expect(macros).toHaveLength(1);
     expect(macros[0].id).toBe('ok');
+  });
+
+  it('sanitizes malformed persisted actions and numeric fields', async () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([{
+      id: 'dirty',
+      name: 'Dirty',
+      repeatType: 123,
+      loopTimes: 999.4,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      actions: [
+        { keyName: 'A', kind: 'keyboard', direction: 'down', keyCode: [4], timestamp: 10.7 },
+        { keyName: 'middle', kind: 'mouse', direction: 'down', keyCode: [3], timestamp: 12 },
+        { keyName: 'Bad code', kind: 'keyboard', direction: 'down', keyCode: [999], timestamp: 20 },
+        { keyName: 'Two-byte code', kind: 'keyboard', direction: 'down', keyCode: [4, 2], timestamp: 20 },
+        { keyName: 'Bad time', kind: 'keyboard', direction: 'down', keyCode: [5], timestamp: 'later' },
+      ],
+    }]));
+
+    const fresh = await importFreshStore();
+    const [macro] = fresh.useMacroStore.getState().macros;
+
+    expect(macro.repeatType).toBe(MacroRepeatType.LoopTimes);
+    expect(macro.loopTimes).toBe(255);
+    expect(macro.actions).toEqual([
+      {
+        keyName: 'A',
+        kind: MacroActionKind.Keyboard,
+        direction: MacroDirection.Down,
+        keyCode: [4],
+        timestamp: 11,
+      },
+      {
+        keyName: 'middle',
+        kind: MacroActionKind.Mouse,
+        direction: MacroDirection.Down,
+        keyCode: [2],
+        timestamp: 12,
+      },
+    ]);
   });
 
   it('keeps deletions after reload once migration has run', async () => {
@@ -302,6 +352,11 @@ describe('getMacroDelay', () => {
     expect(getMacroDelay(0, actionsAt(0, 65536))).toBe(65535);
   });
 
+  it('rounds fractional gaps and rejects non-finite timestamps', () => {
+    expect(getMacroDelay(0, actionsAt(0, 10.6))).toBe(11);
+    expect(getMacroDelay(0, actionsAt(0, Number.NaN))).toBe(0);
+  });
+
   it('returns zero for the final action and out-of-range indices', () => {
     expect(getMacroDelay(1, actionsAt(0, 100))).toBe(0);
     expect(getMacroDelay(5, actionsAt(0, 100))).toBe(0);
@@ -320,7 +375,7 @@ describe('keyboardEventToMacroAction', () => {
       keyName: 'Space',
       kind: MacroActionKind.Keyboard,
       direction: MacroDirection.Down,
-      keyCode: [0x2c, 0x00],
+      keyCode: [0x2c],
       timestamp: 120,
     });
   });
@@ -332,7 +387,29 @@ describe('keyboardEventToMacroAction', () => {
       0,
     );
 
-    expect(action).toMatchObject({ keyName: 'A', keyCode: [0x04, 0x00], direction: MacroDirection.Up });
+    expect(action).toMatchObject({ keyName: 'A', keyCode: [0x04], direction: MacroDirection.Up });
+  });
+
+  it('uses the physical key code for shifted symbols, function keys, and numpad keys', () => {
+    const shiftedDigit = keyboardEventToMacroAction(
+      new KeyboardEvent('keydown', { key: '!', code: 'Digit1' }),
+      MacroDirection.Down,
+      0,
+    );
+    const functionKey = keyboardEventToMacroAction(
+      new KeyboardEvent('keydown', { key: 'F12', code: 'F12' }),
+      MacroDirection.Down,
+      0,
+    );
+    const numpadKey = keyboardEventToMacroAction(
+      new KeyboardEvent('keydown', { key: '7', code: 'Numpad7' }),
+      MacroDirection.Down,
+      0,
+    );
+
+    expect(shiftedDigit?.keyCode).toEqual([0x1e]);
+    expect(functionKey?.keyCode).toEqual([0x45]);
+    expect(numpadKey?.keyCode).toEqual([0x5f]);
   });
 
   it('falls back to event.code when event.key is not mapped', () => {
@@ -342,7 +419,7 @@ describe('keyboardEventToMacroAction', () => {
       0,
     );
 
-    expect(action).toMatchObject({ keyCode: [0x2c, 0x00] });
+    expect(action).toMatchObject({ keyCode: [0x2c] });
   });
 
   it('returns null for unmapped keys', () => {

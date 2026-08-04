@@ -21,7 +21,7 @@ function collectionHasProtocolOutput(collection: HIDCollectionInfo): boolean {
   return (collection.children ?? []).some(collectionHasProtocolOutput);
 }
 
-class BrowserHidService {
+export class BrowserHidService {
   private device: HIDDevice | null = null;
   private inputListener: ((event: HIDInputReportEvent) => void) | null = null;
   private handlers = new Set<HidInputHandler>();
@@ -132,14 +132,20 @@ class BrowserHidService {
   }
 
   send(command: MouseCommand) {
-    return this.enqueue(() => this.performSend(command));
+    const device = this.device;
+    if (!device) return Promise.reject(new Error('No HID device is connected.'));
+    const payload = new Uint8Array(command);
+    return this.enqueue(() => this.performSend(device, payload));
   }
 
   // 整批命令作为单个队列任务串行发送，期间不允许其他命令插入
   sendBatch(commands: readonly MouseCommand[]) {
+    const device = this.device;
+    if (!device) return Promise.reject(new Error('No HID device is connected.'));
+    const payloads = commands.map((command) => new Uint8Array(command));
     return this.enqueue(async () => {
-      for (const command of commands) {
-        await this.performSend(command);
+      for (const command of payloads) {
+        await this.performSend(device, command);
       }
     });
   }
@@ -150,15 +156,22 @@ class BrowserHidService {
     return run;
   }
 
-  private async performSend(command: MouseCommand) {
-    if (!this.device) {
-      throw new Error('No HID device is connected.');
+  private async performSend(device: HIDDevice, command: MouseCommand) {
+    // 队列中的任务必须绑定到入队时的设备。断开后即使很快连上另一台设备，
+    // 旧设备残留命令也不能误写到新设备。
+    if (this.device !== device) {
+      throw new Error('The HID device changed before the command was sent.');
     }
-    if (!this.device.opened) {
-      await this.device.open();
+    if (!device.opened) {
+      await device.open();
+      if (this.device !== device) {
+        throw new Error('The HID device changed before the command was sent.');
+      }
     }
-    console.debug('HID ->', toHexString(command));
-    await this.device.sendReport(MouseCommands.reportId, command);
+    if (import.meta.env.DEV) console.debug('HID ->', toHexString(command));
+    // TS 5.7+ distinguishes ArrayBuffer from SharedArrayBuffer-backed typed arrays;
+    // WebHID accepts an ArrayBuffer-backed BufferSource, so make that ownership explicit.
+    await device.sendReport(MouseCommands.reportId, new Uint8Array(command));
   }
 
   private toProtocolPacket(event: HIDInputReportEvent): Uint8Array | null {

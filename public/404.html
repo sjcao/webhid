@@ -6,16 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mouse HID Hub</title>
     <script type="text/javascript">
-      // GitHub Pages SPA Single Page App redirect fallback
-      var segmentCount = 1;
-      var l = window.location;
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        l.pathname.split('/').slice(0, 1 + segmentCount).join('/') + '/?/' +
-        l.pathname.slice(1).split('/').slice(segmentCount).join('/').replace(/&/g, '~and~') +
-        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
-      );
+      // The app uses hash routing, so an unknown physical path only needs to return to the app root.
+      window.location.replace('/webhid/' + window.location.search + window.location.hash);
     </script>
   </head>
   <body>

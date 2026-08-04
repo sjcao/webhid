@@ -83,6 +83,7 @@ beforeEach(() => {
     error: null,
     errorKey: null,
     disconnectNotice: false,
+    autoReconnectPending: false,
   });
 });
 
@@ -190,6 +191,25 @@ describe('plug events', () => {
     });
     expect(useDeviceStore.getState().devices[0].productName).toBe('Plugged');
   });
+
+  it('records device enumeration failures instead of creating an unhandled rejection', async () => {
+    getAuthorizedDevicesMock.mockRejectedValueOnce(new Error('enumeration failed'));
+
+    await useDeviceStore.getState().refreshDevices();
+
+    expect(useDeviceStore.getState().devices).toEqual([]);
+    expect(useDeviceStore.getState().error).toBe('enumeration failed');
+  });
+
+  it('clears a stale enumeration error after a successful refresh', async () => {
+    useDeviceStore.setState({ error: 'old enumeration failure' });
+    getAuthorizedDevicesMock.mockResolvedValueOnce([fakeDevice()]);
+
+    await useDeviceStore.getState().refreshDevices();
+
+    expect(useDeviceStore.getState().devices).toHaveLength(1);
+    expect(useDeviceStore.getState().error).toBeNull();
+  });
 });
 
 describe('unplug events', () => {
@@ -202,9 +222,37 @@ describe('unplug events', () => {
     const state = useDeviceStore.getState();
     expect(state.currentDevice).toBeNull();
     expect(state.disconnectNotice).toBe(true);
+    expect(state.autoReconnectPending).toBe(true);
 
     useDeviceStore.getState().clearDisconnectNotice();
     expect(useDeviceStore.getState().disconnectNotice).toBe(false);
+    expect(useDeviceStore.getState().autoReconnectPending).toBe(true);
+  });
+
+  it('still auto-reconnects after the disconnect notice is dismissed', async () => {
+    const device = fakeDevice('Reconnect');
+    useDeviceStore.setState({ currentDevice: seedDevice(device) });
+    emitDisconnect(device);
+    useDeviceStore.getState().clearDisconnectNotice();
+    getAuthorizedDevicesMock.mockResolvedValue([device]);
+
+    emitConnect(device);
+
+    await vi.waitFor(() => expect(useDeviceStore.getState().currentDevice?.device).toBe(device));
+    expect(useDeviceStore.getState().autoReconnectPending).toBe(false);
+  });
+
+  it('prefers the device that triggered the hot-plug event over other authorized devices', async () => {
+    const previouslyAuthorized = fakeDevice('Other Mouse');
+    const pluggedDevice = fakeDevice('Plugged Mouse');
+    useDeviceStore.setState({ autoReconnectPending: true });
+    getAuthorizedDevicesMock.mockResolvedValue([previouslyAuthorized, pluggedDevice]);
+
+    emitConnect(pluggedDevice);
+
+    await vi.waitFor(() => expect(useDeviceStore.getState().currentDevice?.device).toBe(pluggedDevice));
+    expect(connectMock).toHaveBeenCalledWith(pluggedDevice);
+    expect(connectMock).not.toHaveBeenCalledWith(previouslyAuthorized);
   });
 
   it('ignores unplug events for other devices', () => {

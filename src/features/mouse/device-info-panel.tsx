@@ -14,6 +14,8 @@ export function DeviceInfoPanel() {
   const deviceType = useMouseStore((state) => state.deviceType);
   const workMode = useMouseStore((state) => state.workMode);
   const activeProfile = useMouseStore((state) => state.activeProfile);
+  const connected = Boolean(device);
+  const status = previewMode ? t('app.preview') : connected ? t('app.connected') : t('app.disconnected');
 
   return (
     <div className="min-h-full bg-driver-bg text-driver-text">
@@ -22,8 +24,8 @@ export function DeviceInfoPanel() {
         subtitle={t('mouse.deviceInfoHint')}
         actions={
           <div className="flex items-center gap-2 rounded-md bg-driver-raised px-3 py-2 text-xs font-bold">
-            {previewMode ? <MonitorPlay size={15} className="text-warn" /> : <Cable size={15} className="text-success" />}
-            {previewMode ? t('app.demoData') : t('app.connected')}
+             {previewMode ? <MonitorPlay size={15} className="text-warn" /> : <Cable size={15} className={connected ? 'text-success' : 'text-danger'} />}
+             {status}
           </div>
         }
       />
@@ -34,18 +36,18 @@ export function DeviceInfoPanel() {
             <Cpu size={24} />
           </span>
           <div className="min-w-0">
-            <div className="truncate text-lg font-black">{device?.productName ?? t('mouse.previewDeviceName')}</div>
-            <div className="mt-1 text-xs text-driver-muted">
-              {t('mouse.connectionStatus')}: {previewMode ? t('app.preview') : t('app.connected')}
+             <div className="truncate text-lg font-black">{device?.productName ?? (previewMode ? t('mouse.previewDeviceName') : '—')}</div>
+             <div className="mt-1 text-xs text-driver-muted">
+               {t('mouse.connectionStatus')}: {status}
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          <InfoRow label={t('mouse.version')} value={version} />
-          <InfoRow label={t('mouse.workMode')} value={previewMode ? t('app.demoData') : t(workModeKey(workMode))} />
-          <InfoRow label={t('mouse.profileStatus')} value={`Profile ${activeProfile + 1}`} />
-          <InfoRow label={t('mouse.receiverStatus')} value={deviceType === 'mouse' ? t('mouse.mouse') : t('mouse.receiver')} />
+          <InfoRow label={t('mouse.version')} value={previewMode || connected ? version : '—'} />
+          <InfoRow label={t('mouse.workMode')} value={previewMode ? t('app.demoData') : connected ? t(workModeKey(workMode)) : '—'} />
+          <InfoRow label={t('mouse.profileStatus')} value={previewMode || connected ? `Profile ${activeProfile + 1}` : '—'} />
+          <InfoRow label={t('mouse.receiverStatus')} value={previewMode || connected ? (deviceType === 'mouse' ? t('mouse.mouse') : t('mouse.receiver')) : '—'} />
           <InfoRow label="VID / PID" value={device ? `${formatUsbId(device.vendorId)} / ${formatUsbId(device.productId)}` : '—'} />
           <InfoRow label={t('mouse.protocolStatus')} value="WebHID · 0x09 · 17 bytes" />
         </div>

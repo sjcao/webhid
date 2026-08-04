@@ -97,19 +97,17 @@ test('runs all features end-to-end to ensure perfect stability', async ({ page }
   // 7.2 特殊功能之火力键配置
   await page.getByRole('tab', { name: '特殊' }).click();
   await page.locator('input[type="number"]').first().fill('50'); // 设置点击间隔 50ms
-  // 使用 times 模式 (10 次)
-  await page.getByRole('button', { name: '单/多次触发' }).click();
   await page.locator('input[type="number"]').nth(1).fill('10'); // 设置点击 10 次
   await page.getByRole('button', { name: '保存并设置' }).first().click();
   // 验证绑定文本更新为 10次/50ms
   await expect(page.getByRole('button', { name: '右键', exact: false }).locator('span').nth(1)).toHaveText('连点 10次/50ms');
 
   // 7.3 特殊功能之组合键配置
-  await page.getByRole('button', { name: 'Ctrl', exact: true }).click();
+  await page.getByRole('button', { name: 'R Ctrl', exact: true }).click();
   // 单独点击保存并设置 (组合键保存按钮是第2个)
   await page.getByRole('button', { name: '保存并设置' }).nth(1).click();
-  // 验证绑定文本更新为 Ctrl
-  await expect(page.getByRole('button', { name: '右键', exact: false }).locator('span').nth(1)).toHaveText('Ctrl');
+  // 验证右侧修饰键不会被误判为普通按键
+  await expect(page.getByRole('button', { name: '右键', exact: false }).locator('span').nth(1)).toHaveText('R Ctrl');
 
   // 7.4 快捷指令 (宏) 绑定配置
   await page.getByRole('tab', { name: '快捷指令', exact: true }).click();

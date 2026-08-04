@@ -10,6 +10,8 @@ type ComboKeyFormProps = {
   active: boolean;
 };
 
+const MAX_COMBO_VALUES = 8;
+
 export function ComboKeyForm({ selectedButton, active }: ComboKeyFormProps) {
   const { t } = useI18n();
   const config = useMouseStore((state) => state.buttonConfigs[selectedButton]);
@@ -84,6 +86,7 @@ export function ComboKeyForm({ selectedButton, active }: ComboKeyFormProps) {
         name: keyName(event),
         value: hidVal,
       });
+      setComboModifiers((prev) => prev.slice(0, MAX_COMBO_VALUES - 1));
       setIsRecordingCombo(false);
     };
 
@@ -129,10 +132,12 @@ export function ComboKeyForm({ selectedButton, active }: ComboKeyFormProps) {
           <div className="grid grid-cols-4 gap-1">
             {MODIFIER_OPTIONS.map((opt) => {
               const active = comboModifiers.includes(opt.value);
+              const modifierLimit = comboNormalKey ? MAX_COMBO_VALUES - 1 : MAX_COMBO_VALUES;
               return (
                 <button
                   key={opt.value}
                   type="button"
+                  disabled={!active && comboModifiers.length >= modifierLimit}
                   className={`flex h-8 items-center justify-center rounded border text-xs font-bold transition ${
                     active
                       ? 'border-warn bg-warn/5 text-warn'
@@ -142,7 +147,7 @@ export function ComboKeyForm({ selectedButton, active }: ComboKeyFormProps) {
                     setComboModifiers((prev) =>
                       prev.includes(opt.value)
                         ? prev.filter((v) => v !== opt.value)
-                        : [...prev, opt.value]
+                        : prev.length < modifierLimit ? [...prev, opt.value] : prev
                     );
                   }}
                 >
@@ -185,7 +190,7 @@ export function ComboKeyForm({ selectedButton, active }: ComboKeyFormProps) {
             disabled={saving || (comboModifiers.length === 0 && !comboNormalKey)}
             onClick={saveComboKey}
           >
-            {t('mouse.save')}
+            {t('mouse.saveAndApply')}
           </Button>
           <Button
             type="button"

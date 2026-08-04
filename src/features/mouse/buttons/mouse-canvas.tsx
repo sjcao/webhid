@@ -46,10 +46,8 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
               binding = defaultName;
             } else if (config.functionType === KeyFunctionType.BurstFire) {
               const interval = config.values[0];
-              const count = config.values[1];
-              binding = count === 0
-                ? formatTemplate(t('mouse.burstHoldLabel'), { interval })
-                : formatTemplate(t('mouse.burstTimesLabel'), { count, interval });
+              const count = Math.max(1, config.values[1] ?? 1);
+              binding = formatTemplate(t('mouse.burstTimesLabel'), { count, interval });
             } else if (config.functionType === KeyFunctionType.ComboKey) {
               // 组合键友好文本
               const { modifiers, normalValue } = parseComboValues(config.values);

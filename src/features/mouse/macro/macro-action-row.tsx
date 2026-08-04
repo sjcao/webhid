@@ -184,7 +184,8 @@ export const MacroActionRow = memo(function MacroActionRow({
 });
 
 function clampDelay(value: number) {
-  return Math.min(65535, Math.max(0, value));
+  if (!Number.isFinite(value)) return 0;
+  return Math.min(65535, Math.max(0, Math.round(value)));
 }
 
 function DelayInput({

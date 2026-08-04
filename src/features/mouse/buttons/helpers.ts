@@ -3,10 +3,14 @@ import type { TranslationKey } from '@/i18n/use-i18n';
 import type { Locale } from '@/stores/ui-store';
 
 export const MODIFIER_OPTIONS = [
-  { label: 'Ctrl', value: 0xe0 },
-  { label: 'Shift', value: 0xe1 },
-  { label: 'Alt', value: 0xe2 },
-  { label: 'Win', value: 0xe3 },
+  { label: 'L Ctrl', value: 0xe0 },
+  { label: 'L Shift', value: 0xe1 },
+  { label: 'L Alt', value: 0xe2 },
+  { label: 'L Win', value: 0xe3 },
+  { label: 'R Ctrl', value: 0xe4 },
+  { label: 'R Shift', value: 0xe5 },
+  { label: 'R Alt', value: 0xe6 },
+  { label: 'R Win', value: 0xe7 },
 ] as const;
 
 export const MODIFIER_VALUES: number[] = MODIFIER_OPTIONS.map((option) => option.value);

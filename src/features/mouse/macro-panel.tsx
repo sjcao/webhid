@@ -192,12 +192,15 @@ export function MacroPanel() {
 
   // 复制克隆宏
   function handleDuplicate() {
-    if (!selectedMacroId) return;
+    if (!selectedMacroId || dirty) return;
     duplicateMacro(selectedMacroId, t('mouse.copySuffix'));
   }
 
   function resetDraft() {
     if (!currentMacro) return;
+    setEditingActionId(null);
+    setIsInsertingKey(false);
+    setInsertMouseMenuOpen(false);
     setTempName(currentMacro.name);
     setRepeatType(currentMacro.repeatType);
     setLoopTimes(currentMacro.loopTimes);
@@ -417,9 +420,13 @@ export function MacroPanel() {
               menuOpen={insertMouseMenuOpen}
               onToggleInsertKey={() => {
                 setEditingActionId(null);
+                setInsertMouseMenuOpen(false);
                 setIsInsertingKey((prev) => !prev);
               }}
-              onToggleMenu={() => setInsertMouseMenuOpen((prev) => !prev)}
+              onToggleMenu={() => {
+                setIsInsertingKey(false);
+                setInsertMouseMenuOpen((prev) => !prev);
+              }}
               onCloseMenu={() => setInsertMouseMenuOpen(false)}
               onInsert={insertMouseAction}
             />

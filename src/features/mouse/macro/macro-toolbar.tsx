@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Copy, Play, RotateCcw, Save, Square } from 'lucide-react';
 import { MacroRepeatType } from '@/protocol/mouse';
+import { normalizeLoopTimes } from '@/stores/macro-store';
 import { useI18n } from '@/i18n/use-i18n';
 import { Button } from '@/shared/ui/button';
 
@@ -103,7 +104,7 @@ export function MacroToolbar({
 
         <Button
           onClick={onDuplicate}
-          disabled={recording}
+          disabled={recording || dirty}
           className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap border border-driver-line bg-driver-panel text-xs font-bold text-driver-text shadow-sm hover:bg-driver-hover"
         >
           <Copy size={13} className="shrink-0" />
@@ -153,7 +154,7 @@ function LoopCountInput({
     const raw = e.target.value;
     setLocalVal(raw);
     if (raw !== '') {
-      const num = Math.min(255, Math.max(1, Number(raw)));
+      const num = normalizeLoopTimes(Number(raw));
       if (!isNaN(num)) {
         onChange(num);
       }
@@ -165,7 +166,7 @@ function LoopCountInput({
       setLocalVal(String(value));
       return;
     }
-    const num = Math.min(255, Math.max(1, Number(localVal)));
+    const num = normalizeLoopTimes(Number(localVal));
     setLocalVal(String(num));
     onChange(num);
   }

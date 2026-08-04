@@ -48,7 +48,7 @@ export function ConnectPage() {
     <main className="min-h-screen overflow-hidden bg-bg text-text">
       <header className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center gap-3">
-          <img src="./logo.svg" alt="Logo" className="h-8 w-8" />
+          <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="Logo" className="h-8 w-8" />
           <div className="text-base font-bold tracking-wide text-text">{t('app.title')}</div>
         </div>
 
