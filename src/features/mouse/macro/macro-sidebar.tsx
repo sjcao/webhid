@@ -17,9 +17,9 @@ export function MacroSidebar({ macros, selectedMacroId, recording, onSelect, onC
   const { t } = useI18n();
 
   return (
-    <div className="relative flex h-full w-[220px] shrink-0 flex-col border-r border-driver-line bg-driver-panel p-4 min-[1200px]:w-[240px]">
+    <div className="relative flex h-[168px] w-full shrink-0 flex-col border-b border-driver-line bg-driver-panel p-3 lg:h-full lg:w-[220px] lg:border-b-0 lg:border-r lg:p-4 min-[1200px]:w-[240px]">
       {recording && <div className="absolute inset-0 z-20 bg-driver-panel/75 backdrop-blur-[2px]" aria-hidden="true" />}
-      <h2 className="mb-3 text-sm font-black uppercase tracking-wider text-driver-muted">
+      <h2 className="mb-2 text-xs font-black uppercase tracking-wider text-driver-muted lg:mb-3 lg:text-sm">
         {t('mouse.shortcutsLibrary')}
       </h2>
 
@@ -27,7 +27,7 @@ export function MacroSidebar({ macros, selectedMacroId, recording, onSelect, onC
       <Button
         variant="black"
         onClick={onCreate}
-        className="mb-4 flex h-10 w-full items-center justify-center gap-2 rounded-md text-xs font-bold shadow-sm"
+        className="mb-2 flex h-9 w-full items-center justify-center gap-2 rounded-md text-xs font-bold shadow-sm lg:mb-4 lg:h-10"
       >
         <Plus size={15} />
         {t('mouse.newShortcut')}

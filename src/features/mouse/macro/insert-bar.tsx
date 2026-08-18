@@ -26,14 +26,14 @@ export function InsertBar({
   const { t } = useI18n();
 
   return (
-    <div className="flex h-16 shrink-0 items-center gap-3 border-t border-driver-line bg-driver-panel px-6">
+    <div className="flex h-16 shrink-0 items-center gap-2 border-t border-driver-line bg-driver-panel px-3 sm:gap-3 sm:px-6">
 
       {/* 插入键盘按键 */}
       <button
         type="button"
         disabled={recording}
         onClick={onToggleInsertKey}
-        className={`flex h-10 items-center gap-2 rounded-md border px-5 text-xs font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 ${
+        className={`flex h-10 min-w-0 flex-1 items-center justify-center gap-2 rounded-md border px-3 text-xs font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:px-5 ${
           isInsertingKey
             ? 'animate-pulse border-warn bg-warn/5 text-warn'
             : 'border-driver-line bg-driver-panel text-driver-text hover:bg-driver-hover'
@@ -44,12 +44,12 @@ export function InsertBar({
       </button>
 
       {/* 插入鼠标按键 (Dropdown 模拟) */}
-      <div className="relative">
+      <div className="relative min-w-0 flex-1 sm:flex-none">
         <button
           type="button"
           disabled={recording}
           onClick={onToggleMenu}
-          className="flex h-10 items-center gap-2 rounded-md border border-driver-line bg-driver-panel px-5 text-xs font-bold text-driver-text shadow-sm hover:bg-driver-hover disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-driver-line bg-driver-panel px-3 text-xs font-bold text-driver-text shadow-sm hover:bg-driver-hover disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-5"
         >
           <Mouse size={15} />
           {t('mouse.insertMouseKey')}

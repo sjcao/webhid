@@ -69,6 +69,10 @@ select {
   font: inherit;
 }
 
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
 body.light {
   --color-bg: #f2f3f5;
   --color-bg-soft: #ffffff;
@@ -114,6 +118,19 @@ body.light {
   color: var(--driver-text);
 }
 
+@media (min-width: 768px) {
+  .workspace-shell {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .workspace-shell {
+    grid-template-columns: 228px minmax(0, 1fr);
+  }
+}
+
 .driver-theme-scope input,
 .driver-theme-scope select {
   color-scheme: light;
@@ -122,4 +139,15 @@ body.light {
 body:not(.light) .driver-theme-scope input,
 body:not(.light) .driver-theme-scope select {
   color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

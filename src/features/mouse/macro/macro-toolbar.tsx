@@ -37,7 +37,7 @@ export function MacroToolbar({
   const { t } = useI18n();
 
   return (
-    <div className="flex min-h-14 shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b border-driver-line bg-driver-panel px-6 py-2.5 shadow-sm">
+    <div className="flex min-h-14 shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b border-driver-line bg-driver-panel px-3 py-2.5 shadow-sm sm:px-4 min-[1200px]:px-6">
       <div className="flex shrink-0 items-center gap-2">
         <span className="whitespace-nowrap text-xs font-bold text-driver-muted">{t('mouse.shortcutName')}:</span>
         <input
@@ -55,7 +55,7 @@ export function MacroToolbar({
       </div>
 
       {/* 循环参数设置 */}
-      <div className="flex shrink-0 items-center gap-4">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4">
         <div className="flex items-center gap-2">
           <span className="whitespace-nowrap text-xs font-bold text-driver-muted">{t('mouse.repeatMode')}:</span>
           <select
@@ -81,23 +81,23 @@ export function MacroToolbar({
       </div>
 
       {/* 控制按钮组 */}
-      <div className="flex shrink-0 items-center gap-1.5 ml-auto">
+      <div className="grid w-full grid-cols-4 items-center gap-1.5 sm:ml-auto sm:flex sm:w-auto sm:shrink-0">
         <Button
           variant={recording ? 'danger' : 'black'}
           onClick={onToggleRecording}
-          className={`flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-bold transition-all duration-200 ${
+          className={`flex h-8 min-w-0 shrink-0 items-center gap-1 px-2 text-[11px] font-bold transition-all duration-200 sm:gap-1.5 sm:whitespace-nowrap sm:text-xs ${
             recording ? 'z-50 relative shadow-[0_0_15px_rgba(239,68,68,0.45)] ring-2 ring-red-500' : ''
           }`}
         >
           {recording ? (
             <>
               <Square size={13} fill="white" className="shrink-0" />
-              <span className="whitespace-nowrap">{t('mouse.stopRecord')}</span>
+              <span className="truncate sm:whitespace-nowrap">{t('mouse.stopRecord')}</span>
             </>
           ) : (
             <>
               <Play size={13} fill="white" className="shrink-0" />
-              <span className="whitespace-nowrap">{t('mouse.startRecord')}</span>
+              <span className="truncate sm:whitespace-nowrap">{t('mouse.startRecord')}</span>
             </>
           )}
         </Button>
@@ -105,28 +105,28 @@ export function MacroToolbar({
         <Button
           onClick={onDuplicate}
           disabled={recording || dirty}
-          className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap border border-driver-line bg-driver-panel text-xs font-bold text-driver-text shadow-sm hover:bg-driver-hover"
+          className="flex h-8 min-w-0 shrink-0 items-center gap-1 border border-driver-line bg-driver-panel px-2 text-[11px] font-bold text-driver-text shadow-sm hover:bg-driver-hover sm:gap-1.5 sm:whitespace-nowrap sm:text-xs"
         >
           <Copy size={13} className="shrink-0" />
-          <span className="whitespace-nowrap">{t('mouse.duplicate')}</span>
+          <span className="truncate sm:whitespace-nowrap">{t('mouse.duplicate')}</span>
         </Button>
 
         <Button
           onClick={onReset}
           disabled={recording}
-          className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap border border-driver-line bg-driver-panel text-xs font-bold text-driver-text shadow-sm hover:bg-driver-hover"
+          className="flex h-8 min-w-0 shrink-0 items-center gap-1 border border-driver-line bg-driver-panel px-2 text-[11px] font-bold text-driver-text shadow-sm hover:bg-driver-hover sm:gap-1.5 sm:whitespace-nowrap sm:text-xs"
         >
           <RotateCcw size={13} className="shrink-0" />
-          <span className="whitespace-nowrap">{t('mouse.reset')}</span>
+          <span className="truncate sm:whitespace-nowrap">{t('mouse.reset')}</span>
         </Button>
 
         <Button
           onClick={onSave}
           disabled={recording || !name.trim() || !dirty}
-          className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap bg-driver-text text-xs font-bold text-driver-panel shadow-sm hover:opacity-90"
+          className="flex h-8 min-w-0 shrink-0 items-center gap-1 bg-driver-text px-2 text-[11px] font-bold text-driver-panel shadow-sm hover:opacity-90 sm:gap-1.5 sm:whitespace-nowrap sm:text-xs"
         >
           <Save size={13} className="shrink-0" />
-          <span className="whitespace-nowrap">{t('mouse.save')}</span>
+          <span className="truncate sm:whitespace-nowrap">{t('mouse.save')}</span>
         </Button>
       </div>
     </div>

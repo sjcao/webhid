@@ -65,7 +65,7 @@ export const MacroActionRow = memo(function MacroActionRow({
         onDrop(index);
       }}
       onDragEnd={onDragEnd}
-      className={`flex min-h-14 items-center justify-between gap-3 rounded-lg border border-driver-line bg-driver-panel px-3 py-2 shadow-sm transition duration-150 min-[1200px]:px-4 ${
+      className={`flex min-h-14 flex-col items-stretch justify-between gap-2 rounded-lg border border-driver-line bg-driver-panel px-3 py-2 shadow-sm transition duration-150 lg:flex-row lg:items-center lg:gap-3 min-[1200px]:px-4 ${
         isDragged ? 'scale-95 border-dashed border-warn opacity-40' : 'hover:bg-driver-hover'
       }`}
     >
@@ -108,7 +108,7 @@ export const MacroActionRow = memo(function MacroActionRow({
       </div>
 
       {/* 右侧：方向按钮、延迟输入框和删除 */}
-      <div className="flex shrink-0 items-center gap-2 min-[1200px]:gap-3">
+      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 min-[1200px]:gap-3">
         <div className="flex items-center rounded bg-driver-raised p-0.5">
           <button
             type="button"
@@ -137,7 +137,7 @@ export const MacroActionRow = memo(function MacroActionRow({
             type="button"
             disabled={recording}
             onClick={() => onToggleDirection(action.id, MacroDirection.Down)}
-            className={`rounded px-3 py-1.5 text-[10px] font-black transition flex items-center gap-1 ${
+            className={`flex items-center gap-1 rounded px-2 py-1.5 text-[10px] font-black transition sm:px-3 ${
               isDown
                 ? 'bg-driver-text text-driver-panel shadow-sm'
                 : 'text-driver-muted hover:bg-driver-hover'
@@ -149,7 +149,7 @@ export const MacroActionRow = memo(function MacroActionRow({
             type="button"
             disabled={recording}
             onClick={() => onToggleDirection(action.id, MacroDirection.Up)}
-            className={`rounded px-3 py-1.5 text-[10px] font-black transition flex items-center gap-1 ${
+            className={`flex items-center gap-1 rounded px-2 py-1.5 text-[10px] font-black transition sm:px-3 ${
               !isDown
                 ? 'bg-driver-text text-driver-panel shadow-sm'
                 : 'text-driver-muted hover:bg-driver-hover'

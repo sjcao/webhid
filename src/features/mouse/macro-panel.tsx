@@ -330,7 +330,7 @@ export function MacroPanel() {
   }, []);
 
   return (
-    <div className="flex h-full min-h-0 w-full overflow-hidden bg-driver-bg text-driver-text">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-driver-bg text-driver-text lg:flex-row">
 
       {/* 左侧侧边栏：已创建的宏列表 */}
       <MacroSidebar
@@ -364,7 +364,7 @@ export function MacroPanel() {
             />
 
             {/* 动作序列列表 */}
-            <div className="flex-1 space-y-2 overflow-y-auto p-4 min-[1200px]:p-6">
+            <div className="flex-1 space-y-2 overflow-y-auto p-3 sm:p-4 min-[1200px]:p-6">
 
               {tempActions.map((action, idx) => {
                 const prevTimestamp = idx === 0 ? 0 : tempActions[idx - 1].timestamp;
@@ -434,7 +434,7 @@ export function MacroPanel() {
           </div>
         ) : (
           /* 空白配置占位页 */
-          <div className="m-6 flex flex-1 flex-col items-center justify-center rounded-lg border border-driver-line bg-driver-panel p-8 shadow-sm">
+          <div className="m-3 flex flex-1 flex-col items-center justify-center rounded-lg border border-driver-line bg-driver-panel p-6 shadow-sm sm:m-6 sm:p-8">
             <div className="mb-4 rounded-full bg-driver-raised p-5 text-driver-muted">
               <Plus size={42} />
             </div>

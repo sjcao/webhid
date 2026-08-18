@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PanelRightOpen } from 'lucide-react';
+import { PanelRightOpen, RotateCcw } from 'lucide-react';
 import { ButtonId } from '@/protocol/mouse';
 import { useMouseStore } from '@/stores/mouse-store';
 import { useI18n } from '@/i18n/use-i18n';
@@ -14,7 +14,9 @@ export function ButtonsPanel() {
   const [selectedButton, setSelectedButton] = useState<ButtonId>(ButtonId.Middle);
   const [confirmLeft, setConfirmLeft] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
-  const [mappingOpen, setMappingOpen] = useState(true);
+  const [mappingOpen, setMappingOpen] = useState(() => (
+    typeof window === 'undefined' || window.matchMedia('(min-width: 1024px)').matches
+  ));
 
   const readButton = useMouseStore((state) => state.readButton);
   const resetButtons = useMouseStore((state) => state.resetButtons);
@@ -31,7 +33,7 @@ export function ButtonsPanel() {
   }
 
   return (
-    <div className="flex h-full min-h-0 w-full overflow-hidden bg-driver-bg text-driver-text">
+    <div className="relative flex h-full min-h-0 w-full overflow-hidden bg-driver-bg text-driver-text">
       {/* 左侧：鼠标按键映射画布 */}
       <div className="relative flex min-w-0 flex-1 flex-col">
         <PanelHeader
@@ -50,9 +52,12 @@ export function ButtonsPanel() {
               )}
               <Button
                 className="border border-driver-line bg-driver-panel text-driver-text shadow-sm hover:bg-driver-hover"
+                aria-label={t('mouse.restoreDefault')}
+                title={t('mouse.restoreDefault')}
                  onClick={() => setConfirmReset(true)}
               >
-                {t('mouse.restoreDefault')}
+                <RotateCcw size={16} className="sm:hidden" />
+                <span className="hidden sm:inline">{t('mouse.restoreDefault')}</span>
               </Button>
             </div>
           }

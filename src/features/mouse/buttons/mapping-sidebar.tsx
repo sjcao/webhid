@@ -102,7 +102,7 @@ export function MappingSidebar({ open, selectedButton, onClose }: MappingSidebar
   }
 
   return (
-    <div className={`${open ? 'flex' : 'hidden'} h-full w-[336px] shrink-0 flex-col border-l border-driver-line bg-driver-panel shadow-[-8px_0_24px_rgba(0,0,0,0.02)] min-[1200px]:w-[360px]`}>
+    <div className={`${open ? 'flex' : 'hidden'} absolute inset-0 z-40 h-full w-full shrink-0 flex-col bg-driver-panel shadow-[-8px_0_24px_rgba(0,0,0,0.12)] md:left-auto md:w-[336px] md:border-l md:border-driver-line lg:static min-[1200px]:w-[360px]`}>
       {/* 标题栏 */}
       <div className="flex h-14 items-center justify-between border-b border-driver-line px-5">
         <div className="flex items-center gap-2">

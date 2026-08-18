@@ -30,8 +30,8 @@ export function DeviceInfoPanel() {
         }
       />
 
-      <div className="p-6">
-        <div className="mb-4 flex items-center gap-3 rounded-xl border border-driver-line bg-driver-panel p-5">
+      <div className="p-3 sm:p-6">
+        <div className="mb-3 flex items-center gap-3 rounded-xl border border-driver-line bg-driver-panel p-4 sm:mb-4 sm:p-5">
           <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-warn/10 text-warn">
             <Cpu size={24} />
           </span>
@@ -43,7 +43,7 @@ export function DeviceInfoPanel() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
           <InfoRow label={t('mouse.version')} value={previewMode || connected ? version : '—'} />
           <InfoRow label={t('mouse.workMode')} value={previewMode ? t('app.demoData') : connected ? t(workModeKey(workMode)) : '—'} />
           <InfoRow label={t('mouse.profileStatus')} value={previewMode || connected ? `Profile ${activeProfile + 1}` : '—'} />
@@ -58,7 +58,7 @@ export function DeviceInfoPanel() {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-driver-line bg-driver-panel p-5">
+    <div className="rounded-lg border border-driver-line bg-driver-panel p-4 sm:p-5">
       <div className="text-xs font-bold uppercase tracking-wide text-driver-muted">{label}</div>
       <div className="mt-2 truncate text-base font-semibold">{value}</div>
     </div>

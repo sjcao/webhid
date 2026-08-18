@@ -25,9 +25,9 @@ export function DpiPanel() {
         actions={<div className="rounded-md bg-driver-text px-4 py-2 text-sm font-semibold text-driver-panel">{currentDpi} DPI</div>}
       />
 
-      <div className="p-6">
-        <section className="rounded-xl border border-driver-line bg-driver-panel p-6 shadow-sm">
-          <div className="mb-6 flex items-end justify-between gap-4">
+      <div className="p-3 sm:p-6">
+        <section className="rounded-xl border border-driver-line bg-driver-panel p-4 shadow-sm sm:p-6">
+          <div className="mb-5 flex flex-col items-start justify-between gap-3 sm:mb-6 sm:flex-row sm:items-end sm:gap-4">
             <div>
               <div className="text-xs font-bold uppercase tracking-wider text-driver-muted">{t('mouse.currentDpi')}</div>
               <div className="mt-1 text-3xl font-black">{currentDpi} DPI</div>
@@ -35,9 +35,9 @@ export function DpiPanel() {
             <div className="rounded-full bg-warn/10 px-3 py-1.5 text-xs font-bold text-warn">{t('mouse.protocolFixedDpi')}</div>
           </div>
 
-          <div className="relative pt-3">
-            <div className="absolute left-[8.333%] right-[8.333%] top-8 h-1 rounded-full bg-driver-raised" aria-hidden="true" />
-            <div className="relative grid grid-cols-6 gap-2">
+          <div className="relative pt-1 lg:pt-3">
+            <div className="absolute left-[8.333%] right-[8.333%] top-8 hidden h-1 rounded-full bg-driver-raised lg:block" aria-hidden="true" />
+            <div className="relative grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
               {dpiStages.map((stage) => {
                 const active = currentDpi === stage.value;
                 return (

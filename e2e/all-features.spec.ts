@@ -1,6 +1,12 @@
 import { expect, test } from '@playwright/test';
 
 test('runs all features end-to-end to ensure perfect stability', async ({ page }) => {
+  const browserErrors: string[] = [];
+  page.on('pageerror', (error) => browserErrors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') browserErrors.push(message.text());
+  });
+
   // 1. 进入首页
   await page.goto('./');
   await expect(page.getByRole('heading', { name: '请连接设备' })).toBeVisible();
@@ -19,7 +25,7 @@ test('runs all features end-to-end to ensure perfect stability', async ({ page }
 
   // 3. 进入演示模式
   await page.getByText('进入演示模式').click();
-  await expect(page.getByText('MOUSE F1 Ultimate 2.0')).toBeVisible();
+  await expect(page.getByRole('button', { name: /MOUSE F1 Ultimate 2.0/ }).first()).toBeVisible();
 
   // 4. 板载配置切换测试 (P1 -> P2 -> P1)
   const profileSelector = page.getByRole('button', { name: '板载配置' });
@@ -131,4 +137,5 @@ test('runs all features end-to-end to ensure perfect stability', async ({ page }
   // 9. 返回首页 (设备连接页)
   await page.getByRole('button', { name: '首页' }).click();
   await expect(page.getByRole('heading', { name: '请连接设备' })).toBeVisible();
+  expect(browserErrors).toEqual([]);
 });

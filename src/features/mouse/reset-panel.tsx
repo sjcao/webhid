@@ -25,7 +25,7 @@ export function ResetPanel() {
     <div className="min-h-full bg-driver-bg text-driver-text">
       <PanelHeader title={t('nav.other')} subtitle={t('mouse.resetHint')} />
 
-      <div className="p-6">
+      <div className="p-3 sm:p-6">
         <div className="overflow-hidden rounded-xl border border-driver-line bg-driver-panel">
           <ResetAction
             icon={Settings2}
@@ -73,7 +73,7 @@ function ResetAction({
   return (
     <button
       type="button"
-      className={`flex w-full items-center gap-4 px-5 py-5 text-left transition hover:bg-driver-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-danger ${separated ? 'border-t border-driver-line' : ''}`}
+      className={`flex w-full items-center gap-3 px-4 py-4 text-left transition hover:bg-driver-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-danger sm:gap-4 sm:px-5 sm:py-5 ${separated ? 'border-t border-driver-line' : ''}`}
       onClick={onClick}
     >
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-danger/10 text-danger">
@@ -83,7 +83,7 @@ function ResetAction({
         <span className="block text-sm font-bold">{title}</span>
         <span className="mt-1 block text-xs leading-5 text-driver-muted">{description}</span>
       </span>
-      <span className="inline-flex items-center gap-1 text-xs font-bold text-danger">
+      <span className="hidden items-center gap-1 text-xs font-bold text-danger sm:inline-flex">
         {title}
         <ChevronRight size={15} />
       </span>

@@ -6,7 +6,7 @@ test('opens preview workspace and renders core panels', async ({ page }) => {
   await page.getByLabel('语言').click();
   await expect(page.getByRole('heading', { name: 'Pair with New Device' })).toBeVisible();
   await page.getByText(/进入演示模式|Enter Demo Mode/).click();
-  await expect(page.getByText(/MOUSE F1 Ultimate 2.0/)).toBeVisible();
+  await expect(page.getByRole('button', { name: /MOUSE F1 Ultimate 2.0/ }).first()).toBeVisible();
   const navigation = page.getByRole('navigation');
   await navigation.getByRole('button', { name: /DPI设置|DPI Settings/ }).click();
   await expect(page.getByText(/协议固定 DPI 档位|Protocol fixed DPI stages/)).toBeVisible();
@@ -17,4 +17,3 @@ test('opens preview workspace and renders core panels', async ({ page }) => {
   await page.getByRole('button', { name: 'New Shortcut' }).first().click();
   await expect(page.getByRole('button', { name: 'Start Record' })).toBeVisible();
 });
-

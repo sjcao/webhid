@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Globe2, MonitorPlay, Moon, RefreshCw, Sun, Usb } from 'lucide-react';
+import { Globe2, Info, MonitorPlay, Moon, RefreshCw, Sun, Usb } from 'lucide-react';
 import { useDeviceStore } from '@/stores/device-store';
+import { isDeviceSupported } from '@/services/hid/browser-hid-service';
 import { useUiStore } from '@/stores/ui-store';
 import { useI18n } from '@/i18n/use-i18n';
 import { formatUsbId } from '@/lib/hex';
@@ -115,6 +116,11 @@ export function ConnectPage() {
               </Button>
             </div>
 
+            <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-line/60 bg-surface-2/60 px-3.5 py-2.5 text-xs leading-relaxed text-muted">
+              <Info size={15} className="mt-0.5 shrink-0 text-brand" />
+              <span>{t('connect.protocolNote')}</span>
+            </div>
+
             {devices.length === 0 && (
               <div className="rounded-lg border border-dashed border-line bg-surface-2/60 p-4 text-center text-sm text-muted">
                 {t('connect.noDevices')}
@@ -122,28 +128,56 @@ export function ConnectPage() {
             )}
 
             <div className="grid gap-3 md:grid-cols-2">
-            {devices.map((device) => (
-              <button
-                key={device.id}
-                className="w-full rounded-lg border border-line bg-surface-2/70 p-4 text-left transition hover:border-brand/60 hover:bg-surface-3 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={connecting}
-                aria-busy={connectingId === device.id}
-                onClick={() => openWorkspace(device.id)}
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold text-text">{device.productName}</div>
-                    <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted">
-                      <span>{t('connect.vendor')}: {formatUsbId(device.vendorId)}</span>
-                      <span>{t('connect.product')}: {formatUsbId(device.productId)}</span>
+            {devices.map((device) => {
+              const deviceSupported = isDeviceSupported(device.device);
+              return (
+                <button
+                  key={device.id}
+                  className={`w-full rounded-lg border p-4 text-left transition disabled:cursor-not-allowed ${
+                    deviceSupported
+                      ? 'border-line bg-surface-2/70 hover:border-brand/60 hover:bg-surface-3 disabled:opacity-60'
+                      : 'border-line/40 bg-surface-2/40 opacity-80 hover:border-warn/50 hover:bg-surface-2/60'
+                  }`}
+                  disabled={connecting}
+                  aria-busy={connectingId === device.id}
+                  onClick={() => openWorkspace(device.id)}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-semibold text-text">{device.productName}</div>
+                      <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted">
+                        <span>{t('connect.vendor')}: {formatUsbId(device.vendorId)}</span>
+                        <span>{t('connect.product')}: {formatUsbId(device.productId)}</span>
+                      </div>
                     </div>
+                    <Badge
+                      className={
+                        !deviceSupported
+                          ? 'border-muted/40 text-muted'
+                          : connectingId === device.id
+                            ? 'border-warn/40 text-warn'
+                            : device.opened
+                              ? 'border-success/30 text-success'
+                              : ''
+                      }
+                    >
+                      {!deviceSupported
+                        ? t('connect.unsupportedDeviceBadge')
+                        : connectingId === device.id
+                          ? t('connect.connecting')
+                          : device.opened
+                            ? t('app.connected')
+                            : t('app.disconnected')}
+                    </Badge>
                   </div>
-                  <Badge className={connectingId === device.id ? 'border-warn/40 text-warn' : device.opened ? 'border-success/30 text-success' : ''}>
-                    {connectingId === device.id ? t('connect.connecting') : device.opened ? t('app.connected') : t('app.disconnected')}
-                  </Badge>
-                </div>
-              </button>
-            ))}
+                  {!deviceSupported && (
+                    <div className="mt-2 text-xs text-warn/80">
+                      {t('connect.unsupportedDeviceHint')}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
             </div>
           </div>
         </div>

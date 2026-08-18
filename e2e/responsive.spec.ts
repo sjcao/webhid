@@ -9,7 +9,7 @@ for (const viewport of [
     await page.goto('./');
     await page.getByRole('button', { name: '进入演示模式' }).click();
 
-    const workspaceGrid = page.locator('main > div.grid');
+    const workspaceGrid = page.locator('main > div.flex');
     await expect.poll(async () => workspaceGrid.evaluate((element) => getComputedStyle(element).gridTemplateColumns)).toContain(viewport.sidebar);
     await expect.poll(async () => page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width);
 
@@ -62,4 +62,38 @@ test('protects unsaved shortcut edits and confirms deletion', async ({ page }) =
   await expect(page.getByRole('dialog')).toContainText('永久删除');
   await page.getByRole('dialog').getByRole('button', { name: '删除' }).click();
   await expect(page.getByText('M1', { exact: true })).not.toBeVisible();
+});
+
+test('keeps the workspace usable on a 390px phone', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('./');
+  await page.getByRole('button', { name: '进入演示模式' }).click();
+
+  const mobileNavigation = page.getByRole('navigation', { name: '鼠标配置' });
+  await expect(mobileNavigation).toBeVisible();
+  await expect(page.getByRole('button', { name: '打开功能库' })).toBeVisible();
+  await expect.poll(async () => page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+
+  await page.getByRole('button', { name: '中键', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '搜索功能按键' })).toBeVisible();
+  await page.getByRole('button', { name: '关闭功能库' }).click();
+
+  const profileSelector = page.getByRole('button', { name: /板载配置 P1/ });
+  await profileSelector.click();
+  await page.getByRole('button', { name: 'P2', exact: true }).click();
+
+  await mobileNavigation.getByRole('button', { name: 'DPI设置' }).click();
+  await expect(page.getByRole('button', { name: 'DPI 6' })).toBeVisible();
+
+  await mobileNavigation.getByRole('button', { name: '配置管理' }).click();
+  await expect(page.getByRole('button', { name: 'Profile 4' })).toBeVisible();
+
+  await mobileNavigation.getByRole('button', { name: '快捷指令设置' }).click();
+  await page.getByRole('button', { name: '新建快捷指令' }).first().click();
+  await expect(page.getByRole('textbox', { name: '指令名称' })).toBeVisible();
+  await expect.poll(async () => page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+
+  await page.setViewportSize({ width: 320, height: 720 });
+  await expect(mobileNavigation).toBeVisible();
+  await expect.poll(async () => page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
 });

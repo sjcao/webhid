@@ -17,13 +17,18 @@ import { ResetPanel } from './reset-panel';
 import { DpiPanel } from './dpi-panel';
 import { workModeKey } from './work-mode';
 
-const navItems: Array<{ id: MousePanel; icon: typeof Mouse; key: Parameters<ReturnType<typeof useI18n>['t']>[0] }> = [
-  { id: 'buttons', icon: Mouse, key: 'nav.buttons' },
-  { id: 'shortcuts', icon: Keyboard, key: 'nav.shortcuts' },
-  { id: 'dpi', icon: Cpu, key: 'nav.dpi' },
-  { id: 'params', icon: SlidersHorizontal, key: 'nav.params' },
-  { id: 'profiles', icon: Grid2X2, key: 'nav.profiles' },
-  { id: 'other', icon: Settings, key: 'nav.other' },
+const navItems: Array<{
+  id: MousePanel;
+  icon: typeof Mouse;
+  key: Parameters<ReturnType<typeof useI18n>['t']>[0];
+  mobileKey: Parameters<ReturnType<typeof useI18n>['t']>[0];
+}> = [
+  { id: 'buttons', icon: Mouse, key: 'nav.buttons', mobileKey: 'nav.buttonsShort' },
+  { id: 'shortcuts', icon: Keyboard, key: 'nav.shortcuts', mobileKey: 'nav.shortcutsShort' },
+  { id: 'dpi', icon: Cpu, key: 'nav.dpi', mobileKey: 'nav.dpiShort' },
+  { id: 'params', icon: SlidersHorizontal, key: 'nav.params', mobileKey: 'nav.paramsShort' },
+  { id: 'profiles', icon: Grid2X2, key: 'nav.profiles', mobileKey: 'nav.profilesShort' },
+  { id: 'other', icon: Settings, key: 'nav.other', mobileKey: 'nav.otherShort' },
 ];
 
 export function MouseWorkspacePage() {
@@ -101,13 +106,13 @@ export function MouseWorkspacePage() {
   }[activePanel];
 
   return (
-    <main className="min-h-screen bg-bg text-text">
-      <header className="flex h-12 items-center justify-between bg-bg-soft px-5">
+    <main className="h-dvh min-h-screen overflow-hidden bg-bg text-text">
+      <header className="flex h-12 items-center justify-between border-b border-line bg-bg-soft px-3 sm:px-5">
         <div className="flex h-full items-center gap-3">
-          <button className="flex h-10 items-center gap-2 rounded-full bg-surface-2 px-5 text-sm font-semibold" onClick={() => void leaveWorkspace()}>
+          <button className="flex h-9 items-center gap-2 rounded-full bg-surface-2 px-3 text-sm font-semibold transition hover:bg-surface-3 sm:px-5" onClick={() => void leaveWorkspace()}>
             <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="Logo" className="h-6 w-6" />
             <Home size={16} />
-            {t('mouse.home')}
+            <span className="hidden min-[360px]:inline">{t('mouse.home')}</span>
           </button>
         </div>
         <div className="flex items-center gap-3">
@@ -121,9 +126,9 @@ export function MouseWorkspacePage() {
       </header>
 
       {/* 常驻 live region：容器始终存在，内容变化才能被屏幕阅读器稳定播报 */}
-      <div role="alert" aria-live="assertive" className="pointer-events-none fixed left-1/2 top-14 z-50 -translate-x-1/2">
+      <div role="alert" aria-live="assertive" className="pointer-events-none fixed left-1/2 top-14 z-[70] w-[calc(100%-24px)] max-w-xl -translate-x-1/2">
         {banner && (
-          <div className="pointer-events-auto flex max-w-xl items-center gap-3 rounded-md border border-danger/40 bg-surface-2 px-4 py-2 text-sm text-danger shadow-panel">
+          <div className="pointer-events-auto flex items-center gap-3 rounded-md border border-danger/40 bg-surface-2 px-4 py-2 text-sm text-danger shadow-panel">
             <span className="min-w-0">{banner.message}</span>
             <button
               type="button"
@@ -137,8 +142,8 @@ export function MouseWorkspacePage() {
         )}
       </div>
 
-      <div className="grid h-[calc(100vh-48px)] grid-cols-[72px_minmax(0,1fr)] gap-0 min-[1200px]:grid-cols-[228px_minmax(0,1fr)]">
-        <aside className="flex min-h-0 flex-col bg-surface-2 px-2 pb-3 pt-2">
+      <div className="workspace-shell flex h-[calc(100dvh-48px)] min-h-0 flex-col">
+        <aside className="hidden min-h-0 flex-col bg-surface-2 px-2 pb-3 pt-2 md:flex">
           <button className="hidden rounded-md bg-surface-3 p-3 text-left shadow-[inset_0_0_0_1px_var(--color-line)] min-[1200px]:block" onClick={() => setActivePanel('params')}>
             <span className="flex items-center justify-between gap-2">
                <span className="block truncate text-sm font-semibold">{currentDevice?.productName ?? (previewMode ? t('mouse.previewDeviceName') : t('app.disconnected'))}</span>
@@ -177,7 +182,7 @@ export function MouseWorkspacePage() {
             {profileOpen && (
               <ProfilePopover
                 id="profile-popover-desktop"
-                className="left-[calc(100%+10px)] top-0 w-[260px] shadow-[0_18px_48px_rgba(0,0,0,0.32)]"
+                className="absolute left-[calc(100%+10px)] top-0 w-[260px] shadow-[0_18px_48px_rgba(0,0,0,0.32)]"
                 showDpi
                 onClose={closeProfile}
               />
@@ -204,7 +209,7 @@ export function MouseWorkspacePage() {
               <PopoverShell
                 id="device-popover-mobile"
                  label={currentDevice?.productName ?? (previewMode ? t('mouse.previewDeviceName') : t('app.disconnected'))}
-                className="left-[calc(100%+10px)] top-0 w-[270px] shadow-panel"
+                className="absolute left-[calc(100%+10px)] top-0 w-[270px] shadow-panel"
                 onClose={closeDevice}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -241,7 +246,7 @@ export function MouseWorkspacePage() {
             {profileOpen && (
               <ProfilePopover
                 id="profile-popover-mobile"
-                className="left-[calc(100%+10px)] top-14 w-[260px] shadow-panel"
+                className="absolute left-[calc(100%+10px)] top-14 w-[260px] shadow-panel"
                 onClose={closeProfile}
               />
             )}
@@ -270,11 +275,107 @@ export function MouseWorkspacePage() {
 
         </aside>
 
-        <section className="min-w-0 overflow-hidden bg-bg p-1">
-          <div className="driver-theme-scope h-full overflow-auto rounded-md bg-driver-bg text-driver-text shadow-[0_0_0_1px_rgba(0,0,0,0.03)]">
+        <section className="order-1 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-bg md:p-1">
+          <div className="relative z-40 flex h-12 shrink-0 items-center gap-2 border-b border-line bg-surface-2 px-2 md:hidden">
+            <button
+              type="button"
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-md bg-surface-3 px-3 py-2 text-left"
+              aria-expanded={deviceOpen}
+              aria-haspopup="dialog"
+              aria-controls="device-popover-phone"
+              onClick={() => {
+                setDeviceOpen((open) => !open);
+                setProfileOpen(false);
+              }}
+            >
+              <Mouse size={16} className="shrink-0 text-warn" />
+              <span className="min-w-0 flex-1 truncate text-xs font-bold">
+                {currentDevice?.productName ?? (previewMode ? t('mouse.previewDeviceName') : t('app.disconnected'))}
+              </span>
+              <ChevronRight size={14} className="shrink-0 text-muted" />
+            </button>
+            <button
+              type="button"
+              className="flex h-9 shrink-0 items-center gap-1.5 rounded-md bg-surface-3 px-3 text-xs font-black"
+              aria-expanded={profileOpen}
+              aria-haspopup="dialog"
+              aria-controls="profile-popover-phone"
+              aria-label={`${t('mouse.profileSelector')} P${activeProfile + 1}`}
+              onClick={() => {
+                setProfileOpen((open) => !open);
+                setDeviceOpen(false);
+              }}
+            >
+              P{activeProfile + 1}
+              <ChevronRight size={13} className="text-muted" />
+            </button>
+            <button
+              type="button"
+              className="h-9 shrink-0 rounded-md bg-warn/10 px-2 text-[11px] font-black text-warn"
+              aria-label={`${t('mouse.currentDpi')}: ${dpi}`}
+              onClick={() => setActivePanel('dpi')}
+            >
+              {dpi}
+            </button>
+
+            {deviceOpen && (
+              <PopoverShell
+                id="device-popover-phone"
+                label={currentDevice?.productName ?? (previewMode ? t('mouse.previewDeviceName') : t('app.disconnected'))}
+                className="fixed left-3 right-3 top-[104px] z-[60] shadow-panel"
+                onClose={closeDevice}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-bold">{currentDevice?.productName ?? (previewMode ? t('mouse.previewDeviceName') : t('app.disconnected'))}</div>
+                    <div className="mt-1 text-xs text-muted">{previewMode ? t('app.preview') : currentDevice ? t('app.connected') : t('app.disconnected')}</div>
+                  </div>
+                  <button type="button" className="rounded p-1 text-muted hover:bg-surface-3 hover:text-text" aria-label={t('mouse.cancel')} onClick={closeDevice}>
+                    <X size={15} />
+                  </button>
+                </div>
+                <button type="button" className="mt-3 flex w-full items-center justify-between rounded-md bg-surface-3 px-3 py-2 text-left text-xs font-semibold" onClick={() => { setActivePanel('params'); setDeviceOpen(false); }}>
+                  {t('mouse.openDetails')}
+                  <ChevronRight size={15} />
+                </button>
+              </PopoverShell>
+            )}
+            {profileOpen && (
+              <ProfilePopover
+                id="profile-popover-phone"
+                className="fixed left-3 right-3 top-[104px] z-[60] shadow-panel"
+                showDpi
+                onClose={closeProfile}
+              />
+            )}
+          </div>
+
+          <div className="driver-theme-scope min-h-0 flex-1 overflow-auto bg-driver-bg text-driver-text shadow-[0_0_0_1px_rgba(0,0,0,0.03)] md:rounded-md">
             {panel}
           </div>
         </section>
+
+        <nav aria-label={t('nav.mouseConfig')} className="order-2 grid h-16 shrink-0 grid-cols-6 border-t border-line bg-surface-2 px-1 pb-[env(safe-area-inset-bottom)] md:hidden">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = activePanel === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                aria-label={t(item.key)}
+                aria-current={active ? 'page' : undefined}
+                className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-md px-0.5 text-[9px] font-semibold transition ${
+                  active ? 'bg-warn/10 text-warn' : 'text-muted hover:bg-surface-3 hover:text-text'
+                }`}
+                onClick={() => setActivePanel(item.id)}
+              >
+                <Icon size={18} />
+                <span className="w-full truncate text-center">{t(item.mobileKey)}</span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
       <ConfirmDialog
@@ -362,7 +463,7 @@ function PopoverShell({ id, label, className, onClose, children }: {
         aria-modal="true"
         aria-label={label}
         tabIndex={-1}
-        className={`absolute rounded-md border border-line bg-surface-2 p-3 text-text ${className ?? ''}`}
+        className={`rounded-md border border-line bg-surface-2 p-3 text-text ${className ?? ''}`}
       >
         {children}
       </div>

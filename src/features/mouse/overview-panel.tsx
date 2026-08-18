@@ -19,14 +19,14 @@ export function OverviewPanel() {
         actions={<div className="rounded-md bg-driver-text px-4 py-2 text-sm font-semibold text-driver-panel">Profile {activeProfile + 1}</div>}
       />
 
-      <div className="p-6">
-        <div className="mb-5 grid grid-cols-3 gap-3">
+      <div className="p-3 sm:p-6">
+        <div className="mb-4 grid grid-cols-1 gap-2 sm:mb-5 sm:grid-cols-3 sm:gap-3">
           <StatusItem icon={SlidersHorizontal} label={t('mouse.currentDpi')} value={`${dpi} DPI`} />
           <StatusItem icon={Workflow} label={t('mouse.profileStatus')} value={`Profile ${activeProfile + 1}`} />
           <StatusItem icon={Activity} label={t('mouse.workMode')} value={t(workModeKey(workMode))} />
         </div>
 
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
           {[0, 1, 2, 3].map((profile) => {
             const active = activeProfile === profile;
             return (
@@ -34,7 +34,7 @@ export function OverviewPanel() {
                 key={profile}
                 type="button"
                 aria-pressed={active}
-                className={`min-h-44 rounded-xl border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warn ${
+                className={`min-h-32 rounded-xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warn sm:min-h-44 sm:p-5 ${
                   active
                     ? 'border-driver-text bg-driver-text text-driver-panel shadow-lg'
                     : 'border-driver-line bg-driver-panel text-driver-text hover:-translate-y-0.5 hover:bg-driver-hover'
@@ -45,7 +45,7 @@ export function OverviewPanel() {
                   <span className="text-base font-black">Profile {profile + 1}</span>
                   {active ? <Check size={18} /> : <span className="h-2.5 w-2.5 rounded-full bg-driver-muted/35" />}
                 </div>
-                <div className={`mt-12 text-xs font-semibold ${active ? 'text-driver-panel/70' : 'text-driver-muted'}`}>
+                <div className={`mt-8 text-xs font-semibold sm:mt-12 ${active ? 'text-driver-panel/70' : 'text-driver-muted'}`}>
                   {active ? t('mouse.profileActive') : t('mouse.profileHint')}
                 </div>
               </button>

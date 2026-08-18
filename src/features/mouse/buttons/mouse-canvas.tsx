@@ -28,7 +28,7 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
   }, [macroSlots, macros]);
 
   return (
-    <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-4">
+    <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-3 sm:p-4">
       <div className="relative aspect-[26/25] w-full max-w-[460px] shrink-0">
         <MouseGraphic className="mx-auto h-full w-full drop-shadow-[0_20px_42px_rgba(0,0,0,0.18)]" />
 
@@ -68,7 +68,7 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
               type="button"
               aria-pressed={active}
               aria-label={`${pickLabel(button, locale)}: ${binding}`}
-              className={`absolute w-[136px] rounded-md px-3 py-2 text-left text-sm font-black shadow-[0_8px_20px_rgba(0,0,0,0.08)] transition duration-200 hover:-translate-y-0.5 ${
+              className={`absolute w-[104px] rounded-md px-2 py-1.5 text-left text-sm font-black shadow-[0_8px_20px_rgba(0,0,0,0.08)] transition duration-200 hover:-translate-y-0.5 sm:w-[136px] sm:px-3 sm:py-2 ${
                 active
                   ? 'bg-driver-text text-driver-panel ring-2 ring-warn ring-offset-2 ring-offset-driver-bg'
                   : 'bg-driver-panel text-driver-text hover:bg-driver-hover'
@@ -115,17 +115,17 @@ export function MouseCanvas({ selectedButton, onChoose }: MouseCanvasProps) {
 function positionClass(buttonId: ButtonId) {
   switch (buttonId) {
     case ButtonId.Left:
-      return 'right-[78%] top-[14%]';
+      return 'right-[70%] top-[14%] sm:right-[78%]';
     case ButtonId.Forward:
-      return 'right-[78%] top-[38%]';
+      return 'right-[70%] top-[38%] sm:right-[78%]';
     case ButtonId.Backward:
-      return 'right-[78%] top-[58%]';
+      return 'right-[70%] top-[58%] sm:right-[78%]';
     case ButtonId.Right:
-      return 'left-[78%] top-[14%]';
+      return 'left-[70%] top-[14%] sm:left-[78%]';
     case ButtonId.Middle:
-      return 'left-[78%] top-[34%]';
+      return 'left-[70%] top-[34%] sm:left-[78%]';
     case ButtonId.Dpi:
-      return 'left-[78%] top-[55%]';
+      return 'left-[70%] top-[55%] sm:left-[78%]';
     default:
       return 'left-1/2 top-1/2';
   }

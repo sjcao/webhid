@@ -21,6 +21,10 @@ function collectionHasProtocolOutput(collection: HIDCollectionInfo): boolean {
   return (collection.children ?? []).some(collectionHasProtocolOutput);
 }
 
+export function isDeviceSupported(device: HIDDevice): boolean {
+  return (device.collections ?? []).some(collectionHasProtocolOutput);
+}
+
 export class BrowserHidService {
   private device: HIDDevice | null = null;
   private inputListener: ((event: HIDInputReportEvent) => void) | null = null;
@@ -73,7 +77,7 @@ export class BrowserHidService {
   }
 
   async connect(device: HIDDevice) {
-    if (!device.collections.some(collectionHasProtocolOutput)) {
+    if (!isDeviceSupported(device)) {
       throw new UnsupportedDeviceError();
     }
 

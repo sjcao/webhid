@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { MouseCommands } from '@/protocol/mouse';
-import { BrowserHidService, UnsupportedDeviceError } from './browser-hid-service';
+import { BrowserHidService, UnsupportedDeviceError, isDeviceSupported } from './browser-hid-service';
 
 type FakeDevice = HIDDevice & {
   open: ReturnType<typeof vi.fn>;
@@ -100,5 +100,13 @@ describe('BrowserHidService', () => {
     await first;
     await expect(queuedForFirstDevice).rejects.toThrow(/device changed/);
     expect(secondDevice.sendReport).not.toHaveBeenCalled();
+  });
+
+  it('correctly identifies whether a device supports the protocol', () => {
+    const supportedDevice = fakeDevice({ protocol: true });
+    const unsupportedDevice = fakeDevice({ protocol: false });
+
+    expect(isDeviceSupported(supportedDevice)).toBe(true);
+    expect(isDeviceSupported(unsupportedDevice)).toBe(false);
   });
 });
